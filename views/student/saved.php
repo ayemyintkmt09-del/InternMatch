@@ -11,102 +11,84 @@ $database = new Database();
 $db = $database->getConnection();
 $user_id = $_SESSION['user_id'];
 
-// Fixed: Querying 'student_profiles' instead of non-existent 'students' table[cite: 14, 15]
+// Get student_id
 $prof_stmt = $db->prepare("SELECT student_id FROM student_profiles WHERE user_id = ?");
 $prof_stmt->execute([$user_id]);
 $profile = $prof_stmt->fetch();
 $student_id = $profile['student_id'] ?? 0;
 
-// Fetch metrics using exact columns from schema[cite: 14, 15]
-$total_applications = 0;
-$pending_reviews = 0;
-$accepted_offers = 0;
-$rejected_count = 0;
-
-if ($student_id) {
-    $total_apps_stmt = $db->prepare("SELECT COUNT(*) FROM applications WHERE student_id = ?");
-    $total_apps_stmt->execute([$student_id]);
-    $total_applications = $total_apps_stmt->fetchColumn();
-
-    $pending_stmt = $db->prepare("SELECT COUNT(*) FROM applications WHERE student_id = ? AND status = 'Pending'");
-    $pending_stmt->execute([$student_id]);
-    $pending_reviews = $pending_stmt->fetchColumn();
-
-    $accepted_stmt = $db->prepare("SELECT COUNT(*) FROM applications WHERE student_id = ? AND status = 'Accepted'");
-    $accepted_stmt->execute([$student_id]);
-    $accepted_offers = $accepted_stmt->fetchColumn();
-
-    $rejected_stmt = $db->prepare("SELECT COUNT(*) FROM applications WHERE student_id = ? AND status = 'Rejected'");
-    $rejected_stmt->execute([$student_id]);
-    $rejected_count = $rejected_stmt->fetchColumn();
+// Handle removal
+if (isset($_GET['action']) && $_GET['action'] === 'remove' && isset($_GET['saved_id'])) {
+    $saved_id = $_GET['saved_id'];
+    $del = $db->prepare("DELETE FROM saved_internships WHERE saved_id = ? AND student_id = ?");
+    $del->execute([$saved_id, $student_id]);
+    header("Location: saved.php");
+    exit();
 }
 
-$page_title = "Student Dashboard";
+// Fetch saved internships
+$saved_jobs = [];
+if ($student_id) {
+    $query = "
+        SELECT s.saved_id, i.*, c.company_name 
+        FROM saved_internships s 
+        JOIN internships i ON s.internship_id = i.internship_id 
+        JOIN companies c ON i.company_id = c.company_id 
+        WHERE s.student_id = ? 
+        ORDER BY s.saved_at DESC
+    ";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$student_id]);
+    $saved_jobs = $stmt->fetchAll();
+}
+
+$page_title = "Saved Internships";
 include '../../includes/header.php';
 ?>
 
 <div class="row mb-4">
     <div class="col-md-12">
-        <div class="p-4 bg-white rounded shadow-sm border-0 border-start border-success border-4">
-            <h2 class="fw-bold text-success">Welcome back, <?php echo htmlspecialchars($_SESSION['name']); ?>!</h2>
-            <p class="text-muted mb-0">Track your internship applications, update your profile, and discover matches tailored for your career path.</p>
+        <div class="p-4 bg-white rounded shadow-sm border-0">
+            <h2 class="fw-bold text-success">Saved Opportunities</h2>
+            <p class="text-muted mb-0">Quickly access and review the internship positions you have bookmarked.</p>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-3 bg-white border-start border-success border-4 h-100">
-            <h6 class="text-muted small">Total Applications</h6>
-            <h2 class="fw-bold text-success mb-0"><?php echo $total_applications; ?></h2>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-3 bg-white border-start border-warning border-4 h-100">
-            <h6 class="text-muted small">Pending Review</h6>
-            <h2 class="fw-bold text-warning mb-0"><?php echo $pending_reviews; ?></h2>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-3 bg-white border-start border-primary border-4 h-100">
-            <h6 class="text-muted small">Accepted Offers</h6>
-            <h2 class="fw-bold text-primary mb-0"><?php echo $accepted_offers; ?></h2>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm p-4 bg-white h-100">
-            <h5 class="fw-bold text-dark mb-3">Application Status Distribution</h5>
-            <div style="height: 250px; position: relative;">
-                <canvas id="applicationChart"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm p-4 bg-white h-100">
-            <h5 class="fw-bold text-dark mb-3">Career Readiness</h5>
-            <p class="text-muted small">Keep your profile updated and configure your profile skills to improve visibility.</p>
-            <a href="profile.php" class="btn btn-success btn-sm w-100 mt-auto">Update Profile & CV</a>
+<div class="card shadow-sm border-0 bg-white">
+    <div class="card-body p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Position</th>
+                        <th>Company</th>
+                        <th>Location</th>
+                        <th>Deadline</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if(empty($saved_jobs)): ?>
+                        <tr><td colspan="5" class="text-center text-muted py-4">No bookmarked internships found.</td></tr>
+                    <?php else: ?>
+                        <?php foreach($saved_jobs as $job): ?>
+                            <tr>
+                                <td class="fw-bold"><?php echo htmlspecialchars($job['title']); ?></td>
+                                <td><?php echo htmlspecialchars($job['company_name']); ?></td>
+                                <td><?php echo htmlspecialchars($job['location'] ?? 'Remote'); ?></td>
+                                <td><?php echo htmlspecialchars($job['deadline'] ?? 'Open'); ?></td>
+                                <td>
+                                    <a href="apply.php?id=<?php echo $job['internship_id']; ?>" class="btn btn-sm btn-success">Apply Now</a>
+                                    <a href="saved.php?action=remove&saved_id=<?php echo $job['saved_id']; ?>" class="btn btn-sm btn-outline-danger">Remove</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('applicationChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Pending', 'Accepted', 'Rejected'],
-            datasets: [{
-                data: [<?php echo $pending_reviews; ?>, <?php echo $accepted_offers; ?>, <?php echo $rejected_count; ?>],
-                backgroundColor: ['#ffc107', '#0d6efd', '#dc3545']
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-</script>
 
 <?php include '../../includes/footer.php'; ?>

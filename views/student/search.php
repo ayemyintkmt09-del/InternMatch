@@ -11,50 +11,60 @@ $database = new Database();
 $db = $database->getConnection();
 $user_id = $_SESSION['user_id'];
 
-// Get student's skills via student_skills and skills table
-$prof_stmt = $db->prepare("SELECT student_id FROM student_profiles WHERE user_id = ?");
-$prof_stmt->execute([$user_id]);
-$profile = $prof_stmt->fetch();
-$student_id = $profile['student_id'] ?? 0;
+// Fetch student_id
+$s_stmt = $db->prepare("SELECT student_id FROM student_profiles WHERE user_id = ?");
+$s_stmt->execute([$user_id]);
+$student = $s_stmt->fetch();
+$student_id = $student['student_id'] ?? 0;
 
-$student_skills_array = [];
-if ($student_id) {
-    $skills_stmt = $db->prepare("
-        SELECT s.skill_name FROM student_skills ss 
-        JOIN skills s ON ss.skill_id = s.skill_id 
-        WHERE ss.student_id = ?
-    ");
-    $skills_stmt->execute([$student_id]);
-    $student_skills_array = array_map('strtolower', array_column($skills_stmt->fetchAll(), 'skill_name'));
+// Algorithm: Calculate skill match percentage
+function calculateSkillMatch($db, $student_id, $internship_id) {
+    $stmt = $db->prepare("SELECT skill_name FROM student_skills WHERE student_id = ?");
+    $stmt->execute([$student_id]);
+    $student_skills = array_column($stmt->fetchAll(), 'skill_name');
+
+    if (empty($student_skills)) {
+        $stmt_p = $db->prepare("SELECT skills FROM student_profiles WHERE student_id = ?");
+        $stmt_p->execute([$student_id]);
+        $profile = $stmt_p->fetch();
+        if (!empty($profile['skills'])) {
+            $student_skills = array_map('trim', explode(',', $profile['skills']));
+        }
+    }
+
+    if (empty($student_skills)) return 0;
+
+    $stmt2 = $db->prepare("SELECT title, description FROM internships WHERE internship_id = ?");
+    $stmt2->execute([$internship_id]);
+    $internship = $stmt2->fetch();
+    
+    if (!$internship) return 0;
+
+    $job_text = strtolower($internship['title'] . ' ' . $internship['description']);
+    $matched_count = 0;
+
+    foreach ($student_skills as $skill) {
+        if (!empty($skill) && strpos($job_text, strtolower(trim($skill))) !== false) {
+            $matched_count++;
+        }
+    }
+
+    $percentage = round(($matched_count / count($student_skills)) * 100);
+    return min($percentage, 100);
 }
 
 $keyword = $_GET['keyword'] ?? '';
 $location = $_GET['location'] ?? '';
 
-$query = "
-    SELECT i.*, c.company_name, c.industry, af.field_name 
-    FROM internships i 
-    JOIN companies c ON i.company_id = c.company_id 
-    LEFT JOIN academic_fields af ON i.field_id = af.field_id 
-    WHERE 1=1
-";
-$params = [];
+$query = "SELECT i.*, c.company_name, c.location as comp_location 
+          FROM internships i 
+          JOIN companies c ON i.company_id = c.company_id 
+          WHERE (i.title LIKE ? OR i.description LIKE ?) 
+          AND (i.location LIKE ? OR c.location LIKE ?)
+          ORDER BY i.internship_id DESC";
 
-if (!empty($keyword)) {
-    $query .= " AND (i.title LIKE ? OR i.description LIKE ? OR c.company_name LIKE ?)";
-    $params[] = "%$keyword%";
-    $params[] = "%$keyword%";
-    $params[] = "%$keyword%";
-}
-
-if (!empty($location)) {
-    $query .= " AND i.location LIKE ?";
-    $params[] = "%$location%";
-}
-
-$query .= " ORDER BY i.internship_id DESC";
 $stmt = $db->prepare($query);
-$stmt->execute($params);
+$stmt->execute(["%$keyword%", "%$keyword%", "%$location%", "%$location%"]);
 $internships = $stmt->fetchAll();
 
 $page_title = "Search Internships";
@@ -64,41 +74,51 @@ include '../../includes/header.php';
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="p-4 bg-white rounded shadow-sm border-0">
-            <h2 class="fw-bold text-success">Smart Internship Search</h2>
-            <p class="text-muted mb-0">Browse listings matching your academic profile and skill inventory.</p>
+            <h2 class="fw-bold text-primary">Find Internships</h2>
+            <p class="text-muted mb-0">Search through verified company listings and view your automated skill match score.</p>
         </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm p-4 bg-white mb-4">
-    <form method="GET" action="" class="row g-3">
-        <div class="col-md-5">
-            <input type="text" name="keyword" class="form-control" placeholder="Search by title, keyword, or company..." value="<?php echo htmlspecialchars($keyword); ?>">
-        </div>
-        <div class="col-md-4">
-            <input type="text" name="location" class="form-control" placeholder="Filter by location..." value="<?php echo htmlspecialchars($location); ?>">
-        </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-success w-100">Search Listings</button>
-        </div>
-    </form>
+<div class="card shadow-sm border-0 bg-white mb-4">
+    <div class="card-body p-4">
+        <form method="GET" class="row g-3">
+            <div class="col-md-5">
+                <input type="text" name="keyword" class="form-control" placeholder="Search title or keywords..." value="<?php echo htmlspecialchars($keyword); ?>">
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="location" class="form-control" placeholder="Filter by location..." value="<?php echo htmlspecialchars($location); ?>">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<div class="row">
+<div class="row g-4">
     <?php if(empty($internships)): ?>
-        <div class="col-md-12">
-            <div class="card border-0 shadow-sm p-4 bg-white text-center text-muted">No listings found.</div>
-        </div>
+        <div class="col-12"><div class="alert alert-light text-center">No matching internships found.</div></div>
     <?php else: ?>
         <?php foreach($internships as $post): ?>
-            <div class="col-md-6 mb-4">
-                <div class="card border-0 shadow-sm h-100 bg-white p-4">
-                    <h4 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($post['title']); ?></h4>
-                    <h6 class="text-muted mb-2"><?php echo htmlspecialchars($post['company_name']); ?> • <span class="small"><?php echo htmlspecialchars($post['location'] ?? 'Remote'); ?></span></h6>
-                    <p class="text-secondary small mb-3"><?php echo substr(htmlspecialchars($post['description']), 0, 120); ?>...</p>
-                    <div class="mt-auto d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Deadline: <?php echo htmlspecialchars($post['deadline'] ?? 'Open'); ?></span>
-                        <a href="apply.php?id=<?php echo $post['internship_id']; ?>" class="btn btn-sm btn-outline-success">View & Apply</a>
+            <?php 
+                $match_score = calculateSkillMatch($db, $student_id, $post['internship_id']); 
+                $badge_color = $match_score >= 70 ? 'success' : ($match_score >= 40 ? 'warning' : 'secondary');
+            ?>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100 bg-white">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h4 class="fw-bold text-dark mb-0"><?php echo htmlspecialchars($post['title']); ?></h4>
+                            <span class="badge bg-<?php echo $badge_color; ?>"><?php echo $match_score; ?>% Match</span>
+                        </div>
+                        <h6 class="text-primary mb-3"><?php echo htmlspecialchars($post['company_name']); ?></h6>
+                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($post['location']); ?></p>
+                        <p class="text-secondary small flex-grow-1"><?php echo nl2br(htmlspecialchars(substr($post['description'], 0, 150))); ?>...</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">Deadline: <?php echo htmlspecialchars($post['deadline']); ?></small>
+                            <a href="apply.php?id=<?php echo $post['internship_id']; ?>" class="btn btn-sm btn-dark">View & Apply</a>
+                        </div>
                     </div>
                 </div>
             </div>

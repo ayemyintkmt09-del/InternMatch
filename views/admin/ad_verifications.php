@@ -2,7 +2,6 @@
 session_start();
 require_once '../../config/database.php';
 
-// Ensure user is logged in and has an admin role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
@@ -10,83 +9,86 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $database = new Database();
 $db = $database->getConnection();
-$message = '';
 
-// Handle Verification Status Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['company_id'], $_POST['status'])) {
-    $company_id = $_POST['company_id'];
-    $new_status = $_POST['status']; // 'verified' or 'pending'
+if (isset($_GET['action']) && isset($_GET['company_id'])) {
+    $action = $_GET['action'];
+    $company_id = $_GET['company_id'];
+    
+    $new_status = ($action === 'approve') ? 'verified' : (($action === 'reject') ? 'rejected' : 'pending');
+    
+    $stmt = $db->prepare("UPDATE companies SET verification_status = ? WHERE company_id = ?");
+    $stmt->execute([$new_status, $company_id]);
 
-    $update_stmt = $db->prepare("UPDATE companies SET verification_status = ? WHERE company_id = ?");
-    if ($update_stmt->execute([$new_status, $company_id])) {
-        $message = "Company verification status updated successfully!";
+    $usr_q = $db->prepare("SELECT user_id, company_name FROM companies WHERE company_id = ?");
+    $usr_q->execute([$company_id]);
+    $comp_info = $usr_q->fetch();
+    if ($comp_info) {
+        $msg = "Your company verification status has been updated to: " . ucfirst($new_status);
+        $notif = $db->prepare("INSERT INTO notifications (user_id, message, is_read) VALUES (?, ?, 0)");
+        $notif->execute([$comp_info['user_id'], $msg]);
     }
+
+    header("Location: ad_verifications.php");
+    exit();
 }
 
-// Fetch all registered companies joined with user emails
-$stmt = $db->query("SELECT c.*, u.email FROM companies c JOIN users u ON c.user_id = u.user_id ORDER BY c.company_id DESC");
+$stmt = $db->prepare("SELECT c.*, u.email FROM companies c JOIN users u ON c.user_id = u.user_id ORDER BY c.company_id DESC");
+$stmt->execute();
 $companies = $stmt->fetchAll();
 
-$page_title = "Admin - Company Verifications";
+$page_title = "Company Verifications";
 include '../../includes/header.php';
 ?>
 
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="p-4 bg-white rounded shadow-sm border-0">
-            <h2 class="fw-bold text-primary">Admin Portal: Company Verifications</h2>
-            <p class="text-muted mb-0">Review registered companies and manage trust and verification badges across the platform.</p>
+            <h2 class="fw-bold text-secondary">Company Verifications</h2>
+            <p class="text-muted mb-0">Review submitted business verification documents and manage platform access permissions[cite: 27].</p>
         </div>
     </div>
 </div>
 
-<?php if($message): ?>
-    <div class="alert alert-success"><?php echo $message; ?></div>
-<?php endif; ?>
-
 <div class="card shadow-sm border-0 bg-white">
     <div class="card-body p-4">
-        <h4 class="fw-bold mb-3">All Registered Companies</h4>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
                         <th>Company Name</th>
                         <th>Email</th>
-                        <th>Industry</th>
-                        <th>Location</th>
-                        <th>Current Status</th>
+                        <th>Industry / Location</th>
+                        <th>Document</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if(empty($companies)): ?>
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No companies found.</td>
-                        </tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">No companies registered yet[cite: 27].</td></tr>
                     <?php else: ?>
                         <?php foreach($companies as $comp): ?>
                             <tr>
                                 <td class="fw-bold"><?php echo htmlspecialchars($comp['company_name']); ?></td>
                                 <td><?php echo htmlspecialchars($comp['email']); ?></td>
-                                <td><?php echo htmlspecialchars($comp['industry'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($comp['location'] ?? 'N/A'); ?></td>
+                                <td><?php echo htmlspecialchars($comp['industry'] ?? 'N/A'); ?><br><small class="text-muted"><?php echo htmlspecialchars($comp['location'] ?? 'N/A'); ?></small></td>
                                 <td>
-                                    <span class="badge bg-<?php echo $comp['verification_status'] === 'verified' ? 'success' : 'warning'; ?>">
-                                        <?php echo ucfirst($comp['verification_status']); ?>
-                                    </span>
+                                    <?php if(!empty($comp['verification_doc_path'])): ?>
+                                        <a href="/InternMatch/<?php echo htmlspecialchars($comp['verification_doc_path']); ?>" target="_blank" class="btn btn-sm btn-outline-secondary">View Document</a>
+                                    <?php else: ?>
+                                        <span class="text-muted small">No Document</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="company_id" value="<?php echo $comp['company_id']; ?>">
-                                        <?php if($comp['verification_status'] !== 'verified'): ?>
-                                            <input type="hidden" name="status" value="verified">
-                                            <button type="submit" class="btn btn-sm btn-outline-success">Verify</button>
-                                        <?php else: ?>
-                                            <input type="hidden" name="status" value="pending">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning">Unverify</button>
-                                        <?php endif; ?>
-                                    </form>
+                                    <?php 
+                                        $v = $comp['verification_status'];
+                                        $b = ($v === 'verified') ? 'success' : (($v === 'rejected') ? 'danger' : 'warning');
+                                    ?>
+                                    <span class="badge bg-<?php echo $b; ?> text-uppercase"><?php echo $v; ?></span>
+                                </td>
+                                <td>
+                                    <a href="ad_verifications.php?action=approve&company_id=<?php echo $comp['company_id']; ?>" class="btn btn-sm btn-success">Approve</a>
+                                    <a href="ad_verifications.php?action=reject&company_id=<?php echo $comp['company_id']; ?>" class="btn btn-sm btn-outline-danger">Reject</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
