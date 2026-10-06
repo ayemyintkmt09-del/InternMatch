@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Internship Details | InternMatch</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+
+<!-- =========================================
+     NAVBAR
+========================================= -->
+
+<nav class="navbar navbar-expand-lg dashboard-nav">
+
+    <div class="container">
+
+        <!-- Logo -->
+            <a class="navbar-brand logo" href="index.html">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Intern<span class="logo-green">Match</span></span>
+            </a>
+
+
+        <!-- Mobile Menu -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <!-- Navigation -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="student-dashboard.html">
+
+                        Dashboard
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a class="nav-link active"
+                       href="opportunities.html">
+
+                        Opportunities
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="my-applications.html">
+
+                        My Applications
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="saved-internships.html">
+
+                        Saved
+
+                    </a>
+
+                </li>
+
+
+                <!-- Notification -->
+                <li class="nav-item ms-lg-2">
+
+                    <button class="notification-button">
+
+                        <i class="bi bi-bell"></i>
+
+                        <span class="notification-dot"></span>
+
+                    </button>
+
+                </li>
+
+
+                <!-- User -->
+                <li class="nav-item dropdown ms-lg-3">
+
+                    <a class="nav-link dropdown-toggle dashboard-user"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+
+                        <div class="dashboard-avatar">
+                            J
+                        </div>
+
+                        <div class="dashboard-user-info">
+                            <strong>John</strong>
+                            <small>Student</small>
+                        </div>
+                    </a>
+
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="student-profile.html">
+                                <i class="bi bi-person me-2"></i>
+                                My Profile
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="#">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                My CV
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+
+                        <li>
+                            <a class="dropdown-item"
+                               href="login.html">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Logout
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- INTERNSHIP DETAILS -->
+
+<main class="internship-details-page">
+
+    <div class="container">
+
+
+        <!-- BACK LINK-->
+
+        <a href="opportunities.html"
+           class="back-opportunities">
+            <i class="bi bi-arrow-left"></i>
+            Back to Opportunities
+        </a>
+
+        <!-- INTERNSHIP HEADER -->
+
+        <section class="internship-details-header">
+
+            <div class="internship-company-logo">
+                TW
+            </div>
+
+            <div class="internship-header-content">
+
+                <div class="internship-header-top">
+
+                    <div>
+                        <p class="dashboard-small-title"> INTERNSHIP OPPORTUNITY</p>
+                        <h1>Junior Web Developer Intern</h1>
+                        <p class="internship-company-name">TechWave Solutions</p>
+                    </div>
+
+                    <span class="details-match-badge">
+                        <i class="bi bi-stars"></i>
+                        92% Match
+                    </span>
+
+                </div>
+
+                <!-- Meta -->
+                <div class="details-meta">
+
+                    <span>
+                        <i class="bi bi-geo-alt"></i>
+                        Yangon
+                    </span>
+
+                    <span>
+                        <i class="bi bi-clock"></i>
+                        3 - 6 Months
+                    </span>
+
+                    <span>
+                        <i class="bi bi-building"></i>
+                        Hybrid
+                    </span>
+
+                    <span>
+                    <i class="bi bi-calendar3"></i>
+                        Posted 2 days ago
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ACTION BAR -->
+        <div class="internship-action-bar">
+
+            <button class="save-details-button"
+                    onclick="toggleDetailsSave(this)">
+                <i class="bi bi-bookmark"></i>
+                Save Internship
+            </button>
+
+
+            <button class="btn btn-primary apply-button"
+                    onclick="applyForInternship()">
+                    <i class="bi bi-send me-2"></i>
+                    Apply Now
+            </button>
+
+        </div>
+
+        <!--CONTENT -->
+        <div class="row g-4">
+        <!-- LEFT CONTENT-->
+            <div class="col-lg-8">
+                <!-- About -->
+                <section class="details-content-card">
+                    <h2>About the Internship</h2>
+                    <p>
+                        TechWave Solutions is looking for a motivated
+                        Junior Web Developer Intern to join its development
+                        team. This internship provides students with an
+                        opportunity to gain practical experience in web
+                        development and work on real-world projects.
+                    </p>
+
+                    <p>
+                        The successful candidate will work with experienced
+                        developers and contribute to the development,
+                        testing, and improvement of web applications.
+                    </p>
+
+                </section>
+
+
+
+                <!-- Responsibilities -->
+
+                <section class="details-content-card">
+
+                    <h2>Responsibilities</h2>
+
+                    <ul class="details-list">
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Assist with developing and maintaining web applications.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Write clean and maintainable HTML, CSS, and JavaScript.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Support the development team with testing and debugging.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Participate in team meetings and development discussions.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Learn and apply modern web development practices.
+                        </li>
+
+                    </ul>
+
+                </section>
+
+
+
+                <!-- Required Skills -->
+
+                <section class="details-content-card">
+
+                    <h2>Required Skills</h2>
+
+                    <div class="details-skills">
+
+                        <span>HTML</span>
+
+                        <span>CSS</span>
+
+                        <span>JavaScript</span>
+
+                        <span>PHP</span>
+
+                        <span>MySQL</span>
+
+                        <span>Git</span>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- Qualifications -->
+
+                <section class="details-content-card">
+
+                    <h2>
+                        Qualifications
+                    </h2>
+
+                    <ul class="details-list">
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Currently studying a relevant computing or technology programme.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Basic understanding of web development.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Willingness to learn new technologies.
+                        </li>
+
+                        <li>
+                            <i class="bi bi-check-circle"></i>
+                            Good communication and teamwork skills.
+                        </li>
+
+                    </ul>
+
+                </section>
+
+
+
+                <!-- Application Information -->
+
+                <section class="details-content-card">
+
+                    <h2>
+                        Application Information
+                    </h2>
+
+                    <div class="application-information-grid">
+
+                        <div>
+
+                            <small>
+                                Application Deadline
+                            </small>
+
+                            <strong>
+                                30 October 2026
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Internship Duration
+                            </small>
+
+                            <strong>
+                                3 - 6 Months
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Work Arrangement
+                            </small>
+
+                            <strong>
+                                Hybrid
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <small>
+                                Location
+                            </small>
+
+                            <strong>
+                                Yangon, Myanmar
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+
+            <!-- RIGHT SIDEBAR -->
+
+            <div class="col-lg-4">
+
+
+                <!-- Match Card -->
+
+                <section class="details-sidebar-card">
+
+                    <div class="sidebar-card-header">
+
+                        <div>
+
+                            <h3>
+                                Your Match
+                            </h3>
+
+                            <p>
+                                Based on your profile
+                            </p>
+
+                        </div>
+
+                        <div class="match-score-circle">
+
+                            92%
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="match-progress-item">
+
+                        <div>
+
+                            <span>
+                                Skills
+                            </span>
+
+                            <strong>
+                                95%
+                            </strong>
+
+                        </div>
+
+                        <div class="match-progress">
+
+                            <div style="width: 95%;"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="match-progress-item">
+
+                        <div>
+
+                            <span>
+                                Academic Field
+                            </span>
+
+                            <strong>
+                                90%
+                            </strong>
+
+                        </div>
+
+                        <div class="match-progress">
+
+                            <div style="width: 90%;"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="match-progress-item">
+
+                        <div>
+
+                            <span>
+                                Interests
+                            </span>
+
+                            <strong>
+                                92%
+                            </strong>
+
+                        </div>
+
+                        <div class="match-progress">
+
+                            <div style="width: 92%;"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="match-progress-item">
+
+                        <div>
+
+                            <span>
+                                Availability
+                            </span>
+
+                            <strong>
+                                90%
+                            </strong>
+
+                        </div>
+
+                        <div class="match-progress">
+
+                            <div style="width: 90%;"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="match-progress-item">
+
+                        <div>
+
+                            <span>
+                                Location
+                            </span>
+
+                            <strong>
+                                95%
+                            </strong>
+
+                        </div>
+
+                        <div class="match-progress">
+
+                            <div style="width: 95%;"></div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- Company Card -->
+
+                <section class="details-sidebar-card">
+
+                    <h3>
+                        About the Company
+                    </h3>
+
+
+                    <div class="company-summary">
+
+                        <div class="company-small-logo">
+                            TW
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                TechWave Solutions
+                            </strong>
+
+                            <span>
+                                Technology Company
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <p>
+                        TechWave Solutions develops digital products
+                        and web-based solutions for businesses and
+                        organisations.
+                    </p>
+
+
+                    <div class="company-detail-item">
+
+                        <i class="bi bi-people"></i>
+
+                        <span>
+                            Technology & Software
+                        </span>
+
+                    </div>
+
+
+                    <div class="company-detail-item">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        <span>
+                            Yangon, Myanmar
+                        </span>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- Quick Apply Card -->
+
+                <section class="details-apply-card">
+
+                    <i class="bi bi-send-check"></i>
+
+                    <h3>
+                        Ready to Apply?
+                    </h3>
+
+                    <p>
+                        Make sure your profile and CV are up to date
+                        before submitting your application.
+                    </p>
+
+                    <button class="btn btn-primary w-100"
+                            onclick="applyForInternship()">
+
+                        Apply Now
+
+                    </button>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- FOOTER-->
+
+<footer class="dashboard-footer">
+
+    <div class="container">
+
+        <p>
+
+            © 2026 InternMatch
+
+            <span>•</span>
+
+            Internship Opportunity & Student Matching System
+
+        </p>
+
+    </div>
+
+</footer>
+
+
+
+<!-- Bootstrap JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- Main JS -->
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

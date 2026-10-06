@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternMatch</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!--NAVBAR -->
+    <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
+
+        <div class="container">
+
+            <!-- Logo -->
+            <a class="navbar-brand logo" href="index.html">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Intern<span class="logo-green">Match</span></span>
+            </a>
+
+            <!-- Mobile menu button -->
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation links -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+
+                <ul class="navbar-nav mx-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="opportunities.html">Opportunities</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+
+                </ul>
+
+                <!-- Navbar buttons -->
+                <div class="d-flex gap-2">
+
+                    <a href="login.html" class="btn btn-login">Login</a>
+
+                    <a href="register.html" class="btn btn-primary-custom">Register</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!--  HERO SECTION  -->
+
+    <section class="hero-section">
+
+        <div class="container">
+
+            <div class="row align-items-center">
+
+                <!-- Hero text -->
+                <div class="col-lg-6">
+
+                    <span class="hero-badge">
+                        <i class="bi bi-stars"></i>
+                        Find your next opportunity
+                    </span>
+
+                    <h1 class="hero-title">
+                        Your Next
+                        <span>Opportunity</span>
+                        Awaits
+                    </h1>
+
+                    <p class="hero-text">
+                        Discover internships that match your skills,
+                        education, interests and career goals.
+                    </p>
+
+
+                    <!-- Search Box -->
+                    <div class="search-box">
+
+                        <div class="search-input">
+
+                            <i class="bi bi-search"></i>
+
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="Search internships..."
+                            >
+
+                        </div>
+
+
+                        <select id="fieldFilter">
+                            <option value="">All Fields</option>
+                            <option value="IT">IT & Computer Science</option>
+                            <option value="Business">Business</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Design">Design</option>
+                        </select>
+
+
+                        <select id="locationFilter">
+                            <option value="">Location</option>
+                            <option value="Yangon">Yangon</option>
+                            <option value="Mandalay">Mandalay</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+
+
+                        <button
+                            class="search-button"
+                            onclick="searchInternships()"
+                        >
+                            <i class="bi bi-search"></i>
+                        </button>
+
+                    </div>
+
+                    <p id="searchMessage" class="search-message"></p>
+
+                </div>
+
+
+                <!-- Hero illustration -->
+                <div class="col-lg-6 text-center">
+
+                    <div class="hero-illustration">
+
+                        <div class="illustration-circle"></div>
+
+                        <div class="laptop">
+                            <div class="laptop-screen">
+
+                                <div class="screen-header"></div>
+
+                                <div class="screen-content">
+
+                                    <div class="screen-card"></div>
+                                    <div class="screen-card"></div>
+                                    <div class="screen-card"></div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="laptop-base"></div>
+                        </div>
+
+                        <div class="person">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+
+                        <div class="floating-icon icon-one">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </div>
+
+                        <div class="floating-icon icon-two">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+
+                        <div class="floating-icon icon-three">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FEATURED INTERNSHIPS -->
+
+    <section class="featured-section">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="section-label">
+                        OPPORTUNITIES
+                    </span>
+
+                    <h2>
+                        Featured Internships
+                    </h2>
+
+                    <p>
+                        Explore some of the latest internship opportunities.
+                    </p>
+                </div>
+
+                <a href="#" class="view-all">
+                    View All
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                <!-- Internship 1 -->
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="internship-card">
+
+                        <div class="company-icon google">
+                            <i class="bi bi-google"></i>
+                        </div>
+
+                        <h5>
+                            Software Engineering Intern
+                        </h5>
+
+                        <p class="company-name">
+                            TechNova Co.
+                        </p>
+
+                        <div class="internship-info">
+                            <span>
+                                <i class="bi bi-geo-alt"></i>
+                                Yangon
+                            </span>
+
+                            <span>
+                                <i class="bi bi-clock"></i>
+                                3 months
+                            </span>
+                        </div>
+
+                        <span class="category-tag">
+                            IT & Computer Science
+                        </span>
+
+                        <a href="#" class="btn card-button">
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Internship 2 -->
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="internship-card">
+
+                        <div class="company-icon marketing">
+                            <i class="bi bi-megaphone-fill"></i>
+                        </div>
+
+                        <h5>
+                            Marketing Intern
+                        </h5>
+
+                        <p class="company-name">
+                            Bright Media
+                        </p>
+
+                        <div class="internship-info">
+                            <span>
+                                <i class="bi bi-geo-alt"></i>
+                                Yangon
+                            </span>
+
+                            <span>
+                                <i class="bi bi-clock"></i>
+                                2 months
+                            </span>
+                        </div>
+
+                        <span class="category-tag">
+                            Marketing
+                        </span>
+
+                        <a href="#" class="btn card-button">
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Internship 3 -->
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="internship-card">
+
+                        <div class="company-icon business">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+
+                        <h5>
+                            Business Analyst Intern
+                        </h5>
+
+                        <p class="company-name">
+                            Global Solutions
+                        </p>
+
+                        <div class="internship-info">
+                            <span>
+                                <i class="bi bi-geo-alt"></i>
+                                Mandalay
+                            </span>
+
+                            <span>
+                                <i class="bi bi-clock"></i>
+                                3 months
+                            </span>
+                        </div>
+
+                        <span class="category-tag">
+                            Business
+                        </span>
+
+                        <a href="#" class="btn card-button">
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Internship 4 -->
+                <div class="col-md-6 col-lg-3">
+
+                    <div class="internship-card">
+
+                        <div class="company-icon design">
+                            <i class="bi bi-palette-fill"></i>
+                        </div>
+
+                        <h5>
+                            Graphic Design Intern
+                        </h5>
+
+                        <p class="company-name">
+                            Creative Studio
+                        </p>
+
+                        <div class="internship-info">
+                            <span>
+                                <i class="bi bi-geo-alt"></i>
+                                Remote
+                            </span>
+
+                            <span>
+                                <i class="bi bi-clock"></i>
+                                2 months
+                            </span>
+                        </div>
+
+                        <span class="category-tag">
+                            Design
+                        </span>
+
+                        <a href="#" class="btn card-button">
+                            View Details
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= HOW IT WORKS ================= -->
+
+    <section class="how-section" id="how-it-works">
+
+        <div class="container">
+
+            <div class="text-center section-title">
+
+                <span class="section-label">
+                    SIMPLE PROCESS
+                </span>
+
+                <h2>
+                    How InternMatch Works
+                </h2>
+
+                <p>
+                    Find and apply for internships in a few simple steps.
+                </p>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                <!-- Step 1 -->
+                <div class="col-md-4">
+
+                    <div class="step-card">
+
+                        <div class="step-number">
+                            01
+                        </div>
+
+                        <div class="step-icon">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+
+                        <h4>
+                            Create Your Profile
+                        </h4>
+
+                        <p>
+                            Add your education, skills, interests,
+                            availability and preferred location.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Step 2 -->
+                <div class="col-md-4">
+
+                    <div class="step-card">
+
+                        <div class="step-number">
+                            02
+                        </div>
+
+                        <div class="step-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+
+                        <h4>
+                            Find Your Match
+                        </h4>
+
+                        <p>
+                            Search internships or receive recommendations
+                            based on your profile.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Step 3 -->
+                <div class="col-md-4">
+
+                    <div class="step-card">
+
+                        <div class="step-number">
+                            03
+                        </div>
+
+                        <div class="step-icon">
+                            <i class="bi bi-send-fill"></i>
+                        </div>
+
+                        <h4>
+                            Apply & Track
+                        </h4>
+
+                        <p>
+                            Apply for suitable internships and track
+                            your application status.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- BENEFITS  -->
+
+    <section class="benefits-section" id="about">
+
+        <div class="container">
+
+            <div class="row g-5 align-items-center">
+
+                <div class="col-lg-6">
+
+                    <span class="section-label">
+                        WHY INTERNMATCH
+                    </span>
+
+                    <h2>
+                        Built for Students
+                        and Companies
+                    </h2>
+
+                    <p class="benefit-description">
+                        InternMatch provides a centralized platform
+                        where students can discover opportunities and
+                        companies can manage internship recruitment.
+                    </p>
+
+                    <div class="benefit-list">
+
+                        <div class="benefit-item">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <div>
+                                <h5>For Students</h5>
+                                <p>
+                                    Find relevant internships, manage
+                                    your CV and track applications.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="benefit-item">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <div>
+                                <h5>For Companies</h5>
+                                <p>
+                                    Post opportunities and review
+                                    suitable student applications.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="benefit-item">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <div>
+                                <h5>Smart Matching</h5>
+                                <p>
+                                    Compare student profiles with
+                                    internship requirements.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-6">
+
+                    <div class="stats-card">
+
+                        <div class="stat-item">
+                            <i class="bi bi-briefcase-fill"></i>
+                            <strong>100+</strong>
+                            <span>Internships</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <i class="bi bi-building-fill"></i>
+                            <strong>50+</strong>
+                            <span>Companies</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <i class="bi bi-people-fill"></i>
+                            <strong>500+</strong>
+                            <span>Students</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <strong>90%</strong>
+                            <span>Match Accuracy</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!--  CTA -->
+
+    <section class="cta-section">
+
+        <div class="container">
+
+            <div class="cta-content">
+
+                <h2>
+                    Ready to Find Your Opportunity?
+                </h2>
+
+                <p>
+                    Create your profile and start exploring internship
+                    opportunities today.
+                </p>
+
+                <a href="register.html" class="btn cta-button">
+                    Get Started
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!--  FOOTER  -->
+
+    <footer class="footer">
+
+        <div class="container">
+
+            <div class="row g-4">
+
+                <div class="col-lg-5">
+
+                    <a class="navbar-brand logo footer-logo" href="#">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <span>Intern<span class="logo-green">Match</span></span>
+                    </a>
+
+                    <p>
+                        Connecting students with internship opportunities
+                        that match their skills, education and interests.
+                    </p>
+
+                </div>
+
+
+                <div class="col-6 col-lg-2">
+
+                    <h6>Platform</h6>
+
+                    <a href="opportunities.html">Opportunities</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#about">About</a>
+
+                </div>
+
+
+                <div class="col-6 col-lg-2">
+
+                    <h6>Account</h6>
+
+                    <a href="login.html">Login</a>
+                    <a href="register.html">Register</a>
+                    <a href="student-profile.html">Profile</a>
+
+                </div>
+
+
+                <div class="col-lg-3">
+
+                    <h6>Contact</h6>
+
+                    <p>
+                        <i class="bi bi-envelope"></i>
+                        info@internmatch.com
+                    </p>
+
+                    <p>
+                        <i class="bi bi-geo-alt"></i>
+                        Myanmar
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <hr>
+
+            <div class="footer-bottom">
+
+                <span>
+                    © 2026 InternMatch. All rights reserved.
+                </span>
+
+                <span>
+                    Internship Opportunity & Student Matching System
+                </span>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- Bootstrap JavaScript -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- Custom JavaScript -->
+    <script src="js/script.js"></script>
+
+</body>
+
+</html>
