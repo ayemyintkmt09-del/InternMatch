@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../middleware/auth.php';
 
 require_once __DIR__ . '/CompanyFileController.php';
-
+require_once __DIR__ . '/NotificationController.php';
 
 
 final class AdminVerificationController
@@ -193,6 +193,25 @@ final class AdminVerificationController
             'notes' => $notes !== '' ? $notes : null,
             'company_id' => $companyId,
         ]);
+
+        $decisionChanged =
+            $company['verification_status'] !== $status
+            || (string) ($company['verification_notes'] ?? '') !== $notes;
+
+        if ($decisionChanged) {
+            $message = $status === 'verified'
+                ? 'Your company verification was approved.'
+                : 'Your company verification was rejected.';
+
+            $message .= ' Open Company Profile to view your current status and feedback.';
+
+            NotificationController::create(
+                $pdo,
+                (int) $company['user_id'],
+                $message,
+                'System'
+            );
+        }
 
         $pdo->commit();
     } catch (Throwable $exception) {

@@ -104,7 +104,11 @@ $loginSuccess = take_flash('login_success');
 
                 <!-- Register button -->
                 <div class="d-flex gap-2">
-                    <a href="register.html" class="btn btn-primary-custom">Register</a>
+                    <a
+                        href="<?= e(url('register.php')) ?>"
+                        class="btn btn-primary-custom">
+                        Register
+                    </a>
                 </div>
             </div>
         </div>

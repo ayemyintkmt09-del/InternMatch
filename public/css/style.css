@@ -7660,3 +7660,105 @@ section {
     object-fit: contain;
     border-radius: inherit;
 }
+
+/* Homepage cards */
+.featured-section .internship-card {
+    display: block;
+    height: 100%;
+    padding: 22px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background-color: #ffffff;
+}
+
+/* Student dashboard cards */
+.dashboard-main .internship-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    height: auto;
+    padding: 18px 0;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid #edf1f4;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.dashboard-main .internship-card:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.dashboard-main .internship-card:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.dashboard-main .profile-completion-content {
+    display: block;
+    min-width: 0;
+}
+
+.dashboard-main .application-item {
+    flex-wrap: wrap;
+}
+
+.dashboard-main .application-info {
+    min-width: 120px;
+}
+
+.dashboard-main .application-item .badge {
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .dashboard-main .internship-card {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-main .internship-card-action {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+
+.notification-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: #dc3545;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 15px;
+    text-align: center;
+}
+
+.notifications-page .notification-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.notifications-page .notification-title-row {
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.notifications-page .notification-content {
+    overflow-wrap: anywhere;
+}
+
+.notifications-page .notification-card > form {
+    flex-shrink: 0;
+    margin: 0;
+}

@@ -110,27 +110,27 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
 
                     <li class="nav-item">
                         <a
-                            class="nav-link active"
-                            href="company-dashboard.php"
-                        >
+                            class="nav-link <?= $activeNav === 'dashboard'
+                                ? 'active' : '' ?>"
+                            href="<?= e(url('company-dashboard.php')) ?>">
                             Dashboard
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a
-                            class="nav-link"
-                            href="<?= e(url('company-internships.php')) ?>"
-                        >
+                            class="nav-link <?= $activeNav === 'internships'
+                                ? 'active' : '' ?>"
+                            href="<?= e(url('company-internships.php')) ?>">
                             Internships
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a
-                            class="nav-link"
-                            href="<?= e(url('company-internships.php')) ?>"
-                        >
+                            class="nav-link <?= $activeNav === 'applications'
+                                ? 'active' : '' ?>"
+                            href="<?= e(url('company-applications.php')) ?>">
                             Applications
                         </a>
                     </li>
@@ -142,20 +142,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                 <div class="dashboard-nav-right">
 
                     <!-- Notification -->
-                   <button
-                        type="button"
-                        class="notification-button"
-                        disabled
-                        title="Notifications will be available after integration"
-                        aria-label="Notifications are not available yet">
-                        <i class="bi bi-bell"></i>
-                    </button>
-
-                        <i class="bi bi-bell"></i>
-
-                        <span class="notification-dot"></span>
-
-                    </a>
+                   <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
 
 
                     <!-- Company User -->
@@ -371,7 +358,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
 
                     <div>
 
-                        <span>Total Applicants</span>
+                        <span>Total Applications</span>
 
                         <strong>
                             <?= (int) $dashboard['total_applications'] ?>
@@ -576,7 +563,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                             <div class="text-end mt-3">
                                 <a
                                     class="btn btn-outline-primary"
-                                    href="<?= e(url('company-internships.php')) ?>">
+                                    href="<?= e(url('company-applications.php')) ?>">
                                     View All Internships
                                 </a>
                             </div>
@@ -704,34 +691,24 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                         <div class="company-panel-header">
                             <div>
                                 <h3>Application Status</h3>
-                                <p>Current applicant activity.</p>
+                                <p>All applications to your internships.</p>
                             </div>
                         </div>
 
-                        <div class="company-status-item">
-                            <span>Pending</span>
-                            <strong>12</strong>
-                        </div>
+                        <?php foreach (
+                            $dashboard['status_counts'] as $status => $total
+                        ): ?>
 
-                        <div class="company-status-item">
-                            <span>Under Review</span>
-                            <strong>16</strong>
-                        </div>
+                            <div class="company-status-item">
+                                <span><?= e($status) ?></span>
+                                <strong><?= number_format($total) ?></strong>
+                            </div>
 
-                        <div class="company-status-item">
-                            <span>Shortlisted</span>
-                            <strong>8</strong>
-                        </div>
+                        <?php endforeach; ?>
 
-                        <div class="company-status-item">
-                            <span>Accepted</span>
-                            <strong>5</strong>
-                        </div>
-
-                        <div class="company-status-item">
-                            <span>Rejected</span>
-                            <strong>7</strong>
-                        </div>
+                        <p class="small text-muted mt-3 mb-0">
+                            Total applications includes withdrawn applications.
+                        </p>
 
                     </div>
 

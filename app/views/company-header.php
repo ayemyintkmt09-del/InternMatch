@@ -1,9 +1,11 @@
-    <?php
+<?php
     $companyHeaderName = $user['name'] ?? 'Company';
     $companyHeaderInitial = mb_strtoupper(
         mb_substr($companyHeaderName, 0, 1, 'UTF-8'),
         'UTF-8'
     );
+
+    $activeNav = $activeNav ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -66,16 +68,17 @@
 
                     <li class="nav-item">
                         <a
-                            class="nav-link active"
-                            href="company-dashboard.php"
-                        >
+                            class="nav-link <?= $activeNav === 'dashboard'
+                                ? 'active' : '' ?>"
+                            href="<?= e(url('company-dashboard.php')) ?>">
                             Dashboard
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a
-                            class="nav-link"
+                            class="nav-link <?= $activeNav === 'internships'
+                                ? 'active' : '' ?>"
                             href="<?= e(url('company-internships.php')) ?>"
                         >
                             Internships
@@ -84,7 +87,8 @@
 
                     <li class="nav-item">
                         <a
-                            class="nav-link"
+                            class="nav-link <?= $activeNav === 'applications'
+                                ? 'active' : '' ?>"
                             href="<?= e(url('company-applications.php')) ?>"
                         >
                             Applications
@@ -98,20 +102,7 @@
                 <div class="dashboard-nav-right">
 
                     <!-- Notification -->
-                    <button
-                        type="button"
-                        class="notification-button"
-                        disabled
-                        title="Notifications will be available after integration"
-                        aria-label="Notifications are not available yet">
-                        <i class="bi bi-bell"></i>
-                    </button>
-
-                        <i class="bi bi-bell"></i>
-
-                        <span class="notification-dot"></span>
-
-                    </a>
+                   <?php require __DIR__ . '/notification-link.php'; ?>
 
 
                     <!-- Company User -->

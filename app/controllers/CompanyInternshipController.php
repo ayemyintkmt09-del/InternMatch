@@ -609,81 +609,87 @@ final class CompanyInternshipController
 
 
         public static function dashboard(int $userId): array
-    {
-        $companyId = self::companyId($userId);
+        {
+            $pdo = db();
+            $companyId = self::companyId($userId);
 
-        $activeStatement = db()->prepare(
-            "SELECT COUNT(*)
-             FROM internships
-             WHERE company_id = :company_id
-               AND status = 'Published'
-               AND deadline >= :today"
-        );
+            $activeStatement = $pdo->prepare(
+                "SELECT COUNT(*)
+                FROM internships AS i
+                INNER JOIN companies AS c
+                    ON c.company_id = i.company_id
+                INNER JOIN users AS u
+                    ON u.user_id = c.user_id
+                WHERE i.company_id = :company_id
+                AND i.status = 'Published'
+                AND i.deadline >= :today
+                AND c.verification_status = 'verified'
+                AND u.status = 'active'
+                AND u.role = 'company'"
+            );
 
-        $activeStatement->execute([
-            'company_id' => $companyId,
-            'today' => date('Y-m-d'),
-        ]);
+            $activeStatement->execute([
+                'company_id' => $companyId,
+                'today' => date('Y-m-d'),
+            ]);
 
-        $applicationStatement = db()->prepare(
-            "SELECT
-                COUNT(*) AS total_applications,
-                COALESCE(
-                    SUM(a.status = 'Under Review'),
-                    0
-                ) AS under_review,
-                COALESCE(
-                    SUM(a.status = 'Shortlisted'),
-                    0
-                ) AS shortlisted
-             FROM applications AS a
-             JOIN internships AS i
-                ON i.internship_id = a.internship_id
-             WHERE i.company_id = :company_id
-             AND a.status <> 'Withdrawn'"
-        );
+            $statusCounts = [
+                'Pending' => 0,
+                'Under Review' => 0,
+                'Shortlisted' => 0,
+                'Accepted' => 0,
+                'Rejected' => 0,
+                'Withdrawn' => 0,
+            ];
 
-        $applicationStatement->execute([
-            'company_id' => $companyId,
-        ]);
+            $statusStatement = $pdo->prepare(
+                'SELECT a.status, COUNT(*) AS total
+                FROM applications AS a
+                INNER JOIN internships AS i
+                    ON i.internship_id = a.internship_id
+                WHERE i.company_id = :company_id
+                GROUP BY a.status'
+            );
 
-        $applicationStats = $applicationStatement->fetch();
+            $statusStatement->execute([
+                'company_id' => $companyId,
+            ]);
 
-        $latestStatement = db()->prepare(
-            'SELECT
-                i.*,
-                (
-                    SELECT COUNT(*)
-                    FROM applications AS a
-                    WHERE a.internship_id = i.internship_id
-                ) AS application_count
-             FROM internships AS i
-             WHERE i.company_id = :company_id
-             ORDER BY i.created_at DESC, i.internship_id DESC
-             LIMIT 5'
-        );
+            foreach ($statusStatement->fetchAll() as $row) {
+                $statusCounts[$row['status']] = (int) $row['total'];
+            }
 
-        $latestStatement->execute([
-            'company_id' => $companyId,
-        ]);
+            $latestStatement = $pdo->prepare(
+                'SELECT
+                    i.*,
+                    (
+                        SELECT COUNT(*)
+                        FROM applications AS a
+                        WHERE a.internship_id = i.internship_id
+                    ) AS application_count
+                FROM internships AS i
+                WHERE i.company_id = :company_id
+                ORDER BY i.created_at DESC, i.internship_id DESC
+                LIMIT 5'
+            );
 
-        return [
-            'active_internships' =>
-                (int) $activeStatement->fetchColumn(),
+            $latestStatement->execute([
+                'company_id' => $companyId,
+            ]);
 
-            'total_applications' =>
-                (int) $applicationStats['total_applications'],
+            return [
+                'active_internships' =>
+                    (int) $activeStatement->fetchColumn(),
+                'total_applications' => array_sum($statusCounts),
+                'under_review' => $statusCounts['Under Review'],
+                'shortlisted' => $statusCounts['Shortlisted'],
+                'status_counts' => $statusCounts,
+                'latest_internships' => $latestStatement->fetchAll(),
+            ];
+        }
 
-            'under_review' =>
-                (int) $applicationStats['under_review'],
 
-            'shortlisted' =>
-                (int) $applicationStats['shortlisted'],
-
-            'latest_internships' =>
-                $latestStatement->fetchAll(),
-        ];
-    }
+        
 
         public static function close(
         int $userId,

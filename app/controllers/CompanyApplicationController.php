@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/NotificationController.php';
+
 final class CompanyApplicationController
 {
     private static function companyId(int $userId): int
@@ -56,10 +58,32 @@ final class CompanyApplicationController
     ): array {
         $companyId = self::companyId($userId);
 
+        $internshipStatement = db()->prepare(
+            'SELECT title
+            FROM internships
+            WHERE internship_id = :internship_id
+            AND company_id = :company_id
+            LIMIT 1'
+        );
+
+        $internshipStatement->execute([
+            'internship_id' => $internshipId,
+            'company_id' => $companyId,
+        ]);
+
+        $internship = $internshipStatement->fetch();
+
+        if (!$internship) {
+            throw new InvalidArgumentException(
+                'Internship not found.'
+            );
+        }
+
         $statement = db()->prepare(
             'SELECT
                 a.*,
                 i.title,
+                i.interns_needed,
                 u.name AS student_name,
                 u.email AS student_email,
                 sp.phone,
@@ -86,7 +110,7 @@ final class CompanyApplicationController
 
         return [
             'items' => $items,
-            'title' => $items[0]['title'] ?? 'Internship Applicants',
+            'title' => $internship['title'],
         ];
     }
 
@@ -139,31 +163,52 @@ final class CompanyApplicationController
         int $applicationId,
         array $input
     ): void {
+        // Checks that the application belongs to this company.
         $application = self::application($userId, $applicationId);
 
         $newStatus = $input['status'] ?? null;
+        $expectedStatus = $input['expected_status'] ?? null;
         $notes = $input['interview_notes'] ?? '';
         $interviewDate = $input['interview_date'] ?? '';
 
+        $allowedStatuses = [
+            'Under Review',
+            'Shortlisted',
+            'Accepted',
+            'Rejected',
+        ];
+
         if (
             !is_string($newStatus)
-            || !in_array(
-                $newStatus,
-                [
-                    'Under Review',
-                    'Shortlisted',
-                    'Accepted',
-                    'Rejected',
-                ],
-                true
-            )
+            || !in_array($newStatus, $allowedStatuses, true)
         ) {
             throw new InvalidArgumentException(
                 'Invalid application status.'
             );
         }
 
-        if (!is_string($notes) || mb_strlen($notes, 'UTF-8') > 3000) {
+        if (
+            !is_string($expectedStatus)
+            || !in_array(
+                $expectedStatus,
+                ['Pending', 'Under Review', 'Shortlisted', 'Accepted', 'Rejected'],
+                true
+            )
+        ) {
+            throw new InvalidArgumentException(
+                'Reload the application review page and try again.'
+            );
+        }
+
+        if (!is_string($notes)) {
+            throw new InvalidArgumentException(
+                'Invalid interview notes.'
+            );
+        }
+
+        $notes = trim($notes);
+
+        if (mb_strlen($notes, 'UTF-8') > 3000) {
             throw new InvalidArgumentException(
                 'Interview notes must not exceed 3,000 characters.'
             );
@@ -176,7 +221,6 @@ final class CompanyApplicationController
         }
 
         $interviewDate = trim($interviewDate);
-        $notes = trim($notes);
 
         if ($interviewDate !== '') {
             $date = DateTimeImmutable::createFromFormat(
@@ -187,107 +231,230 @@ final class CompanyApplicationController
             if (
                 !$date
                 || $date->format('Y-m-d\TH:i') !== $interviewDate
+                || (int) $date->format('Y') < 1000
+                || (int) $date->format('Y') > 9999
             ) {
                 throw new InvalidArgumentException(
                     'Please enter a valid interview date.'
                 );
             }
 
-            $interviewDate = str_replace('T', ' ', $interviewDate) . ':00';
+            $interviewDate = $date->format('Y-m-d H:i:s');
         } else {
             $interviewDate = null;
         }
 
-        
         $pdo = db();
         $pdo->beginTransaction();
 
         try {
             $lock = $pdo->prepare(
-                'SELECT status
-                 FROM applications
-                 WHERE application_id = :application_id
-                 FOR UPDATE'
+                'SELECT status, interview_date, interview_notes
+                FROM applications
+                WHERE application_id = :application_id
+                AND internship_id = :internship_id
+                FOR UPDATE'
             );
 
             $lock->execute([
                 'application_id' => $applicationId,
+                'internship_id' => $application['internship_id'],
             ]);
 
-            $lockedApplication = $lock->fetch(PDO::FETCH_ASSOC);
+            $current = $lock->fetch();
 
-            if (!$lockedApplication) {
+            if (!$current) {
                 throw new InvalidArgumentException(
                     'Application not found.'
                 );
             }
 
-            $application['status'] = $lockedApplication['status'];
-
-            if ($application['status'] === 'Withdrawn') {
+            if ($current['status'] === 'Withdrawn') {
                 throw new InvalidArgumentException(
                     'A withdrawn application cannot be reviewed.'
                 );
             }
 
-            if ($application['status'] === $newStatus) {
-                $detailsStatement = $pdo->prepare(
-                    'UPDATE applications
-                    SET interview_date = :interview_date,
-                        interview_notes = :interview_notes,
-                        reviewed_at = CURRENT_TIMESTAMP
-                    WHERE application_id = :application_id'
+
+            $allowedTransitions = [
+    'Pending' => [
+        'Pending',
+        'Under Review',
+        'Rejected',
+    ],
+    'Under Review' => [
+        'Under Review',
+        'Shortlisted',
+        'Accepted',
+        'Rejected',
+    ],
+    'Shortlisted' => [
+        'Shortlisted',
+        'Accepted',
+        'Rejected',
+    ],
+    'Accepted' => [
+        'Accepted',
+    ],
+    'Rejected' => [
+        'Rejected',
+    ],
+];
+
+if (
+    !in_array(
+        $newStatus,
+        $allowedTransitions[$current['status']] ?? [],
+        true
+    )
+) {
+    throw new InvalidArgumentException(
+        'This application cannot move from '
+        . $current['status']
+        . ' to '
+        . $newStatus
+        . '.'
+    );
+}
+
+if (
+    $newStatus === 'Accepted'
+    && $current['status'] !== 'Accepted'
+) {
+    $internshipLock = $pdo->prepare(
+        'SELECT interns_needed
+         FROM internships
+         WHERE internship_id = :internship_id
+         FOR UPDATE'
+    );
+
+    $internshipLock->execute([
+        'internship_id' => $application['internship_id'],
+    ]);
+
+    $internship = $internshipLock->fetch();
+
+    if (!$internship) {
+        throw new InvalidArgumentException(
+            'The internship no longer exists.'
+        );
+    }
+
+    $acceptedCountStatement = $pdo->prepare(
+            "SELECT COUNT(*)
+            FROM applications
+            WHERE internship_id = :internship_id
+            AND status = 'Accepted'"
+        );
+
+        $acceptedCountStatement->execute([
+            'internship_id' => $application['internship_id'],
+        ]);
+
+        $acceptedCount = (int) $acceptedCountStatement->fetchColumn();
+
+        if (
+            $acceptedCount >= (int) $internship['interns_needed']
+        ) {
+            throw new InvalidArgumentException(
+                'All internship positions have already been filled.'
+            );
+        }
+    }
+
+            if ($current['status'] !== $expectedStatus) {
+                throw new InvalidArgumentException(
+                    'The application status changed after you opened this page. '
+                    . 'Review the current status and try again.'
                 );
+            }
 
-                $detailsStatement->execute([
-                    'interview_date' => $interviewDate,
-                    'interview_notes' => $notes === '' ? null : $notes,
-                    'application_id' => $applicationId,
-                ]);
+            $statusChanged = $current['status'] !== $newStatus;
 
+            $dateChanged =
+                (string) ($current['interview_date'] ?? '')
+                !== (string) ($interviewDate ?? '');
+
+            $notesChanged =
+                (string) ($current['interview_notes'] ?? '') !== $notes;
+
+            if (!$statusChanged && !$dateChanged && !$notesChanged) {
                 $pdo->commit();
                 return;
             }
 
             $update = $pdo->prepare(
-                'UPDATE applications SET
-                    status = :new_status,
+                'UPDATE applications
+                SET status = :status,
                     interview_date = :interview_date,
                     interview_notes = :interview_notes,
                     reviewed_at = CURRENT_TIMESTAMP
-                 WHERE application_id = :application_id'
+                WHERE application_id = :application_id'
             );
 
             $update->execute([
-                'new_status' => $newStatus,
+                'status' => $newStatus,
                 'interview_date' => $interviewDate,
                 'interview_notes' => $notes === '' ? null : $notes,
                 'application_id' => $applicationId,
             ]);
 
-            $history = $pdo->prepare(
-                'INSERT INTO application_status_history (
-                    application_id,
-                    old_status,
-                    new_status,
-                    changed_by,
-                    notes
-                 ) VALUES (
-                    :application_id,
-                    :old_status,
-                    :new_status,
-                    :changed_by,
-                    :notes
-                 )'
+            if ($statusChanged) {
+                $history = $pdo->prepare(
+                    'INSERT INTO application_status_history (
+                        application_id,
+                        old_status,
+                        new_status,
+                        changed_by,
+                        notes
+                    ) VALUES (
+                        :application_id,
+                        :old_status,
+                        :new_status,
+                        :changed_by,
+                        :notes
+                    )'
+                );
+
+                $history->execute([
+                    'application_id' => $applicationId,
+                    'old_status' => $current['status'],
+                    'new_status' => $newStatus,
+                    'changed_by' => $userId,
+                    'notes' => $notes === '' ? null : $notes,
+                ]);
+            }
+
+            $activeInterviewStatus = in_array(
+                $newStatus,
+                ['Under Review', 'Shortlisted'],
+                true
             );
 
-            $history->execute([
-                'application_id' => $applicationId,
-                'old_status' => $application['status'],
-                'new_status' => $newStatus,
-                'changed_by' => $userId,
-                'notes' => $notes === '' ? null : $notes,
-            ]);
+            if (
+                $statusChanged
+                || ($dateChanged && $activeInterviewStatus)
+            ) {
+                $message = $statusChanged
+                    ? 'Your application status is now ' . $newStatus . '.'
+                    : 'Your interview schedule has changed.';
+
+                if ($activeInterviewStatus && $interviewDate !== null) {
+                    $message .= ' Interview: '
+                        . (new DateTimeImmutable($interviewDate))
+                            ->format('d M Y, g:i A')
+                        . ' Myanmar time.';
+                } elseif ($activeInterviewStatus && $dateChanged) {
+                    $message .= ' No interview is currently scheduled.';
+                }
+
+                NotificationController::applicationEvent(
+                    $pdo,
+                    $applicationId,
+                    'student',
+                    $message
+                );
+            }
 
             $pdo->commit();
         } catch (Throwable $exception) {
@@ -298,4 +465,44 @@ final class CompanyApplicationController
             throw $exception;
         }
     }
+
+
+
+    public static function all(int $userId): array
+{
+    $companyId = self::companyId($userId);
+
+    $statement = db()->prepare(
+        'SELECT
+            a.application_id,
+            a.internship_id,
+            a.status,
+            a.application_date,
+            a.cv_original_name,
+            i.title,
+            u.name AS student_name,
+            u.email AS student_email,
+            sp.university,
+            sp.degree
+         FROM applications AS a
+         INNER JOIN internships AS i
+            ON i.internship_id = a.internship_id
+         INNER JOIN student_profiles AS sp
+            ON sp.student_id = a.student_id
+         INNER JOIN users AS u
+            ON u.user_id = sp.user_id
+         WHERE i.company_id = :company_id
+         ORDER BY
+            a.application_date DESC,
+            a.application_id DESC'
+    );
+
+    $statement->execute([
+        'company_id' => $companyId,
+    ]);
+
+    return $statement->fetchAll();
+}
+
+
 }

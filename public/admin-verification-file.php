@@ -46,7 +46,7 @@ try {
     exit('The document could not be downloaded.');
 }
 
-header('Content-Type: application/octet-stream');
+header('Content-Type: application/pdf');
 header(
     'Content-Disposition: attachment; filename="company-'
     . $companyId

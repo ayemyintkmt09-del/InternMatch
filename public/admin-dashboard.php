@@ -71,25 +71,33 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#users">
+                        <a
+                            class="nav-link"
+                            href="<?= e(url('admin-users.php')) ?>">
                             Users
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#companies">
+                        <a
+                            class="nav-link"
+                            href="<?= e(url('admin-verifications.php')) ?>">
                             Companies
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#internships">
+                        <a
+                            class="nav-link"
+                            href="<?= e(url('admin-internships.php')) ?>">
                             Internships
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#applications">
+                        <a
+                            class="nav-link"
+                            href="<?= e(url('admin-activity.php')) ?>">
                             Applications
                         </a>
                     </li>
@@ -99,14 +107,7 @@
                 <div class="d-flex align-items-center gap-3">
 
                     <!-- Notification -->
-                    <button
-                        type="button"
-                        class="notification-button"
-                        disabled
-                        title="Notifications will be available after integration"
-                        aria-label="Notifications are not available yet">
-                        <i class="bi bi-bell"></i>
-                    </button>
+                    <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
 
                     <!-- Admin Profile -->
                     <div class="dropdown">
@@ -127,16 +128,20 @@
                         <ul class="dropdown-menu dropdown-menu-end">
 
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a
+                                    class="dropdown-item"
+                                    href="<?= e(url('admin-users.php?role=admin')) ?>">
                                     <i class="bi bi-person me-2"></i>
-                                    Admin Profile
+                                    Admin Accounts
                                 </a>
                             </li>
 
                             <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bi bi-gear me-2"></i>
-                                    Settings
+                                <a
+                                    class="dropdown-item"
+                                    href="<?= e(url('admin-activity.php')) ?>">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Activity Log
                                 </a>
                             </li>
 
@@ -199,13 +204,13 @@
                     </p>
                 </div>
 
-                <button
+                <a
                     class="btn btn-primary admin-action-button"
-                    onclick="showAdminSettings()">
+                    href="<?= e(url('admin-users.php')) ?>">
 
-                    <i class="bi bi-gear me-2"></i>
-                    System Settings
-                </button>
+                    <i class="bi bi-people me-2"></i>
+                    Manage Users
+                </a>
 
             </div>
 
@@ -354,13 +359,12 @@
                                 Internship review tools are not connected yet.
                             </p>
 
-                            <button
-                                type="button"
-                                class="admin-text-button"
-                                disabled>
+                            <a
+                                class="admin-text-button text-decoration-none"
+                                href="<?= e(url('admin-internships.php')) ?>">
                                 Review Internships
                                 <i class="bi bi-arrow-right"></i>
-                            </button>
+                            </a>
 
                         </div>
 

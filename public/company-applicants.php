@@ -31,6 +31,21 @@ try {
         $userId,
         $internshipId
     );
+
+
+    $acceptedCount = 0;
+
+    foreach ($result['items'] as $application) {
+        if ($application['status'] === 'Accepted') {
+            $acceptedCount++;
+        }
+    }
+
+    $internsNeeded = !empty($result['items'])
+        ? (int) $result['items'][0]['interns_needed']
+        : 0;
+
+
 } catch (InvalidArgumentException $exception) {
     http_response_code(404);
     exit(e($exception->getMessage()));
@@ -78,6 +93,19 @@ require __DIR__ . '/../app/views/company-header.php';
 
             <section class="profile-section">
                 <div class="table-responsive">
+
+
+                <?php if ($internsNeeded > 0): ?>
+                    <div class="alert alert-info" role="status">
+                        Accepted students:
+                        <strong><?= $acceptedCount ?></strong>
+                        /
+                        <strong><?= $internsNeeded ?></strong>
+                        available positions.
+                    </div>
+                <?php endif; ?>
+
+
                     <table class="table align-middle">
 
                         <thead>

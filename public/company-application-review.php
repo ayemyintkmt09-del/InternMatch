@@ -181,6 +181,11 @@ require __DIR__ . '/../app/views/company-header.php';
 
                 <input
                     type="hidden"
+                    name="expected_status"
+                    value="<?= e($application['status']) ?>">
+
+                <input
+                    type="hidden"
                     name="application_id"
                     value="<?= $applicationId ?>">
 
@@ -190,6 +195,14 @@ require __DIR__ . '/../app/views/company-header.php';
                         for="status">
                         Status
                     </label>
+
+
+
+                    <?php
+                        $acceptedCount = 0;
+                        $internsNeeded = 0;
+                    ?>
+
 
                     <select
                         id="status"
@@ -219,7 +232,7 @@ require __DIR__ . '/../app/views/company-header.php';
                     <label
                         class="profile-label"
                         for="interview_date">
-                        Interview Date (optional)
+                        Interview Date — Myanmar time (optional)
                     </label>
 
                     <input

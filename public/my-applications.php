@@ -61,8 +61,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 try {
     $applications = ApplicationController::listing($userId);
+
+    $applicationHistory = [];
+
+    foreach ($applications as $application) {
+        $applicationHistory[
+            (int) $application['application_id']
+        ] = ApplicationController::history(
+            $userId,
+            (int) $application['application_id']
+        );
+    }
 } catch (Throwable $exception) {
     error_log((string) $exception);
+
     http_response_code(500);
     exit('Your applications could not be loaded.');
 }
@@ -81,20 +93,26 @@ require __DIR__ . '/../app/views/student-header.php';
 
         <div class="opportunities-header">
             <div>
-                <p class="dashboard-small-title">APPLICATION TRACKER</p>
+                <p class="dashboard-small-title">
+                    APPLICATION TRACKER
+                </p>
+
                 <h1>My Applications</h1>
-                <p>Track the internships you have applied for.</p>
+
+                <p>
+                    Track the internships you have applied for.
+                </p>
             </div>
         </div>
 
         <?php if ($success !== null): ?>
-            <div class="alert alert-success">
+            <div class="alert alert-success" role="status">
                 <?= e($success) ?>
             </div>
         <?php endif; ?>
 
         <?php if ($error !== null): ?>
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" role="alert">
                 <?= e($error) ?>
             </div>
         <?php endif; ?>
@@ -129,22 +147,31 @@ require __DIR__ . '/../app/views/student-header.php';
                                 <th>Company</th>
                                 <th>Applied</th>
                                 <th>Status</th>
+                                <th>Interview</th>
+                                <th>Interview Notes</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <?php foreach ($applications as $application): ?>
+
                                 <?php
-                                $statusClass = match ($application['status']) {
+                                $statusClass = match (
+                                    $application['status']
+                                ) {
                                     'Accepted' =>
                                         'bg-success-subtle text-success',
+
                                     'Rejected' =>
                                         'bg-danger-subtle text-danger',
+
                                     'Withdrawn' =>
                                         'bg-secondary-subtle text-secondary',
+
                                     'Shortlisted' =>
                                         'bg-primary-subtle text-primary',
+
                                     default =>
                                         'bg-warning-subtle text-warning-emphasis',
                                 };
@@ -156,7 +183,9 @@ require __DIR__ . '/../app/views/student-header.php';
                                     </td>
 
                                     <td>
-                                        <?= e($application['company_name']) ?>
+                                        <?= e(
+                                            $application['company_name']
+                                        ) ?>
                                     </td>
 
                                     <td>
@@ -168,16 +197,78 @@ require __DIR__ . '/../app/views/student-header.php';
                                     </td>
 
                                     <td>
-                                        <span class="badge <?= e($statusClass) ?>">
-                                            <?= e($application['status']) ?>
+                                        <span
+                                            class="badge <?= e(
+                                                $statusClass
+                                            ) ?>">
+                                            <?= e(
+                                                $application['status']
+                                            ) ?>
                                         </span>
+                                    </td>
+
+                                    <td>
+                                        <?php if (
+                                            !empty(
+                                                $application['interview_date']
+                                            )
+                                        ): ?>
+
+                                            <span
+                                                class="small text-primary">
+                                                <i
+                                                    class="bi bi-calendar-event me-1"></i>
+
+                                                <?= e(
+                                                    $application[
+                                                        'interview_date'
+                                                    ]
+                                                ) ?>
+                                            </span>
+
+                                        <?php else: ?>
+
+                                            <span class="small text-muted">
+                                                Not scheduled
+                                            </span>
+
+                                        <?php endif; ?>
+                                    </td>
+
+                                    <td>
+                                        <?php if (
+                                            !empty(
+                                                $application[
+                                                    'interview_notes'
+                                                ]
+                                            )
+                                        ): ?>
+
+                                            <span class="small text-muted">
+                                                <?= e(
+                                                    $application[
+                                                        'interview_notes'
+                                                    ]
+                                                ) ?>
+                                            </span>
+
+                                        <?php else: ?>
+
+                                            <span class="small text-muted">
+                                                No notes
+                                            </span>
+
+                                        <?php endif; ?>
                                     </td>
 
                                     <td>
                                         <?php if (
                                             in_array(
                                                 $application['status'],
-                                                ['Pending', 'Under Review'],
+                                                [
+                                                    'Pending',
+                                                    'Under Review',
+                                                ],
                                                 true
                                             )
                                         ): ?>
@@ -188,14 +279,18 @@ require __DIR__ . '/../app/views/student-header.php';
                                                     'my-applications.php'
                                                 )) ?>"
                                                 class="m-0"
-                                                onsubmit="return confirm('Withdraw this application?');">
+                                                onsubmit="return confirm(
+                                                    'Withdraw this application?'
+                                                );">
 
                                                 <?= csrf_field() ?>
 
                                                 <input
                                                     type="hidden"
                                                     name="application_id"
-                                                    value="<?= (int) $application['application_id'] ?>">
+                                                    value="<?= (int) $application[
+                                                        'application_id'
+                                                    ] ?>">
 
                                                 <button
                                                     type="submit"
@@ -205,15 +300,82 @@ require __DIR__ . '/../app/views/student-header.php';
                                             </form>
 
                                         <?php else: ?>
+
                                             <span class="text-muted small">
                                                 No action
                                             </span>
+
                                         <?php endif; ?>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="7">
+                                        <details>
+                                            <summary
+                                                class="small text-primary">
+                                                View status history
+                                            </summary>
+
+                                            <div class="mt-3">
+                                                <?php foreach (
+                                                    $applicationHistory[
+                                                        (int) $application[
+                                                            'application_id'
+                                                        ]
+                                                    ] as $history
+                                                ): ?>
+
+                                                    <div
+                                                        class="border-start border-primary ps-3 mb-3">
+
+                                                        <strong>
+                                                            <?= e(
+                                                                $history[
+                                                                    'new_status'
+                                                                ]
+                                                            ) ?>
+                                                        </strong>
+
+                                                        <div
+                                                            class="small text-muted">
+                                                            <?= e(
+                                                                $history[
+                                                                    'changed_at'
+                                                                ]
+                                                            ) ?>
+                                                        </div>
+
+                                                        <?php if (
+                                                            !empty(
+                                                                $history[
+                                                                    'notes'
+                                                                ]
+                                                            )
+                                                        ): ?>
+
+                                                            <div
+                                                                class="small mt-1">
+                                                                <?= e(
+                                                                    $history[
+                                                                        'notes'
+                                                                    ]
+                                                                ) ?>
+                                                            </div>
+
+                                                        <?php endif; ?>
+
+                                                    </div>
+
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </details>
                                     </td>
                                 </tr>
 
                             <?php endforeach; ?>
                         </tbody>
+
                     </table>
                 </div>
             </section>

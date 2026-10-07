@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
+require_once __DIR__ . '/../app/controllers/MatchingController.php';
 
 $user = require_role('student');
 
 try {
     $result = StudentInternshipController::search($_GET);
+
+    $result['items'] = MatchingController::attachToList(
+        (int) $user['user_id'],
+        $result['items']
+    );
+
     $fields = StudentInternshipController::fields();
+
+
 } catch (InvalidArgumentException $exception) {
     http_response_code(400);
     exit(e($exception->getMessage()));
@@ -259,6 +268,18 @@ require __DIR__ . '/../app/views/student-header.php';
                                             </p>
                                         </div>
                                     </div>
+
+
+                                    <?php if (isset($internship['match_score'])): ?>
+                                        <span class="badge bg-primary-subtle text-primary">
+                                            <i class="bi bi-stars me-1"></i>
+                                            <?= number_format(
+                                                (float) $internship['match_score']['overall'],
+                                                1
+                                            ) ?>% match
+                                        </span>
+                                    <?php endif; ?>
+
 
                                     <div class="opportunity-meta">
 

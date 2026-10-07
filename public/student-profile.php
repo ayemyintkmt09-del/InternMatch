@@ -200,14 +200,7 @@ function profile_options(
                 </li>
 
                 <!-- Notification -->
-                <button
-                    type="button"
-                    class="notification-button"
-                    disabled
-                    title="Notifications will be available after integration"
-                    aria-label="Notifications are not available yet">
-                    <i class="bi bi-bell"></i>
-                </button>
+                <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
 
                 <!-- User -->
                 <li class="nav-item dropdown ms-lg-3">

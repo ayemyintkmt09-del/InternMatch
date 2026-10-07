@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/StudentInternshipController.php';
 require_once __DIR__ . '/CvController.php';
+require_once __DIR__ . '/NotificationController.php';
 
 final class ApplicationController
 {
@@ -233,6 +234,23 @@ final class ApplicationController
                 'notes' => 'Application submitted by student.',
             ]);
 
+            NotificationController::applicationEvent(
+                $pdo,
+                $applicationId,
+                'student',
+                'Your application was submitted successfully.',
+                'Application'
+            );
+
+            NotificationController::applicationEvent(
+                $pdo,
+                $applicationId,
+                'company',
+                'A new application has been received. Application #'
+                    . $applicationId . '.',
+                'Application'
+            );
+
             $pdo->commit();
         } catch (Throwable $exception) {
             if ($pdo->inTransaction()) {
@@ -349,6 +367,21 @@ final class ApplicationController
                 'notes' => 'Application withdrawn by student.',
             ]);
 
+            NotificationController::applicationEvent(
+                $pdo,
+                $applicationId,
+                'student',
+                'Your application has been withdrawn.'
+            );
+
+            NotificationController::applicationEvent(
+                $pdo,
+                $applicationId,
+                'company',
+                'Application #' . $applicationId
+                    . ' was withdrawn by the student.'
+            );
+
             $pdo->commit();
         } catch (Throwable $exception) {
             if ($pdo->inTransaction()) {
@@ -358,4 +391,41 @@ final class ApplicationController
             throw $exception;
         }
     }
+
+
+
+    public static function history(
+    int $userId,
+    int $applicationId
+): array {
+    $student = self::student($userId);
+
+    $statement = db()->prepare(
+        'SELECT
+            h.old_status,
+            h.new_status,
+            h.notes,
+            h.changed_at,
+            u.name AS changed_by_name
+         FROM application_status_history AS h
+         INNER JOIN applications AS a
+            ON a.application_id = h.application_id
+         INNER JOIN users AS u
+            ON u.user_id = h.changed_by
+         WHERE h.application_id = :application_id
+           AND a.student_id = :student_id
+         ORDER BY h.changed_at ASC, h.history_id ASC'
+    );
+
+    $statement->execute([
+        'application_id' => $applicationId,
+        'student_id' => $student['student_id'],
+    ]);
+
+    return $statement->fetchAll();
+}
+
+
+
+
 }

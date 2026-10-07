@@ -8,6 +8,10 @@ require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
 require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
 require_once __DIR__ . '/../app/controllers/ApplicationController.php';
 
+require_once __DIR__ . '/../app/controllers/MatchingController.php';
+
+
+
 $user = require_role('student');
 
 $rawId = $_GET['id'] ?? null;
@@ -45,6 +49,17 @@ try {
         : null;
 
     $hasApplied = $applicationStatus !== null;
+
+
+    $matchScore = $internship !== null
+    ? MatchingController::forInternship(
+        (int) $user['user_id'],
+        $internship
+    )
+    : null;
+
+
+
 
 } catch (Throwable $exception) {
     error_log((string) $exception);
@@ -310,6 +325,69 @@ require __DIR__ . '/../app/views/student-header.php';
             </div>
 
             <aside class="col-lg-4">
+
+
+                <?php if ($matchScore !== null): ?>
+                    <section class="details-sidebar-card">
+                        <h3>Your Match</h3>
+
+                        <div class="display-6 text-primary fw-bold mb-3">
+                            <?= number_format(
+                                (float) $matchScore['overall'],
+                                1
+                            ) ?>%
+                        </div>
+
+                        <?php
+                        $matchRows = [
+                            'Skills' => $matchScore['skill'],
+                            'Academic Field' => $matchScore['academic_field'],
+                            'Interests' => $matchScore['interest'],
+                            'Availability' => $matchScore['availability'],
+                            'Location' => $matchScore['location'],
+                        ];
+                        ?>
+
+                        <?php foreach ($matchRows as $label => $value): ?>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span><?= e($label) ?></span>
+                                    <strong><?= (int) $value ?>%</strong>
+                                </div>
+
+                                <div
+                                    class="progress"
+                                    role="progressbar"
+                                    aria-label="<?= e($label) ?> match"
+                                    aria-valuenow="<?= (int) $value ?>"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+
+                                    <div
+                                        class="progress-bar bg-primary"
+                                        style="width: <?= (int) $value ?>%">
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <?php if (
+                            $matchScore['required_skill_count'] > 0
+                        ): ?>
+                            <p class="small text-muted mb-0">
+                                <?= (int) $matchScore['matched_skill_count'] ?>
+                                of
+                                <?= (int) $matchScore['required_skill_count'] ?>
+                                required skills match your profile.
+                            </p>
+                        <?php endif; ?>
+                    </section>
+                <?php endif; ?>
+
+
+
+
+                
 
                 <section class="details-sidebar-card">
                     <h3>Internship Information</h3>

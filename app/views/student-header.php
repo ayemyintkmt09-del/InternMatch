@@ -93,15 +93,9 @@ $user = $user ?? ['name' => 'Student'];
 
             <div class="dashboard-nav-right">
 
-                <button
-                    type="button"
-                    class="notification-button"
-                    disabled
-                    title="Notifications will be available after integration"
-                    aria-label="Notifications are not available yet">
-                    <i class="bi bi-bell"></i>
-                </button>
+                <?php require __DIR__ . '/notification-link.php'; ?>
 
+                
                 <div class="dropdown">
                     <button
                         type="button"
