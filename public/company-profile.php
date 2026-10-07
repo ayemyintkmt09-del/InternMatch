@@ -157,13 +157,14 @@ $hasVerificationDocument =
 
             <div class="dashboard-nav-right">
 
-                <a
-                    class="notification-button text-decoration-none"
-                    href="<?= e(url('notification.html')) ?>"
-                    aria-label="Notifications"
-                    title="Notifications">
-                    <i class="bi bi-bell" aria-hidden="true"></i>
-                </a>
+                <button
+                    type="button"
+                    class="notification-button"
+                    disabled
+                    title="Notifications will be available after integration"
+                    aria-label="Notifications are not available yet">
+                    <i class="bi bi-bell"></i>
+                </button>
 
             <div class="dropdown">
                 <button

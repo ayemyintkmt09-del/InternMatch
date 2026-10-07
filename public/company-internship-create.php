@@ -160,7 +160,7 @@
         <div class="container">
 
             <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
+            <a class="navbar-brand logo" href="<?= e(url('index.html')) ?>">
                 <i class="bi bi-mortarboard-fill"></i>
                 <span>Intern<span class="logo-green">Match</span></span>
             </a>
@@ -206,7 +206,7 @@
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="#applications"
+                            href="<?= e(url('company-internships.php')) ?>"
                         >
                             Applications
                         </a>
@@ -219,11 +219,14 @@
                 <div class="dashboard-nav-right">
 
                     <!-- Notification -->
-                    <a
-                        href="<?= e(url('notification.html')) ?>"
+                    <button
+                        type="button"
                         class="notification-button"
-                        title="Notifications"
-                    >
+                        disabled
+                        title="Notifications will be available after integration"
+                        aria-label="Notifications are not available yet">
+                        <i class="bi bi-bell"></i>
+                    </button>
 
                         <i class="bi bi-bell"></i>
 

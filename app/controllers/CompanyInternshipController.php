@@ -639,7 +639,8 @@ final class CompanyInternshipController
              FROM applications AS a
              JOIN internships AS i
                 ON i.internship_id = a.internship_id
-             WHERE i.company_id = :company_id"
+             WHERE i.company_id = :company_id
+             AND a.status <> 'Withdrawn'"
         );
 
         $applicationStatement->execute([

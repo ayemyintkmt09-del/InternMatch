@@ -158,7 +158,7 @@ function profile_options(
     <div class="container">
 
         <!-- Logo -->
-        <a class="navbar-brand logo" href="index.php">
+        <a class="navbar-brand logo" href="index.html">
             <i class="bi bi-mortarboard-fill"></i>
             <span>Intern<span class="logo-green">Match</span></span>
         </a>
@@ -182,30 +182,32 @@ function profile_options(
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="opportunities.html">
+                    <a class="nav-link" href="opportunities.php">
                         Opportunities
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="my-applications.html">
+                    <a class="nav-link" href="my-applications.php">
                         My Applications
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="saved-internships.html">
+                    <a class="nav-link" href="saved-internships.php">
                         Saved
                     </a>
                 </li>
 
                 <!-- Notification -->
-                <li class="nav-item ms-lg-2">
-                    <button class="notification-button">
-                        <i class="bi bi-bell"></i>
-                        <span class="notification-dot"></span>
-                    </button>
-                </li>
+                <button
+                    type="button"
+                    class="notification-button"
+                    disabled
+                    title="Notifications will be available after integration"
+                    aria-label="Notifications are not available yet">
+                    <i class="bi bi-bell"></i>
+                </button>
 
                 <!-- User -->
                 <li class="nav-item dropdown ms-lg-3">
@@ -298,15 +300,12 @@ function profile_options(
                 </p>
             </div>
 
-            <button class="btn btn-primary profile-save-top"
-
-            
-                    type="submit"
-                    form="studentProfileForm"
-
+            <button
+                class="btn btn-primary profile-save-top"
+                type="submit"
+                form="studentProfileForm">
                 <i class="bi bi-check2-circle me-2"></i>
                 Save Changes
-
             </button>
 
         </div>
@@ -1075,11 +1074,10 @@ function profile_options(
                 Cancel
             </a>
 
-            <button class="btn btn-primary"
-
+            <button
+                class="btn btn-primary"
                 type="submit"
-                form="studentProfileForm"
-
+                form="studentProfileForm">
                 <i class="bi bi-check2-circle me-2"></i>
                 Save Changes
             </button>

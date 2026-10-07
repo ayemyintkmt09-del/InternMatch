@@ -89,7 +89,7 @@ $loginSuccess = take_flash('login_success');
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="opportunities.html">Opportunities</a>
+                        <a class="nav-link" href="opportunities.php">Opportunities</a>
                     </li>
 
                     <li class="nav-item">

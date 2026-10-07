@@ -73,7 +73,7 @@ try {
                     <ul class="navbar-nav mx-auto dashboard-nav">
 
                     <li class="nav-item">
-                        <a class="nav-link active" href="student-dashboard.html">Dashboard</a>
+                        <a class="nav-link active" href="student-dashboard.php">Dashboard</a>
                     </li>
                     
                     <li class="nav-item">
@@ -81,7 +81,7 @@ try {
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="my-applications.html">My Applications</a>
+                        <a class="nav-link" href="<?= e(url('my-applications.php')) ?>">My Applications</a>
                     </li>
 
                     <li class="nav-item">
@@ -99,14 +99,12 @@ try {
                     <!-- Notification -->
 
                     <button
-                        class="notification-button"
                         type="button"
-                    >
-
+                        class="notification-button"
+                        disabled
+                        title="Notifications will be available after integration"
+                        aria-label="Notifications are not available yet">
                         <i class="bi bi-bell"></i>
-
-                        <span class="notification-dot"></span>
-
                     </button>
 
 
@@ -460,7 +458,7 @@ try {
 
 
                                 <a
-                                    href="internship-details.html"
+                                    href="internship-details.php?id=1"
                                     class="btn btn-small-primary"
                                 >
                                     View

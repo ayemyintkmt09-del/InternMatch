@@ -99,7 +99,7 @@ $registrationError = take_flash('registration_error');
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="opportunities.html">
+                        <a class="nav-link" href="opportunities.php">
                             Opportunities
                         </a>
                     </li>

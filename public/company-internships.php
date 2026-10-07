@@ -169,7 +169,7 @@ $error = take_flash('company_internship_error');
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="#applications"
+                            href="<?= e(url('company-applications.php')) ?>"
                         >
                             Applications
                         </a>
@@ -182,11 +182,14 @@ $error = take_flash('company_internship_error');
                 <div class="dashboard-nav-right">
 
                     <!-- Notification -->
-                    <a
-                        href="<?= e(url('notification.html')) ?>"
+                    <button
+                        type="button"
                         class="notification-button"
-                        title="Notifications"
-                    >
+                        disabled
+                        title="Notifications will be available after integration"
+                        aria-label="Notifications are not available yet">
+                        <i class="bi bi-bell"></i>
+                    </button>
 
                         <i class="bi bi-bell"></i>
 
@@ -380,7 +383,7 @@ $error = take_flash('company_internship_error');
                                             <?= e($internship['status']) ?>
                                         </span>
                                     </td>
-                                </tr>
+                                
 
 
 
@@ -461,11 +464,23 @@ $error = take_flash('company_internship_error');
                                         </span>
 
                                     <?php endif; ?>
-                                </td>
-                                
 
+
+                                    <a
+                                        class="btn btn-sm btn-outline-primary mt-2"
+                                        href="<?= e(url(
+                                            'company-applicants.php?internship_id='
+                                            . (int) $internship['internship_id']
+                                        )) ?>">
+                                        Applicants
+                                    </a>
+                                </td>
+
+                            </tr>
                                 
                             <?php endforeach; ?>
+
+
                         </tbody>
                     </table>
                 </div>
@@ -476,6 +491,9 @@ $error = take_flash('company_internship_error');
         
     </div>
 </main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

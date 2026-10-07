@@ -75,7 +75,7 @@ $user = $user ?? ['name' => 'Student'];
                 <li class="nav-item">
                     <a
                         class="nav-link"
-                        href="<?= e(url('my-applications.html')) ?>">
+                        href="<?= e(url('my-applications.php')) ?>">
                         My Applications
                     </a>
                 </li>
@@ -93,12 +93,14 @@ $user = $user ?? ['name' => 'Student'];
 
             <div class="dashboard-nav-right">
 
-                <a
-                    class="notification-button text-decoration-none"
-                    href="<?= e(url('notification.html')) ?>"
-                    aria-label="Notifications">
+                <button
+                    type="button"
+                    class="notification-button"
+                    disabled
+                    title="Notifications will be available after integration"
+                    aria-label="Notifications are not available yet">
                     <i class="bi bi-bell"></i>
-                </a>
+                </button>
 
                 <div class="dropdown">
                     <button

@@ -1,10 +1,24 @@
 <?php
 
-declare(strict_types=1);
+    declare(strict_types=1);
 
-require_once __DIR__ . '/../app/middleware/auth.php';
+    require_once __DIR__ . '/../app/middleware/auth.php';
+    require_once __DIR__ . '/../app/controllers/AdminDashboardController.php';
 
-$user = require_role('admin');
+    require_once __DIR__ . '/../app/controllers/AdminActivityController.php';
+
+    $user = require_role('admin');
+
+    try {
+        $adminDashboard = AdminDashboardController::load();
+        $adminPanels = AdminDashboardController::panels();
+        $recentActivity = AdminActivityController::recent(8);
+    } catch (Throwable $exception) {
+        error_log((string) $exception);
+        http_response_code(500);
+
+        exit('The admin dashboard could not be loaded.');
+    }
 ?>
 
 
@@ -51,7 +65,7 @@ $user = require_role('admin');
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                     <li class="nav-item">
-                        <a class="nav-link active" href="admin-dashboard.html">
+                        <a class="nav-link active" href="<?= e(url('admin-dashboard.php')) ?>">
                             Dashboard
                         </a>
                     </li>
@@ -85,12 +99,14 @@ $user = require_role('admin');
                 <div class="d-flex align-items-center gap-3">
 
                     <!-- Notification -->
-                    <a href="notifications.html"
-                       class="dashboard-notification"
-                       title="Notifications">
-                       <i class="bi bi-bell"></i>
-                       <span class="notification-badge">3</span>
-                    </a>
+                    <button
+                        type="button"
+                        class="notification-button"
+                        disabled
+                        title="Notifications will be available after integration"
+                        aria-label="Notifications are not available yet">
+                        <i class="bi bi-bell"></i>
+                    </button>
 
                     <!-- Admin Profile -->
                     <div class="dropdown">
@@ -194,87 +210,83 @@ $user = require_role('admin');
             </div>
 
 
-            <!--STATISTICS  -->
-            <div class="admin-stat-grid">
+        <!-- STATISTICS -->
 
-                <!-- Students -->
-                <div class="admin-stat-card">
+        <div class="admin-stat-grid">
 
-                    <div class="admin-stat-icon blue">
-                        <i class="bi bi-people"></i>
-                    </div>
-
-                    <div>
-                        <p>Total Students</p>
-                        <h3>1,248</h3>
-                        <span class="admin-stat-change positive">
-                            <i class="bi bi-arrow-up"></i>
-                            8.4% this month
-                        </span>
-                    </div>
-
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon blue">
+                    <i class="bi bi-people"></i>
                 </div>
 
+                <div>
+                    <p>Total Students</p>
 
-                <!-- Companies -->
+                    <h3>
+                        <?= number_format($adminDashboard['total_students']) ?>
+                    </h3>
 
-                <div class="admin-stat-card">
-
-                    <div class="admin-stat-icon green">
-                        <i class="bi bi-building"></i>
-                    </div>
-
-                    <div>
-                        <p>Total Companies</p>
-                        <h3>186</h3>
-                        <span class="admin-stat-change positive">
-                            <i class="bi bi-arrow-up"></i>
-                            5.2% this month
-                        </span>
-                    </div>
-
+                    <span class="text-muted small">
+                        Registered student accounts
+                    </span>
                 </div>
-
-                <!-- Internships -->
-
-                <div class="admin-stat-card">
-
-                    <div class="admin-stat-icon orange">
-                        <i class="bi bi-briefcase"></i>
-                    </div>
-
-                    <div>
-                        <p>Active Internships</p>
-                        <h3>324</h3>
-                        <span class="admin-stat-change positive">
-                            <i class="bi bi-arrow-up"></i>
-                            12.1% this month
-                        </span>
-                    </div>
-
-                </div>
-
-
-                <!-- Applications -->
-
-                <div class="admin-stat-card">
-
-                    <div class="admin-stat-icon purple">
-                        <i class="bi bi-file-earmark-text"></i>
-                    </div>
-
-                    <div>
-                        <p>Total Applications</p>
-                        <h3>3,842</h3>
-                        <span class="admin-stat-change positive">
-                            <i class="bi bi-arrow-up"></i>
-                            15.7% this month
-                        </span>
-                    </div>
-
-                </div>
-
             </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon green">
+                    <i class="bi bi-building"></i>
+                </div>
+
+                <div>
+                    <p>Total Companies</p>
+
+                    <h3>
+                        <?= number_format($adminDashboard['total_companies']) ?>
+                    </h3>
+
+                    <span class="text-muted small">
+                        Registered company profiles
+                    </span>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon orange">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+
+                <div>
+                    <p>Active Internships</p>
+
+                    <h3>
+                        <?= number_format($adminDashboard['active_internships']) ?>
+                    </h3>
+
+                    <span class="text-muted small">
+                        Published and within deadline
+                    </span>
+                </div>
+            </div>
+
+            <div class="admin-stat-card">
+                <div class="admin-stat-icon purple">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+
+                <div>
+                    <p>Total Applications</p>
+
+                    <h3>
+                        <?= number_format($adminDashboard['total_applications']) ?>
+                    </h3>
+
+                    <span class="text-muted small">
+                        All submitted applications
+                    </span>
+                </div>
+            </div>
+
+        </div>
 
 
             <!-- PENDING ACTIONS  -->
@@ -284,12 +296,12 @@ $user = require_role('admin');
                 <div class="admin-panel-header">
 
                     <div>
-                        <h2>Pending Actions</h2>
-                        <p>Items that require administrator attention.</p>
+                        <h2>Company Verification</h2>
+                        <p>Company accounts awaiting an administrator decision.</p>
                     </div>
 
                     <span class="admin-pending-count">
-                        12 Pending
+                        <?= number_format($adminDashboard['pending_companies']) ?> Pending
                     </span>
 
                 </div>
@@ -310,15 +322,16 @@ $user = require_role('admin');
                             <h4>Company Verifications</h4>
 
                             <p>
-                                5 companies are waiting for verification.
+                                <?= number_format($adminDashboard['pending_companies']) ?>
+                                company account(s) awaiting verification.
                             </p>
 
-                            <button
-                                class="admin-text-button"
-                                onclick="showManagementMessage('Company Verification')">
+                            <a
+                                class="admin-text-button text-decoration-none"
+                                href="<?= e(url('admin-verifications.php')) ?>">
                                 Review Companies
                                 <i class="bi bi-arrow-right"></i>
-                            </button>
+                            </a>
 
                         </div>
 
@@ -338,12 +351,13 @@ $user = require_role('admin');
                             <h4>Internship Reviews</h4>
 
                             <p>
-                                4 internship posts require review.
+                                Internship review tools are not connected yet.
                             </p>
 
                             <button
+                                type="button"
                                 class="admin-text-button"
-                                onclick="showManagementMessage('Internship Review')">
+                                disabled>
                                 Review Internships
                                 <i class="bi bi-arrow-right"></i>
                             </button>
@@ -366,12 +380,13 @@ $user = require_role('admin');
                             <h4>Reported Content</h4>
 
                             <p>
-                                3 reports need administrator review.
+                                Report management is not connected yet.
                             </p>
 
                             <button
+                                type="button"
                                 class="admin-text-button"
-                                onclick="showManagementMessage('Reported Content')">
+                                disabled>
 
                                 Review Reports
                                 <i class="bi bi-arrow-right"></i>
@@ -387,175 +402,164 @@ $user = require_role('admin');
             </section>
 
 
-            <!-- MANAGEMENT-->
+            <!-- MANAGEMENT -->
 
             <section class="admin-management-grid">
 
-
-                <!-- User Management -->
-
+                <!-- USER SUMMARY -->
                 <div class="admin-panel" id="users">
 
                     <div class="admin-panel-header">
-
                         <div>
-                            <h2>User Management</h2>
-                            <p>Manage student and administrator accounts.</p>
+                            <h2>User Accounts</h2>
+                            <p>Registered accounts by role and account status.</p>
                         </div>
 
-                        <button
+
+                        <a
                             class="btn btn-outline-primary admin-small-button"
-                            onclick="showManagementMessage('User Management')">
-
+                            href="<?= e(url('admin-users.php')) ?>">
                             Manage Users
-
-                        </button>
-
+                        </a>
                     </div>
-
 
                     <div class="admin-user-summary">
 
-                        <div class="admin-user-row">
+                        <?php foreach ($adminPanels['user_roles'] as $row): ?>
+                            <div class="admin-user-row">
 
-                            <div class="admin-user-icon blue">
-                                <i class="bi bi-mortarboard"></i>
-                            </div>
+                                <div class="admin-user-icon blue">
+                                    <i class="bi bi-person"></i>
+                                </div>
 
-                            <div class="admin-user-info">
-                                <strong>Students</strong>
-                                <span>1,248 registered users</span>
-                            </div>
+                                <div class="admin-user-info">
+                                    <strong>
+                                        <?= e(ucfirst((string) $row['role'])) ?>
+                                    </strong>
+                                    <span>Registered accounts</span>
+                                </div>
 
-                            <span class="admin-user-number">
-                                1,248
-                            </span>
-
-                        </div>
-
-
-                        <div class="admin-user-row">
-
-                            <div class="admin-user-icon green">
-                                <i class="bi bi-person-check"></i>
-                            </div>
-
-                            <div class="admin-user-info">
-                                <strong>Active Accounts</strong>
-                                <span>Currently active users</span>
-                            </div>
-
-                            <span class="admin-user-number">
-                                1,182
-                            </span>
-
-                        </div>
-
-
-                        <div class="admin-user-row">
-
-                            <div class="admin-user-icon orange">
-                                <i class="bi bi-person-x"></i>
-                            </div>
-
-                            <div class="admin-user-info">
-                                <strong>Inactive Accounts</strong>
-                                <span>Deactivated user accounts</span>
-                            </div>
-
-                            <span class="admin-user-number">
-                                66
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Company Management -->
-
-                <div class="admin-panel" id="companies">
-
-                    <div class="admin-panel-header">
-
-                        <div>
-                            <h2>Company Management</h2>
-                            <p>Monitor and verify registered companies.</p>
-                        </div>
-
-                        <button
-                            class="btn btn-outline-primary admin-small-button"
-                            onclick="showManagementMessage('Company Management')">
-
-                            Manage Companies
-
-                        </button>
-
-                    </div>
-
-
-                    <div class="admin-company-list">
-
-                        <div class="admin-company-row">
-
-                            <div class="admin-company-logo blue">
-                                TW
-                            </div>
-
-                            <div class="admin-company-info">
-
-                                <strong>
-                                    TechWave Solutions
-                                </strong>
-
-                                <span>
-                                    Technology & Software
+                                <span class="admin-user-number">
+                                    <?= number_format((int) $row['total']) ?>
                                 </span>
 
                             </div>
+                        <?php endforeach; ?>
 
-                            <span class="admin-verification verified">
-                                Verified
-                            </span>
+                        <hr>
 
+                        <?php foreach ($adminPanels['user_statuses'] as $row): ?>
+                            <div class="admin-user-row">
+
+                                <div class="admin-user-icon green">
+                                    <i class="bi bi-person-check"></i>
+                                </div>
+
+                                <div class="admin-user-info">
+                                    <strong>
+                                        <?= e(ucfirst(
+                                            (string) ($row['status'] ?? 'Unspecified')
+                                        )) ?>
+                                    </strong>
+                                    <span>Across all account roles</span>
+                                </div>
+
+                                <span class="admin-user-number">
+                                    <?= number_format((int) $row['total']) ?>
+                                </span>
+
+                            </div>
+                        <?php endforeach; ?>
+
+                    </div>
+
+                </div>
+
+                <!-- COMPANY MANAGEMENT -->
+                <div class="admin-panel" id="companies">
+
+                    <div class="admin-panel-header">
+                        <div>
+                            <h2>Company Management</h2>
+                            <p>Five most recently created company profiles.</p>
                         </div>
 
+                        <a
+                            class="btn btn-outline-primary admin-small-button"
+                            href="<?= e(url('admin-verifications.php')) ?>">
+                            Manage Companies
+                        </a>
+                    </div>
 
-                        <div class="admin-company-row">
+                    <div class="admin-company-list">
 
-                            <div class="admin-company-logo green">
-                                MD
-                            </div>
+                        <?php if ($adminPanels['companies'] === []): ?>
 
-                            <div class="admin-company-info">
-                                <strong>Myanmar Digital Group</strong>
-                                <span>Digital Services</span>
-                            </div>
+                            <p class="text-muted py-3">
+                                No company profiles have been created yet.
+                            </p>
 
-                            <span class="admin-verification verified">
-                                Verified
-                            </span>
+                        <?php else: ?>
 
-                        </div>
+                            <?php foreach ($adminPanels['companies'] as $company): ?>
 
-                        <div class="admin-company-row">
+                                <?php
+                                $badgeClass = match (
+                                    $company['verification_status']
+                                ) {
+                                    'verified' => 'bg-success',
+                                    'rejected' => 'bg-danger',
+                                    default => 'bg-warning text-dark',
+                                };
 
-                            <div class="admin-company-logo orange">
-                                FG
-                            </div>
+                                $initial = mb_strtoupper(
+                                    mb_substr(
+                                        $company['company_name'],
+                                        0,
+                                        1,
+                                        'UTF-8'
+                                    ),
+                                    'UTF-8'
+                                );
+                                ?>
 
-                            <div class="admin-company-info">
-                                <strong>Future Growth Co.</strong>
-                                <span>Marketing & Business</span>
-                            </div>
+                                <div class="admin-company-row">
 
-                            <span class="admin-verification pending">
-                                Pending
-                            </span>
+                                    <div class="admin-company-logo blue">
+                                        <?= e($initial) ?>
+                                    </div>
 
-                        </div>
+                                    <div class="admin-company-info">
+                                        <strong>
+                                            <a
+                                                class="text-decoration-none text-reset"
+                                                href="<?= e(url(
+                                                    'admin-verification-review.php?company_id='
+                                                    . (int) $company['company_id']
+                                                )) ?>">
+                                                <?= e($company['company_name']) ?>
+                                            </a>
+                                        </strong>
+
+                                        <span>
+                                            <?= e(
+                                                $company['industry']
+                                                ?: 'Industry not provided'
+                                            ) ?>
+                                        </span>
+                                    </div>
+
+                                    <span class="badge <?= e($badgeClass) ?>">
+                                        <?= e(ucfirst(
+                                            $company['verification_status']
+                                        )) ?>
+                                    </span>
+
+                                </div>
+
+                            <?php endforeach; ?>
+
+                        <?php endif; ?>
 
                     </div>
 
@@ -563,140 +567,117 @@ $user = require_role('admin');
 
             </section>
 
-
-            <!--  INTERNSHIPS & APPLICATIONS  -->
+            <!-- INTERNSHIPS & APPLICATIONS -->
 
             <section class="admin-management-grid">
 
-
-                <!-- Internship Management -->
-
+                <!-- INTERNSHIP SUMMARY -->
                 <div class="admin-panel" id="internships">
 
                     <div class="admin-panel-header">
-
+                        
                         <div>
-                            <h2>Internship Management</h2>
-                            <p>Monitor internship opportunities.</p>
+                            <h2>Internship Status</h2>
+                            <p>All internship posts, grouped by saved status.</p>
                         </div>
 
-                        <button
+                        <a
                             class="btn btn-outline-primary admin-small-button"
-                            onclick="showManagementMessage('Internship Management')">
-
+                            href="<?= e(url('admin-internships.php')) ?>">
                             Manage Internships
-
-                        </button>
-
+                        </a>
                     </div>
-
 
                     <div class="admin-internship-summary">
 
-                        <div class="admin-status-item">
+                        <?php foreach (
+                            $adminPanels['internships'] as $status => $total
+                        ): ?>
 
-                            <span class="admin-status-dot active"></span>
+                            <?php
+                            $dotClass = match ($status) {
+                                'Published' => 'active',
+                                'Draft' => 'pending',
+                                default => 'closed',
+                            };
+                            ?>
 
-                            <div>
-                                <strong>Active</strong>
-                                <small>324 internships</small>
+                            <div class="admin-status-item">
+
+                                <span
+                                    class="admin-status-dot <?= e($dotClass) ?>">
+                                </span>
+
+                                <div>
+                                    <strong><?= e($status) ?></strong>
+
+                                    <small>
+                                        <?= number_format($total) ?> internships
+                                    </small>
+                                </div>
+
                             </div>
 
-                        </div>
-
-
-                        <div class="admin-status-item">
-
-                            <span class="admin-status-dot pending"></span>
-
-                            <div>
-                                <strong>Pending Review</strong>
-                                <small>4 internships</small>
-                            </div>
-
-                        </div>
-
-
-                        <div class="admin-status-item">
-
-                            <span class="admin-status-dot closed"></span>
-
-                            <div>
-                                <strong>Closed</strong>
-                                <small>86 internships</small>
-                            </div>
-
-                        </div>
+                        <?php endforeach; ?>
 
                     </div>
+
+                    <p class="text-muted small mt-3 mb-0">
+                        Published is the saved post status. The Active Internships
+                        total above also checks company verification and deadlines.
+                    </p>
 
                 </div>
 
-
-                <!-- Application Monitoring -->
-
+                <!-- APPLICATION SUMMARY -->
                 <div class="admin-panel" id="applications">
 
                     <div class="admin-panel-header">
-
                         <div>
                             <h2>Application Monitoring</h2>
-                            <p>Monitor application activity across the system.</p>
+                            <p>Current application statuses across the system.</p>
                         </div>
-
-                        <button
-                            class="btn btn-outline-primary admin-small-button"
-                            onclick="showManagementMessage('Application Monitoring')">
-
-                            View Applications
-
-                        </button>
-
                     </div>
-
 
                     <div class="admin-application-summary">
 
-                        <div class="admin-application-item">
+                        <?php foreach (
+                            $adminPanels['applications'] as $status => $total
+                        ): ?>
 
-                            <div class="admin-application-icon blue">
-                                <i class="bi bi-hourglass-split"></i>
+                            <?php
+                            $iconClass = match ($status) {
+                                'Pending' => 'bi-hourglass-split',
+                                'Under Review' => 'bi-search',
+                                'Shortlisted' => 'bi-person-check',
+                                'Accepted' => 'bi-check-circle',
+                                'Rejected' => 'bi-x-circle',
+                                'Withdrawn' => 'bi-arrow-return-left',
+                                default => 'bi-file-earmark-text',
+                            };
+
+                            $colorClass = match ($status) {
+                                'Shortlisted', 'Accepted' => 'green',
+                                'Under Review', 'Rejected' => 'orange',
+                                default => 'blue',
+                            };
+                            ?>
+
+                            <div class="admin-application-item">
+
+                                <div
+                                    class="admin-application-icon <?= e($colorClass) ?>">
+                                    <i class="bi <?= e($iconClass) ?>"></i>
+                                </div>
+
+                                <div>
+                                    <strong><?= e($status) ?></strong>
+                                    <span><?= number_format($total) ?></span>
+                                </div>
+
                             </div>
 
-                            <div>
-                                <strong>Pending</strong>
-                                <span>1,126</span>
-                            </div>
-
-                        </div>
-
-
-                        <div class="admin-application-item">
-
-                            <div class="admin-application-icon orange">
-                                <i class="bi bi-search"></i>
-                            </div>
-
-                            <div>
-                                <strong>Under Review</strong>
-                                <span>864</span>
-                            </div>
-
-                        </div>
-
-
-                        <div class="admin-application-item">
-
-                            <div class="admin-application-icon green">
-                                <i class="bi bi-check-circle"></i>
-                            </div>
-
-                            <div>
-                                <strong>Accepted</strong>
-                                <span>438</span>
-                            </div>
-
-                        </div>
+                        <?php endforeach; ?>
 
                     </div>
 
@@ -705,138 +686,102 @@ $user = require_role('admin');
             </section>
 
 
-            <!--  RECENT ACTIVITY -->
+            <!-- RECENT ACTIVITY -->
 
             <section class="admin-panel">
 
                 <div class="admin-panel-header">
-
                     <div>
                         <h2>Recent System Activity</h2>
-                        <p>Latest activity across InternMatch.</p>
+                        <p>Latest recorded activity across InternMatch.</p>
                     </div>
 
-                    <button
-                        class="admin-text-button"
-                        onclick="showManagementMessage('System Activity')">
-
-                        View All
+                    <a
+                        class="admin-text-button text-decoration-none"
+                        href="<?= e(url('admin-activity.php')) ?>">
+                        View More
                         <i class="bi bi-arrow-right"></i>
-
-                    </button>
-
+                    </a>
                 </div>
-
 
                 <div class="admin-activity-list">
 
-                    <div class="admin-activity-row">
+                    <?php if ($recentActivity === []): ?>
 
-                        <div class="admin-activity-icon green">
-                            <i class="bi bi-building-check"></i>
-                        </div>
+                        <p class="text-muted py-3">
+                            No activity has been recorded yet.
+                        </p>
 
-                        <div class="admin-activity-info">
+                    <?php else: ?>
 
-                            <strong>
-                                TechWave Solutions was verified
-                            </strong>
+                        <?php foreach ($recentActivity as $activity): ?>
 
-                            <span>
-                                Company verification completed
-                            </span>
+                            <?php
+                            $appearance = AdminActivityController::appearance(
+                                $activity['event_type']
+                            );
+                            ?>
 
-                        </div>
+                            <div class="admin-activity-row">
 
-                        <span class="admin-activity-time">
-                            10 min ago
-                        </span>
+                                <div
+                                    class="admin-activity-icon <?= e(
+                                        $appearance['color']
+                                    ) ?>">
+                                    <i class="bi <?= e($appearance['icon']) ?>"></i>
+                                </div>
 
-                    </div>
+                                <div class="admin-activity-info">
 
+                                    <strong>
+                                        <?php if ($activity['company_id'] !== null): ?>
 
-                    <div class="admin-activity-row">
+                                            <a
+                                                class="text-decoration-none text-reset"
+                                                href="<?= e(url(
+                                                    'admin-verification-review.php?company_id='
+                                                    . (int) $activity['company_id']
+                                                )) ?>">
+                                                <?= e($activity['title']) ?>
+                                            </a>
 
-                        <div class="admin-activity-icon blue">
-                            <i class="bi bi-person-plus"></i>
-                        </div>
+                                        <?php else: ?>
 
-                        <div class="admin-activity-info">
+                                            <?= e($activity['title']) ?>
 
-                            <strong>
-                                12 new students registered
-                            </strong>
+                                        <?php endif; ?>
+                                    </strong>
 
-                            <span>
-                                New student accounts created
-                            </span>
+                                    <span><?= e($activity['detail']) ?></span>
 
-                        </div>
+                                </div>
 
-                        <span class="admin-activity-time">
-                            1 hour ago
-                        </span>
+                                <span class="admin-activity-time">
+                                    <?= e($activity['event_at']) ?>
+                                </span>
 
-                    </div>
+                            </div>
 
+                        <?php endforeach; ?>
 
-                    <div class="admin-activity-row">
-
-                        <div class="admin-activity-icon orange">
-                            <i class="bi bi-briefcase"></i>
-                        </div>
-
-                        <div class="admin-activity-info">
-
-                            <strong>
-                                4 new internship opportunities posted
-                            </strong>
-
-                            <span>
-                                Internship posts waiting for review
-                            </span>
-
-                        </div>
-
-                        <span class="admin-activity-time">
-                            2 hours ago
-                        </span>
-
-                    </div>
-
-
-                    <div class="admin-activity-row">
-
-                        <div class="admin-activity-icon purple">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-
-                        <div class="admin-activity-info">
-
-                            <strong>
-                                37 new applications submitted
-                            </strong>
-
-                            <span>
-                                Students submitted applications
-                            </span>
-
-                        </div>
-
-                        <span class="admin-activity-time">
-                            3 hours ago
-                        </span>
-
-                    </div>
+                    <?php endif; ?>
 
                 </div>
 
             </section>
+
 
 
             <!--QUICK ACTIONS -->
 
             <section class="admin-panel">
+
+            <a
+                href="<?= e(url('admin-verifications.php')) ?>"
+                class="btn btn-primary">
+                <i class="bi bi-shield-check me-1"></i>
+                Company Verification
+            </a>
 
                 <div class="admin-panel-header">
 
@@ -850,49 +795,47 @@ $user = require_role('admin');
 
                 <div class="admin-quick-actions">
 
-                    <button
-                        class="admin-quick-action"
-                        onclick="showManagementMessage('Student Management')">
+                    <a
+                        class="admin-quick-action text-decoration-none text-reset"
+                        href="<?= e(url('admin-users.php?role=student')) ?>">
 
                         <div class="admin-quick-icon blue">
                             <i class="bi bi-people"></i>
                         </div>
 
                         <span>Manage Students</span>
-
                         <i class="bi bi-arrow-right"></i>
+                    </a>
 
-                    </button>
 
-
-                    <button
-                        class="admin-quick-action"
-                        onclick="showManagementMessage('Company Verification')">
+                    <a
+                        class="admin-quick-action text-decoration-none text-reset"
+                        href="<?= e(url('admin-verifications.php')) ?>">
 
                         <div class="admin-quick-icon green">
                             <i class="bi bi-building-check"></i>
                         </div>
 
                         <span>Verify Companies</span>
-
                         <i class="bi bi-arrow-right"></i>
+                    </a>
 
-                    </button>
 
 
-                    <button
-                        class="admin-quick-action"
-                        onclick="showManagementMessage('Internship Management')">
+                    
+
+                    <a
+                        class="admin-quick-action text-decoration-none text-reset"
+                        href="<?= e(url('admin-internships.php')) ?>">
 
                         <div class="admin-quick-icon orange">
                             <i class="bi bi-briefcase"></i>
                         </div>
 
                         <span>Manage Internships</span>
-
                         <i class="bi bi-arrow-right"></i>
 
-                    </button>
+                    </a>
 
 
                     <button
@@ -960,4 +903,4 @@ $user = require_role('admin');
 </body>
 
 </html>
-```
+

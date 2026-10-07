@@ -6,6 +6,7 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
 
 require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
+require_once __DIR__ . '/../app/controllers/ApplicationController.php';
 
 $user = require_role('student');
 
@@ -35,6 +36,16 @@ try {
             (int) $user['user_id'],
             $internshipId
         );
+
+        $applicationStatus = $internship !== null
+        ? ApplicationController::applicationStatus(
+            (int) $user['user_id'],
+            $internshipId
+        )
+        : null;
+
+    $hasApplied = $applicationStatus !== null;
+
 } catch (Throwable $exception) {
     error_log((string) $exception);
     http_response_code(500);
@@ -199,6 +210,35 @@ require __DIR__ . '/../app/views/student-header.php';
                 href="<?= e(url('saved-internships.php')) ?>">
                 View Saved Internships
             </a>
+
+
+
+
+
+            <?php if ($hasApplied): ?>
+
+            <button
+                type="button"
+                class="btn btn-success"
+                disabled>
+                <i class="bi bi-check-circle me-2"></i>
+                <?= $applicationStatus === 'Withdrawn'
+                    ? 'Application Withdrawn'
+                    : 'Application Submitted' ?>
+            </button>
+
+        <?php else: ?>
+
+            <a
+                class="btn btn-primary"
+                href="<?= e(url(
+                    'apply.php?id=' . (int) $internship['internship_id']
+                )) ?>">
+                <i class="bi bi-send me-2"></i>
+                Apply Now
+            </a>
+
+        <?php endif; ?>
 
         </div>
 

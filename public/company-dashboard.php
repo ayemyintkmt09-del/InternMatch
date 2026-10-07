@@ -129,7 +129,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                     <li class="nav-item">
                         <a
                             class="nav-link"
-                            href="#applications"
+                            href="<?= e(url('company-internships.php')) ?>"
                         >
                             Applications
                         </a>
@@ -142,11 +142,14 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                 <div class="dashboard-nav-right">
 
                     <!-- Notification -->
-                    <a
-                        href="<?= e(url('notification.html')) ?>"
+                   <button
+                        type="button"
                         class="notification-button"
-                        title="Notifications"
-                    >
+                        disabled
+                        title="Notifications will be available after integration"
+                        aria-label="Notifications are not available yet">
+                        <i class="bi bi-bell"></i>
+                    </button>
 
                         <i class="bi bi-bell"></i>
 
@@ -545,6 +548,16 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                                     </div>
 
                                     <a
+                                        class="btn btn-sm btn-outline-primary"
+                                        href="<?= e(url(
+                                            'company-applicants.php?internship_id='
+                                            . (int) $internship['internship_id']
+                                        )) ?>">
+                                        <i class="bi bi-people me-1"></i>
+                                        Applicants
+                                    </a>
+
+                                    <a
                                         class="company-more-button text-decoration-none"
                                         href="<?= e(url($managePath)) ?>"
                                         title="<?= $internship['status'] === 'Draft'
@@ -629,9 +642,9 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                         </a>
 
 
-                        <button
-                            class="company-quick-action"
-                            onclick="scrollToApplications()"
+                        <a
+                            class="company-quick-action text-decoration-none text-reset"
+                            href="<?= e(url('company-internships.php')) ?>"
                         >
 
                             <div class="company-quick-icon green">
@@ -652,7 +665,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
 
                             <i class="bi bi-chevron-right"></i>
 
-                        </button>
+                        </a>
 
 
                         <a
@@ -727,111 +740,26 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
             </div>
 
 
-            <!-- Applicant Preview — Demo -->
-
             <div class="company-panel recent-applications-panel">
-
                 <div class="company-panel-header">
-
                     <div>
-                        <h3>Applicant Preview — Demo</h3>
-                        <p>
-                            These are sample applicants.
-                            Live application review will be connected in a later step.
-                        </p>
+                        <h3>Applicant Management</h3>
+                        <p>Review students who applied to your internships.</p>
                     </div>
 
-                    <button
+                    <a
                         class="btn btn-outline-primary btn-small-outline"
-                        onclick="showAllApplicantsMessage()">
-                        View All
-                    </button>
-
-            </div>
-
-                <!-- Applicant 1 -->
-                <div class="company-applicant-row">
-
-                    <div class="company-applicant-avatar">
-                        J
-                    </div>
-
-                    <div class="company-applicant-info">
-                        <h5>John</h5>
-                        <span>Junior Web Developer Intern</span>
-                    </div>
-
-                    <div class="company-applicant-match">
-                        92% Match
-                    </div>
-
-                    <div class="company-applicant-date">
-                        Today
-                    </div>
-
-                    <button
-                        class="btn btn-small-outline"
-                        onclick="showApplicantMessage('Wendy')">Review
-                    </button>
-
+                        href="<?= e(url('company-internships.php')) ?>">
+                        View Internships
+                    </a>
                 </div>
 
-                <!-- Applicant 2 -->
-                <div class="company-applicant-row">
-
-                    <div class="company-applicant-avatar green">
-                        M
-                    </div>
-
-                    <div class="company-applicant-info">
-                        <h5>Min Thu</h5>
-                        <span>Software Engineering Intern</span>
-                    </div>
-
-                    <div class="company-applicant-match">
-                        89% Match
-                    </div>
-
-                    <div class="company-applicant-date">
-                        Yesterday
-                    </div>
-
-                    <button
-                        class="btn btn-small-outline"
-                        onclick="showApplicantMessage('Min Thu')">
-                        Review
-                    </button>
-
+                <div class="text-center py-4">
+                    <i class="bi bi-people fs-1 text-primary"></i>
+                    <p class="mt-3 mb-0">
+                        Select an internship above to view and manage its applicants.
+                    </p>
                 </div>
-
-                <!-- Applicant 3 -->
-                <div class="company-applicant-row">
-
-                    <div class="company-applicant-avatar orange">
-                        S
-                    </div>
-
-                    <div class="company-applicant-info">
-                        <h5>Su Su</h5>
-                        <span>Frontend Developer Intern</span>
-                    </div>
-
-                    <div class="company-applicant-match">
-                        86% Match
-                    </div>
-
-                    <div class="company-applicant-date">
-                        2 days ago
-                    </div>
-
-                    <button
-                        class="btn btn-small-outline"
-                        onclick="showApplicantMessage('Su Su')">
-                        Review
-                    </button>
-
-                </div>
-
             </div>
 
 
