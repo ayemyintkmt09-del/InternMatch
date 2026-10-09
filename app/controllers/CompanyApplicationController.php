@@ -468,9 +468,42 @@ if (
 
 
 
-    public static function all(int $userId): array
-{
+public static function all(
+    int $userId,
+    ?string $status = null
+): array {
     $companyId = self::companyId($userId);
+
+    $allowedStatuses = [
+        'Pending',
+        'Under Review',
+        'Shortlisted',
+        'Accepted',
+        'Rejected',
+        'Withdrawn',
+    ];
+
+    if (
+        $status !== null
+        && !in_array($status, $allowedStatuses, true)
+    ) {
+        throw new InvalidArgumentException(
+            'Invalid application status.'
+        );
+    }
+
+    $where = [
+        'i.company_id = :company_id',
+    ];
+
+    $parameters = [
+        'company_id' => $companyId,
+    ];
+
+    if ($status !== null) {
+        $where[] = 'a.status = :status';
+        $parameters['status'] = $status;
+    }
 
     $statement = db()->prepare(
         'SELECT
@@ -491,15 +524,13 @@ if (
             ON sp.student_id = a.student_id
          INNER JOIN users AS u
             ON u.user_id = sp.user_id
-         WHERE i.company_id = :company_id
+         WHERE ' . implode(' AND ', $where) . '
          ORDER BY
             a.application_date DESC,
             a.application_id DESC'
     );
 
-    $statement->execute([
-        'company_id' => $companyId,
-    ]);
+    $statement->execute($parameters);
 
     return $statement->fetchAll();
 }

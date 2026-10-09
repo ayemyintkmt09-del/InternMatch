@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
+require_once __DIR__ . '/../app/controllers/RegistrationController.php';
 
 require_guest();
-
-require_once __DIR__ . '/../app/controllers/RegistrationController.php';
 
 header('Cache-Control: no-store');
 
@@ -16,16 +15,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $result = RegistrationController::register($_POST);
 
-    flash(
-        $result['success'] ? 'registration_success' : 'registration_error',
-        $result['message']
-    );
+    if ($result['success']) {
+        flash(
+            'login_success',
+            'Your account has been created. '
+            . 'Sign in with your new account to continue.'
+        );
+
+        redirect('login.php');
+    }
+
+    flash('registration_error', $result['message']);
 
     redirect('register.php');
 }
 
 $registrationSuccess = take_flash('registration_success');
 $registrationError = take_flash('registration_error');
+
 ?>
 
 
@@ -54,7 +61,7 @@ $registrationError = take_flash('registration_error');
     >
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 
 </head>
 
@@ -63,77 +70,7 @@ $registrationError = take_flash('registration_error');
 
     <!-- ================= NAVBAR ================= -->
 
-    <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
-
-        <div class="container">
-
-            <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
-                <i class="bi bi-mortarboard-fill"></i>
-                <span>Intern<span class="logo-green">Match</span></span>
-            </a>
-
-
-            <!-- Mobile menu button -->
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-            >
-
-                <span class="navbar-toggler-icon"></span>
-
-            </button>
-
-
-            <!-- Navigation -->
-            <div class="collapse navbar-collapse" id="mainNavbar">
-
-                <ul class="navbar-nav mx-auto">
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="opportunities.php">
-                            Opportunities
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html#how-it-works">
-                            How It Works
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html#about">
-                            About
-                        </a>
-                    </li>
-
-                </ul>
-
-
-                <!-- Login button -->
-                <div class="d-flex gap-2">
-
-                    <a href="<?= e(url('login.php')) ?>" class="btn btn-login">
-                        Login
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </nav>
-
+    <?php require __DIR__ . '/../app/views/public-nav.php'; ?>
 
 
     <!-- REGISTRATION SECTION  -->
@@ -528,7 +465,7 @@ $registrationError = take_flash('registration_error');
 
     <!-- Custom JavaScript -->
 
-    <script src="js/script.js"></script>
+    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 </body>
 

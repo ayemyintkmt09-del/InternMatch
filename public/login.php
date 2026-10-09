@@ -6,17 +6,32 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 
 require_once __DIR__ . '/../app/controllers/LoginController.php';
 
+require_once __DIR__ . '/../app/student-entry.php';
+
 require_guest();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_post();
     verify_csrf();
 
-    $result = LoginController::login($_POST);
+    // Read before login clears anonymous session data.
+$studentEntry = $_SESSION['student_entry'] ?? null;
 
-    if ($result['success']) {
-        redirect(dashboard_path($result['role']));
+$result = LoginController::login($_POST);
+
+if ($result['success']) {
+    unset($_SESSION['student_entry']);
+
+    if ($result['role'] === 'student') {
+        $destination = student_entry_path($studentEntry);
+
+        if ($destination !== null) {
+            redirect($destination);
+        }
     }
+
+    redirect(dashboard_path($result['role']));
+}
 
     flash('login_error', $result['message']);
 
@@ -51,7 +66,7 @@ $loginSuccess = take_flash('login_success');
     >
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 
 </head>
 
@@ -59,61 +74,9 @@ $loginSuccess = take_flash('login_success');
 
 
     <!-- NAVBAR -->
+        <?php require __DIR__ . '/../app/views/public-nav.php'; ?>
 
-    <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
-
-        <div class="container">
-
-            <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
-                <i class="bi bi-mortarboard-fill"></i>
-                <span>Intern<span class="logo-green">Match</span></span>
-            </a>
-
-            <!-- Mobile menu button -->
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- Navigation -->
-            <div class="collapse navbar-collapse" id="mainNavbar">
-
-                <ul class="navbar-nav mx-auto">
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="opportunities.php">Opportunities</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html#how-it-works">How It Works</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html#about">About</a>
-                    </li>
-
-                </ul>
-
-                <!-- Register button -->
-                <div class="d-flex gap-2">
-                    <a
-                        href="<?= e(url('register.php')) ?>"
-                        class="btn btn-primary-custom">
-                        Register
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+        
     <!-- LOGIN SECTION -->
 
     <main class="login-section">
@@ -421,7 +384,7 @@ $loginSuccess = take_flash('login_success');
 
     <!-- Custom JavaScript -->
 
-    <script src="js/script.js"></script>
+    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 </body>
 

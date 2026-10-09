@@ -1,30 +1,3 @@
-function searchInternships() {
-
-    const keyword =
-        document.getElementById("searchInput").value.trim();
-
-    const field =
-        document.getElementById("fieldFilter").value;
-
-    const location =
-        document.getElementById("locationFilter").value;
-
-    const message =
-        document.getElementById("searchMessage");
-
-
-    if (keyword === "" && field === "" && location === "") {
-
-        message.textContent =
-            "Please enter a keyword or select a filter.";
-
-        return;
-    }
-
-
-    message.textContent =
-        "Searching for suitable internships...";
-}
 
 
 /* REGISTRATION PAGE */
@@ -1248,3 +1221,171 @@ function showManagementMessage(title) {
     );
 }
 
+
+
+
+/* Prevent accidental duplicate form submissions */
+
+document.addEventListener("submit", function (event) {
+    const form = event.target;
+
+    if (
+    !(form instanceof HTMLFormElement) ||
+    event.defaultPrevented
+) {
+    return;
+}
+
+    if (form.dataset.allowRepeat === "true") {
+        return;
+    }
+
+    if (form.dataset.submitting === "true") {
+        event.preventDefault();
+        return;
+    }
+
+    const submitButton =
+        event.submitter ||
+        form.querySelector(
+            'button[type="submit"], input[type="submit"]'
+        );
+
+    if (!submitButton) {
+        return;
+    }
+
+    form.dataset.submitting = "true";
+    submitButton.disabled = true;
+
+    if (submitButton.tagName === "BUTTON") {
+        submitButton.dataset.originalText =
+            submitButton.innerHTML;
+
+        submitButton.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" ' +
+            'aria-hidden="true"></span>Processing...';
+    }
+});
+
+
+
+/* Restore forms when returning through browser history. */
+window.addEventListener("pageshow", function () {
+    document.querySelectorAll(
+        'form[data-submitting="true"]'
+    ).forEach(function (form) {
+        delete form.dataset.submitting;
+
+        form.querySelectorAll(
+            'button[type="submit"], input[type="submit"]'
+        ).forEach(function (button) {
+            if (
+                button.tagName === "BUTTON" &&
+                button.dataset.originalText !== undefined
+            ) {
+                button.innerHTML = button.dataset.originalText;
+                delete button.dataset.originalText;
+                button.disabled = false;
+            }
+        });
+    });
+});
+
+
+
+
+
+(function () {
+    function initializeOpportunityFilterToggle() {
+        const panel = document.getElementById("opportunityFiltersPanel");
+        const button = document.getElementById("opportunityFilterToggle");
+
+        if (!panel || !button) {
+            return;
+        }
+
+        const label = button.querySelector("[data-filter-toggle-label]");
+
+        if (!label) {
+            return;
+        }
+
+        panel.addEventListener("shown.bs.collapse", function () {
+            label.textContent = "Hide filters";
+        });
+
+        panel.addEventListener("hidden.bs.collapse", function () {
+            label.textContent = "Show filters";
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            initializeOpportunityFilterToggle
+        );
+    } else {
+        initializeOpportunityFilterToggle();
+    }
+})();
+
+
+
+
+(function () {
+    "use strict";
+
+    function showCompanyLogoFallback(image) {
+        if (!(image instanceof HTMLImageElement)) {
+            return;
+        }
+
+        if (!image.matches("[data-company-logo-image]")) {
+            return;
+        }
+
+        const container = image.closest("[data-company-logo]");
+
+        if (!container) {
+            return;
+        }
+
+        const fallback = container.querySelector(
+            ".im-company-logo-fallback"
+        );
+
+        if (!fallback) {
+            return;
+        }
+
+        image.hidden = true;
+        fallback.hidden = false;
+    }
+
+    // Image error events require capture here.
+    document.addEventListener("error", function (event) {
+        showCompanyLogoFallback(event.target);
+    }, true);
+
+    function checkCompanyLogos() {
+        document.querySelectorAll(
+            "img[data-company-logo-image]"
+        ).forEach(function (image) {
+            // Also handle images that failed before this script loaded.
+            if (image.complete && image.naturalWidth === 0) {
+                showCompanyLogoFallback(image);
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            checkCompanyLogos,
+            { once: true }
+        );
+    } else {
+        checkCompanyLogos();
+    }
+})();

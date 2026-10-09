@@ -7,10 +7,38 @@ require_once __DIR__ . '/../app/controllers/CompanyApplicationController.php';
 
 $user = require_role('company');
 
+$statusOptions = [
+    'Pending',
+    'Under Review',
+    'Shortlisted',
+    'Accepted',
+    'Rejected',
+    'Withdrawn',
+];
+
+$statusFilter = $_GET['status'] ?? '';
+
+if (!is_string($statusFilter)) {
+    $statusFilter = '';
+}
+
+$statusFilter = trim($statusFilter);
+
+if (
+    $statusFilter !== ''
+    && !in_array($statusFilter, $statusOptions, true)
+) {
+    http_response_code(400);
+    exit('Invalid application status.');
+}
+
+
 try {
     $applications = CompanyApplicationController::all(
-        (int) $user['user_id']
-    );
+    (int) $user['user_id'],
+    $statusFilter === '' ? null : $statusFilter
+);
+
 } catch (Throwable $exception) {
     error_log((string) $exception);
 
@@ -32,6 +60,38 @@ require __DIR__ . '/../app/views/company-header.php';
                 <p class="dashboard-small-title">APPLICATION MANAGEMENT</p>
                 <h1>Applications</h1>
                 <p>Review applications from all your internships.</p>
+
+                <form
+                    method="get"
+                    action="<?= e(url('company-applications.php')) ?>"
+                    class="application-filter-bar mb-4">
+
+                    <label
+                        for="companyStatusFilter"
+                        class="visually-hidden">
+                        Filter applications by status
+                    </label>
+
+                    <select
+                        id="companyStatusFilter"
+                        name="status"
+                        class="form-select"
+                        onchange="this.form.submit()">
+
+                        <option value="">All applications</option>
+
+                        <?php foreach ($statusOptions as $statusOption): ?>
+                            <option
+                                value="<?= e($statusOption) ?>"
+                                <?= $statusFilter === $statusOption
+                                    ? 'selected'
+                                    : '' ?>>
+                                <?= e($statusOption) ?>
+                            </option>
+                        <?php endforeach; ?>
+
+                    </select>
+                </form>
             </div>
 
             <a
@@ -41,9 +101,34 @@ require __DIR__ . '/../app/views/company-header.php';
             </a>
         </div>
 
-        <?php if ($applications === []): ?>
+        <?php if (
+                $applications === []
+                && $statusFilter !== ''
+            ): ?>
 
-            <section class="profile-section text-center py-5">
+                <section class="profile-section empty-state">
+                    <i class="bi bi-funnel fs-1 text-primary"></i>
+
+                    <h3 class="mt-3">
+                        No <?= e($statusFilter) ?> applications found.
+                    </h3>
+
+                    <p class="text-muted mb-3">
+                        Try another status filter.
+                    </p>
+
+                    <a
+                        class="btn btn-outline-primary"
+                        href="<?= e(url('company-applications.php')) ?>">
+                        Show All Applications
+                    </a>
+                </section>
+
+            <?php elseif ($applications === []): ?>
+
+                
+
+            <section class="profile-section empty-state">
                 <i class="bi bi-people fs-1 text-primary"></i>
 
                 <h3 class="mt-3">No applications yet</h3>
@@ -57,20 +142,46 @@ require __DIR__ . '/../app/views/company-header.php';
 
             <section class="profile-section">
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle application-table">
+                    <caption class="visually-hidden">
+                        Applications received by the company
+                    </caption>
 
                         <thead>
                             <tr>
-                                <th>Student</th>
-                                <th>Internship</th>
-                                <th>Applied</th>
-                                <th>Status</th>
-                                <th>Review</th>
+                                <th scope="col">Student</th>
+                                <th scope="col">Internship</th>
+                                <th scope="col">Applied</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Review</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <?php foreach ($applications as $application): ?>
+
+
+                                <?php
+                                    $statusClass = match ($application['status']) {
+                                        'Accepted' =>
+                                            'bg-success-subtle text-success',
+
+                                        'Rejected' =>
+                                            'bg-danger-subtle text-danger',
+
+                                        'Withdrawn' =>
+                                            'bg-secondary-subtle text-secondary',
+
+                                        'Shortlisted' =>
+                                            'bg-primary-subtle text-primary',
+
+                                        'Under Review' =>
+                                            'bg-warning-subtle text-warning-emphasis',
+
+                                        default =>
+                                            'bg-light text-dark',
+                                    };
+                                    ?>
 
                                 <tr>
                                     <td>
@@ -100,7 +211,9 @@ require __DIR__ . '/../app/views/company-header.php';
                                     </td>
 
                                     <td>
-                                        <?= e($application['status']) ?>
+                                        <span class="badge <?= e($statusClass) ?>">
+                                            <?= e($application['status']) ?>
+                                        </span>
                                     </td>
 
                                     <td>

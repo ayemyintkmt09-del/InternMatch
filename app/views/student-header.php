@@ -2,14 +2,50 @@
 
 $pageTitle = $pageTitle ?? 'InternMatch';
 $activeNav = $activeNav ?? '';
-$user = $user ?? ['name' => 'Student'];
+
+$studentName = trim((string) ($user['name'] ?? 'Student'));
+
+if ($studentName === '') {
+    $studentName = 'Student';
+}
+
+$studentInitial = mb_strtoupper(
+    mb_substr($studentName, 0, 1, 'UTF-8'),
+    'UTF-8'
+);
+
+$studentNavigation = [
+    [
+        'key' => 'dashboard',
+        'label' => 'Dashboard',
+        'path' => 'student-dashboard.php',
+    ],
+    [
+        'key' => 'opportunities',
+        'label' => 'Opportunities',
+        'path' => 'opportunities.php',
+    ],
+    [
+        'key' => 'applications',
+        'label' => 'My Applications',
+        'path' => 'my-applications.php',
+    ],
+    [
+        'key' => 'saved',
+        'label' => 'Saved',
+        'path' => 'saved-internships.php',
+    ],
+];
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
     <title><?= e($pageTitle) ?> | InternMatch</title>
 
@@ -22,20 +58,28 @@ $user = $user ?? ['name' => 'Student'];
         rel="stylesheet">
 
     <link
-        rel="stylesheet"
-        href="<?= e(url('css/style.css')) ?>">
+        href="<?= e(url('css/style.css')) ?>"
+        rel="stylesheet">
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg dashboard-nav">
+<nav
+    class="navbar navbar-expand-lg dashboard-nav"
+    aria-label="Student navigation">
+
     <div class="container">
 
         <a
             class="navbar-brand logo"
             href="<?= e(url('student-dashboard.php')) ?>">
-            <i class="bi bi-mortarboard-fill"></i>
-            <span>Intern<span class="logo-green">Match</span></span>
+            <i
+                class="bi bi-mortarboard-fill"
+                aria-hidden="true"></i>
+
+            <span>
+                Intern<span class="logo-green">Match</span>
+            </span>
         </a>
 
         <button
@@ -49,53 +93,31 @@ $user = $user ?? ['name' => 'Student'];
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="studentNavbar">
+        <div
+            class="collapse navbar-collapse"
+            id="studentNavbar">
 
             <ul class="navbar-nav mx-auto">
+                <?php foreach ($studentNavigation as $item): ?>
+                    <?php
+                    $isActive = $activeNav === $item['key'];
+                    ?>
 
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="<?= e(url('student-dashboard.php')) ?>">
-                        Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a
-                        class="nav-link <?= $activeNav === 'opportunities'
-                            ? 'active' : '' ?>"
-                        <?= $activeNav === 'opportunities'
-                            ? 'aria-current="page"' : '' ?>
-                        href="<?= e(url('opportunities.php')) ?>">
-                        Opportunities
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="<?= e(url('my-applications.php')) ?>">
-                        My Applications
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a
-                        class="nav-link <?= $activeNav === 'saved' ? 'active' : '' ?>"
-                        <?= $activeNav === 'saved' ? 'aria-current="page"' : '' ?>
-                        href="<?= e(url('saved-internships.php')) ?>">
-                        Saved
-                    </a>
-                </li>
-
+                    <li class="nav-item">
+                        <a
+                            class="nav-link<?= $isActive ? ' active' : '' ?>"
+                            href="<?= e(url($item['path'])) ?>"
+                            <?= $isActive ? 'aria-current="page"' : '' ?>>
+                            <?= e($item['label']) ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
             </ul>
 
             <div class="dashboard-nav-right">
 
                 <?php require __DIR__ . '/notification-link.php'; ?>
 
-                
                 <div class="dropdown">
                     <button
                         type="button"
@@ -105,19 +127,20 @@ $user = $user ?? ['name' => 'Student'];
                         aria-expanded="false"
                         aria-label="Student account menu">
 
-                        <span class="dashboard-avatar">
-                            <?= e(mb_strtoupper(
-                                mb_substr($user['name'], 0, 1, 'UTF-8'),
-                                'UTF-8'
-                            )) ?>
+                        <span
+                            class="dashboard-avatar"
+                            aria-hidden="true">
+                            <?= e($studentInitial) ?>
                         </span>
 
                         <span class="dashboard-user-info">
-                            <strong><?= e($user['name']) ?></strong>
+                            <strong><?= e($studentName) ?></strong>
                             <small>Student</small>
                         </span>
 
-                        <i class="bi bi-chevron-down"></i>
+                        <i
+                            class="bi bi-chevron-down"
+                            aria-hidden="true"></i>
                     </button>
 
                     <ul
@@ -128,9 +151,37 @@ $user = $user ?? ['name' => 'Student'];
                             <a
                                 class="dropdown-item"
                                 href="<?= e(url('student-profile.php')) ?>">
-                                <i class="bi bi-person me-2"></i>
+                                <i
+                                    class="bi bi-person me-2"
+                                    aria-hidden="true"></i>
                                 My Profile
                             </a>
+                        </li>
+
+                        <li>
+                            <a
+                                class="dropdown-item"
+                                href="<?= e(url('help.php')) ?>">
+                                <i
+                                    class="bi bi-question-circle me-2"
+                                    aria-hidden="true"></i>
+                                Help & Guidance
+                            </a>
+                        </li>
+
+                        <li>
+                            <a
+                                class="dropdown-item"
+                                href="<?= e(url('index.php')) ?>">
+                                <i
+                                    class="bi bi-house me-2"
+                                    aria-hidden="true"></i>
+                                Homepage
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
                         </li>
 
                         <li>
@@ -141,8 +192,12 @@ $user = $user ?? ['name' => 'Student'];
 
                                 <?= csrf_field() ?>
 
-                                <button type="submit" class="dropdown-item">
-                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                <button
+                                    type="submit"
+                                    class="dropdown-item">
+                                    <i
+                                        class="bi bi-box-arrow-right me-2"
+                                        aria-hidden="true"></i>
                                     Logout
                                 </button>
                             </form>
@@ -150,7 +205,6 @@ $user = $user ?? ['name' => 'Student'];
 
                     </ul>
                 </div>
-
             </div>
         </div>
     </div>

@@ -37,8 +37,8 @@ try {
         rel="stylesheet">
 
     <link
-        href="<?= e(url('css/style.css')) ?>"
-        rel="stylesheet">
+        href="<?= e(asset_url('css/style.css')) ?>" 
+               rel="stylesheet">
 </head>
 
 <body>

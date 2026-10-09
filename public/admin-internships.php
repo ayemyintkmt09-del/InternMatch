@@ -61,7 +61,7 @@ try {
         rel="stylesheet">
 
     <link
-        href="<?= e(url('css/style.css')) ?>"
+       href="<?= e(asset_url('css/style.css')) ?>"
         rel="stylesheet">
 </head>
 
@@ -177,7 +177,7 @@ try {
 
                 <?php if ($result['items'] === []): ?>
                     <tr>
-                        <td colspan="6" class="text-center py-4">
+                        <td colspan="6" class="empty-table-cell">
                             No internships match your search.
                         </td>
                     </tr>

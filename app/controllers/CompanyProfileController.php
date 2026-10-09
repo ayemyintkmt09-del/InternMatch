@@ -194,4 +194,83 @@ final class CompanyProfileController
             throw $exception;
         }
     }
+
+
+
+    public static function publicProfile(int $companyId): ?array
+{
+    $statement = db()->prepare(
+        'SELECT
+            c.company_id,
+            c.company_name,
+            c.description,
+            c.industry,
+            c.location,
+            c.website,
+            c.logo_path
+         FROM companies AS c
+         INNER JOIN users AS u
+            ON u.user_id = c.user_id
+         WHERE c.company_id = :company_id
+           AND c.verification_status = \'verified\'
+           AND u.status = \'active\'
+           AND u.role = \'company\'
+         LIMIT 1'
+    );
+
+    $statement->execute([
+        'company_id' => $companyId,
+    ]);
+
+    $company = $statement->fetch();
+
+    return $company ?: null;
 }
+
+public static function publicInternships(int $companyId): array
+{
+    $statement = db()->prepare(
+        'SELECT
+            i.internship_id,
+            i.title,
+            i.description,
+            i.location,
+            i.internship_type,
+            i.duration,
+            i.start_date,
+            i.end_date,
+            i.deadline,
+            i.interns_needed,
+            af.field_name
+         FROM internships AS i
+         INNER JOIN companies AS c
+            ON c.company_id = i.company_id
+         INNER JOIN users AS u
+            ON u.user_id = c.user_id
+         LEFT JOIN academic_fields AS af
+            ON af.field_id = i.field_id
+         WHERE i.company_id = :company_id
+           AND i.status = \'Published\'
+           AND i.deadline >= :today
+           AND c.verification_status = \'verified\'
+           AND u.status = \'active\'
+           AND u.role = \'company\'
+         ORDER BY
+            i.deadline ASC,
+            i.published_at DESC,
+            i.internship_id DESC'
+    );
+
+    $statement->execute([
+        'company_id' => $companyId,
+        'today' => date('Y-m-d'),
+    ]);
+
+    return $statement->fetchAll();
+}
+
+
+
+}
+
+

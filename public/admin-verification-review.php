@@ -108,7 +108,7 @@ $statusClass = match ($company['verification_status']) {
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="<?= e(url('css/style.css')) ?>">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>

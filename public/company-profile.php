@@ -110,7 +110,7 @@ $hasVerificationDocument =
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>
@@ -118,7 +118,10 @@ $hasVerificationDocument =
 <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
     <div class="container">
 
-        <a class="navbar-brand logo" href="<?= e(url('index.html')) ?>">
+        <a
+            class="navbar-brand logo"
+            href="<?= e(url('company-dashboard.php')) ?>">
+
             <i class="bi bi-mortarboard-fill"></i>
             <span>Intern<span class="logo-green">Match</span></span>
         </a>

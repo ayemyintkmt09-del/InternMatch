@@ -69,7 +69,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
     >
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>
@@ -83,7 +83,9 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
         <div class="container">
 
             <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
+            <a
+                class="navbar-brand logo"
+                href="<?= e(url('company-dashboard.php')) ?>">
                 <i class="bi bi-mortarboard-fill"></i>
                 <span>Intern<span class="logo-green">Match</span></span>
             </a>
@@ -783,7 +785,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
     </script>
 
     <!-- Main JS -->
-    <script src="js/script.js"></script>
+    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 </body>
 

@@ -37,7 +37,7 @@ try {
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>
@@ -51,7 +51,10 @@ try {
 
 
             <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
+            <a
+                class="navbar-brand logo"
+                href="<?= e(url('student-dashboard.php')) ?>">
+                
                 <i class="bi bi-mortarboard-fill"></i>
                 <span>Intern<span class="logo-green">Match</span></span>
             </a>
@@ -445,7 +448,10 @@ try {
                                 <p>Your five most recent submissions</p>
                             </div>
 
-                            <a href="<?= e(url('my-applications.php')) ?>">
+                            <a
+                                href="<?= e(url('my-applications.php')) ?>"
+                                class="text-decoration-none dashboard-card-link">
+                                
                                 View All
                             </a>
                         </div>
@@ -631,7 +637,7 @@ try {
 
     <!-- Main JavaScript -->
 
-    <script src="js/script.js"></script>
+   <script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 
 </body>

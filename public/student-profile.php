@@ -145,7 +145,7 @@ function profile_options(
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>
@@ -158,7 +158,9 @@ function profile_options(
     <div class="container">
 
         <!-- Logo -->
-        <a class="navbar-brand logo" href="index.html">
+        <a
+            class="navbar-brand logo"
+            href="<?= e(url('student-dashboard.php')) ?>">
             <i class="bi bi-mortarboard-fill"></i>
             <span>Intern<span class="logo-green">Match</span></span>
         </a>
@@ -1103,7 +1105,7 @@ function profile_options(
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Main JS -->
-<script src="js/script.js"></script>
+<script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 
 <script>

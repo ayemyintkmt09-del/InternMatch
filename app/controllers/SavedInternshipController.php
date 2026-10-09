@@ -157,4 +157,27 @@ final class SavedInternshipController
 
         return $statement->fetchAll();
     }
+
+
+
+
+    public static function savedIds(int $userId): array
+{
+    $statement = db()->prepare(
+        'SELECT si.internship_id
+         FROM saved_internships AS si
+         INNER JOIN student_profiles AS sp
+            ON sp.student_id = si.student_id
+         WHERE sp.user_id = :user_id'
+    );
+
+    $statement->execute([
+        'user_id' => $userId,
+    ]);
+
+    return array_map(
+        'intval',
+        $statement->fetchAll(PDO::FETCH_COLUMN)
+    );
+}
 }

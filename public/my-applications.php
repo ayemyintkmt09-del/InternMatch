@@ -8,6 +8,35 @@ require_once __DIR__ . '/../app/controllers/ApplicationController.php';
 $user = require_role('student');
 $userId = (int) $user['user_id'];
 
+$statusOptions = [
+    'Pending',
+    'Under Review',
+    'Shortlisted',
+    'Accepted',
+    'Rejected',
+    'Withdrawn',
+];
+
+$statusFilter = $_GET['status'] ?? '';
+
+if (!is_string($statusFilter)) {
+    $statusFilter = '';
+}
+
+$statusFilter = trim($statusFilter);
+
+if (
+    $statusFilter !== ''
+    && !in_array($statusFilter, $statusOptions, true)
+) {
+    http_response_code(400);
+    exit('Invalid application status.');
+}
+
+$selectedStatus = $statusFilter === ''
+    ? null
+    : $statusFilter;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_post();
     verify_csrf();
@@ -60,7 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 try {
-    $applications = ApplicationController::listing($userId);
+    $applications = ApplicationController::listing(
+    $userId,
+    $selectedStatus
+); 
 
     $applicationHistory = [];
 
@@ -83,7 +115,8 @@ $success = take_flash('application_success');
 $error = take_flash('application_error');
 
 $pageTitle = 'My Applications';
-$activeNav = '';
+$activeNav = 'applications';
+
 
 require __DIR__ . '/../app/views/student-header.php';
 ?>
@@ -117,15 +150,83 @@ require __DIR__ . '/../app/views/student-header.php';
             </div>
         <?php endif; ?>
 
-        <?php if ($applications === []): ?>
 
-            <div class="opportunity-card text-center py-5">
-                <i class="bi bi-send fs-1 text-primary"></i>
+        <div class="application-list-toolbar">
 
-                <h3 class="mt-3">No applications yet</h3>
+    <p class="mb-0 text-muted">
+        Showing
+        <strong><?= count($applications) ?></strong>
+        <?= $statusFilter === ''
+            ? 'applications'
+            : e($statusFilter . ' applications') ?>
+    </p>
+
+    <form
+        method="get"
+        action="<?= e(url('my-applications.php')) ?>"
+        class="application-filter-bar">
+
+        <label
+            for="applicationStatusFilter"
+            class="visually-hidden">
+            Filter applications by status
+        </label>
+
+        <select
+            id="applicationStatusFilter"
+            name="status"
+            class="form-select"
+            onchange="this.form.submit()">
+
+            <option value="">All applications</option>
+
+            <?php foreach ($statusOptions as $statusOption): ?>
+                <option
+                    value="<?= e($statusOption) ?>"
+                    <?= $statusFilter === $statusOption
+                        ? 'selected'
+                        : '' ?>>
+                    <?= e($statusOption) ?>
+                </option>
+            <?php endforeach; ?>
+
+        </select>
+    </form>
+
+</div>
+
+        <?php if (
+            $applications === []
+            && $statusFilter !== ''
+        ): ?>
+
+            <div class="opportunity-card empty-state">
+                <i class="bi bi-funnel fs-1 text-primary"></i>
+
+                <h3 class="mt-3">
+                    No <?= e($statusFilter) ?> applications found.
+                </h3>
 
                 <p class="text-muted">
-                    Browse opportunities and submit your first application.
+                    Try another application-status filter.
+                </p>
+
+                <a
+                    class="btn btn-outline-primary"
+                    href="<?= e(url('my-applications.php')) ?>">
+                    Show All Applications
+                </a>
+            </div>
+
+        <?php elseif ($applications === []): ?>
+
+           <div class="opportunity-card empty-state">
+                <i class="bi bi-send fs-1 text-primary"></i>
+
+                <h3 class="mt-3">You have not submitted any applications yet.</h3>
+
+                <p class="text-muted">
+                    Browse current opportunities and apply when you find a good fit.
                 </p>
 
                 <a
@@ -139,16 +240,19 @@ require __DIR__ . '/../app/views/student-header.php';
 
             <section class="profile-section">
                 <div class="table-responsive">
-                    <table class="table align-middle">
+                    <table class="table align-middle application-table">
+                        <caption class="visually-hidden">
+                            Applications submitted by the current student
+                        </caption>
 
                         <thead>
                             <tr>
-                                <th>Internship</th>
-                                <th>Company</th>
-                                <th>Applied</th>
-                                <th>Status</th>
-                                <th>Interview</th>
-                                <th>Interview Notes</th>
+                                <th scope="col">Internship</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Applied</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Interview</th>
+                                <th scope="col">Interview Notes</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -189,10 +293,9 @@ require __DIR__ . '/../app/views/student-header.php';
                                     </td>
 
                                     <td>
-                                        <?= e(substr(
+                                        <?= e(format_utc_datetime(
                                             $application['application_date'],
-                                            0,
-                                            10
+                                            'd M Y'
                                         )) ?>
                                     </td>
 
@@ -311,13 +414,13 @@ require __DIR__ . '/../app/views/student-header.php';
 
                                 <tr>
                                     <td colspan="7">
-                                        <details>
+                                        <details class="application-history">
                                             <summary
                                                 class="small text-primary">
                                                 View status history
                                             </summary>
 
-                                            <div class="mt-3">
+                                            <div class="application-history-list mt-3">
                                                 <?php foreach (
                                                     $applicationHistory[
                                                         (int) $application[
@@ -381,6 +484,8 @@ require __DIR__ . '/../app/views/student-header.php';
             </section>
 
         <?php endif; ?>
+
+        
 
     </div>
 </main>

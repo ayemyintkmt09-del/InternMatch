@@ -106,7 +106,7 @@ try {
         rel="stylesheet">
 
     <link
-        href="<?= e(url('css/style.css')) ?>"
+        href="<?= e(asset_url('css/style.css')) ?>"
         rel="stylesheet">
 </head>
 

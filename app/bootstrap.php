@@ -119,3 +119,104 @@ function take_flash(string $key): ?string
 
     return is_string($message) ? $message : null;
 }
+
+function company_logo(
+    int $companyId,
+    string $companyName,
+    bool $hasLogo,
+    string $imageClass = ''
+): string {
+    $name = trim($companyName);
+
+    $initial = $name !== ''
+        ? mb_strtoupper(
+            mb_substr($name, 0, 1, 'UTF-8'),
+            'UTF-8'
+        )
+        : '?';
+
+    $showImage = $hasLogo && $companyId > 0;
+
+    $html = '<span class="im-company-logo" data-company-logo>';
+
+    $html .= '<span class="im-company-logo-fallback"'
+        . ($showImage ? ' hidden' : '')
+        . ' aria-hidden="true">'
+        . e($initial)
+        . '</span>';
+
+    if ($showImage) {
+        $html .= '<img'
+            . ' class="' . e(trim('im-company-logo-image ' . $imageClass)) . '"'
+            . ' src="' . e(url(
+                'public-company-logo.php?company_id=' . $companyId
+            )) . '"'
+            . ' alt="' . e($name . ' logo') . '"'
+            . ' decoding="async"'
+            . ' data-company-logo-image'
+            . '>';
+    }
+
+    $html .= '</span>';
+
+    return $html;
+}
+
+
+function format_utc_datetime(
+    ?string $value,
+    string $format = 'd M Y, H:i'
+): string {
+    if ($value === null || trim($value) === '') {
+        return '—';
+    }
+
+    $date = DateTimeImmutable::createFromFormat(
+        '!Y-m-d H:i:s',
+        trim($value),
+        new DateTimeZone('UTC')
+    );
+
+    $errors = DateTimeImmutable::getLastErrors();
+
+    if (
+        $date === false
+        || (
+            $errors !== false
+            && (
+                $errors['warning_count'] > 0
+                || $errors['error_count'] > 0
+            )
+        )
+    ) {
+        return '—';
+    }
+
+    return $date
+        ->setTimezone(
+            new DateTimeZone(date_default_timezone_get())
+        )
+        ->format($format);
+}
+
+
+
+function asset_url(string $path): string
+{
+    $assets = [
+        'css/style.css' => __DIR__ . '/../public/css/style.css',
+        'js/script.js' => __DIR__ . '/../public/js/script.js',
+    ];
+
+    if (!isset($assets[$path])) {
+        throw new InvalidArgumentException('Unknown asset.');
+    }
+
+    $file = $assets[$path];
+
+    $version = is_file($file)
+        ? (string) filemtime($file)
+        : '1';
+
+    return url($path) . '?v=' . rawurlencode($version);
+}

@@ -2,13 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=my-applications.php">
-    <title>My Applications | InternMatch</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta name="robots" content="noindex">
+
+    <title>Continue to InternMatch</title>
 </head>
+
 <body>
-    <p>
-        Opening applications…
-        <a href="my-applications.php">Continue</a>
-    </p>
+    <main>
+        <h1>This page has moved</h1>
+
+        <p>
+            Continue to the current version of InternMatch.
+        </p>
+
+        <p>
+            <a id="continueLink" href="index.php">
+                Continue to InternMatch
+            </a>
+        </p>
+
+        <noscript>
+            <p>
+                JavaScript is disabled. Use the link above
+                to open the homepage.
+            </p>
+        </noscript>
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            const filename = window.location.pathname
+                .split("/")
+                .pop();
+
+            const routes = {
+                "opportunities.html": "explore.php",
+                "saved-internships.html": "saved-internships.php",
+                "my-applications.html": "my-applications.php",
+                "notification.html": "notifications.php",
+                "internship-details.html": "explore.php",
+                "application.html": "explore.php"
+            };
+
+            let destination = routes[filename] || "index.php";
+
+            const parameters = new URLSearchParams(
+                window.location.search
+            );
+
+            if (filename === "opportunities.html") {
+                const forwarded = new URLSearchParams();
+
+                const allowed = [
+                    "q",
+                    "location",
+                    "field_id",
+                    "type",
+                    "sort"
+                ];
+
+                allowed.forEach(function (key) {
+                    const value = parameters.get(key);
+
+                    if (value !== null && value !== "") {
+                        forwarded.set(key, value);
+                    }
+                });
+
+                const query = forwarded.toString();
+
+                if (query !== "") {
+                    destination += "?" + query;
+                }
+            }
+
+            if (
+                filename === "internship-details.html"
+                || filename === "application.html"
+            ) {
+                const id = parameters.get("id");
+
+                if (
+                    id !== null
+                    && /^[1-9][0-9]{0,9}$/.test(id)
+                ) {
+                    destination += "?id=" + encodeURIComponent(id);
+                }
+            }
+
+            const link = document.getElementById("continueLink");
+
+            link.href = destination;
+
+            window.location.replace(destination);
+        })();
+    </script>
 </body>
 </html>

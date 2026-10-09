@@ -38,7 +38,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Shared CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
 </head>
 
 <body>
@@ -47,7 +47,9 @@
     <nav class="navbar navbar-expand-lg main-navbar">
         <div class="container">
 
-            <a class="navbar-brand logo" href="index.html">
+            <a
+                class="navbar-brand logo"
+                href="<?= e(url('admin-dashboard.php')) ?>">
                 <i class="bi bi-mortarboard-fill"></i>
                 <span>Intern<span class="logo-green">Match</span></span>
             </a>
@@ -902,7 +904,7 @@
 
     <!-- Shared JavaScript -->
 
-    <script src="js/script.js"></script>
+    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
 
 </body>
 

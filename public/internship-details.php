@@ -12,6 +12,32 @@ require_once __DIR__ . '/../app/controllers/MatchingController.php';
 
 
 
+if (
+    $_SERVER['REQUEST_METHOD'] === 'GET'
+    && current_user() === null
+) {
+    $entryId = $_GET['id'] ?? null;
+
+    if (!is_string($entryId)) {
+        http_response_code(400);
+        exit('Invalid internship ID.');
+    }
+
+    $entryId = filter_var(
+        $entryId,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($entryId === false) {
+        http_response_code(400);
+        exit('Invalid internship ID.');
+    }
+
+    redirect('explore.php?id=' . $entryId);
+}
+
+
 $user = require_role('student');
 
 $rawId = $_GET['id'] ?? null;
@@ -50,6 +76,15 @@ try {
 
     $hasApplied = $applicationStatus !== null;
 
+    $applicationButtonClass = match ($applicationStatus) {
+    'Accepted' => 'btn-success',
+    'Rejected' => 'btn-danger',
+    'Shortlisted' => 'btn-info text-dark',
+    'Under Review' => 'btn-warning text-dark',
+    'Withdrawn' => 'btn-outline-secondary',
+    default => 'btn-secondary',
+};
+
 
     $matchScore = $internship !== null
     ? MatchingController::forInternship(
@@ -67,6 +102,9 @@ try {
     exit('The internship could not be loaded. Please try again.');
 }
 
+$savedSuccess = take_flash('saved_internship_success');
+$savedError = take_flash('saved_internship_error');
+
 $activeNav = 'opportunities';
 
 if ($internship === null) {
@@ -79,11 +117,25 @@ if ($internship === null) {
 
     <main class="internship-details-page">
         <div class="container">
+            
+                <?php if ($savedSuccess !== null): ?>
+                    <div class="alert alert-success" role="status">
+                        <?= e($savedSuccess) ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($savedError !== null): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?= e($savedError) ?>
+                    </div>
+                <?php endif; ?>
+
             <section class="details-content-card text-center">
                 <h1>Opportunity unavailable</h1>
 
-                <p>
-                    This internship may have closed or is no longer available.
+                <p class="text-muted">
+                    This internship may have passed its application deadline,
+                    been closed, or become unavailable.
                 </p>
 
                 <a
@@ -110,6 +162,21 @@ require __DIR__ . '/../app/views/student-header.php';
 <main class="internship-details-page">
     <div class="container">
 
+
+    <?php if ($savedSuccess !== null): ?>
+        <div class="alert alert-success" role="status">
+            <?= e($savedSuccess) ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($savedError !== null): ?>
+        <div class="alert alert-danger" role="alert">
+            <?= e($savedError) ?>
+        </div>
+    <?php endif; ?>
+
+
+    
         <a
             href="<?= e(url('opportunities.php')) ?>"
             class="back-opportunities">
@@ -120,15 +187,12 @@ require __DIR__ . '/../app/views/student-header.php';
         <section class="internship-details-header">
 
             <div class="internship-company-logo">
-                <?= e(mb_strtoupper(
-                    mb_substr(
-                        $internship['company_name'],
-                        0,
-                        1,
-                        'UTF-8'
-                    ),
-                    'UTF-8'
-                )) ?>
+                <?= company_logo(
+                    (int) $internship['company_id'],
+                    (string) $internship['company_name'],
+                    (int) ($internship['company_has_logo'] ?? 0) === 1,
+                    'internship-company-logo-image'
+                ) ?>
             </div>
 
             <div class="internship-header-content">
@@ -142,7 +206,14 @@ require __DIR__ . '/../app/views/student-header.php';
                         <h1><?= e($internship['title']) ?></h1>
 
                         <p class="internship-company-name">
-                            <?= e($internship['company_name']) ?>
+                            <a
+                                class="opportunity-company-link"
+                                href="<?= e(url(
+                                    'company-public-profile.php?id='
+                                    . (int) $internship['company_id']
+                                )) ?>">
+                                <?= e($internship['company_name']) ?>
+                            </a>
                         </p>
                     </div>
 
@@ -197,6 +268,11 @@ require __DIR__ . '/../app/views/student-header.php';
 
                 <input
                     type="hidden"
+                    name="return_to"
+                    value="internship-details.php">
+
+                <input
+                    type="hidden"
                     name="internship_id"
                     value="<?= (int) $internship['internship_id'] ?>">
 
@@ -221,7 +297,7 @@ require __DIR__ . '/../app/views/student-header.php';
             </form>
 
             <a
-                class="btn btn-outline-primary"
+                class="btn btn-outline-primary ms-2"
                 href="<?= e(url('saved-internships.php')) ?>">
                 View Saved Internships
             </a>
@@ -234,12 +310,14 @@ require __DIR__ . '/../app/views/student-header.php';
 
             <button
                 type="button"
-                class="btn btn-success"
+                class="btn <?= e($applicationButtonClass) ?>"
                 disabled>
                 <i class="bi bi-check-circle me-2"></i>
-                <?= $applicationStatus === 'Withdrawn'
-                    ? 'Application Withdrawn'
-                    : 'Application Submitted' ?>
+                <?php if ($applicationStatus === 'Withdrawn'): ?>
+                    Application Withdrawn
+                <?php else: ?>
+                    Application <?= e((string) $applicationStatus) ?>
+                <?php endif; ?>
             </button>
 
         <?php else: ?>
@@ -298,6 +376,16 @@ require __DIR__ . '/../app/views/student-header.php';
                 <section class="details-content-card">
                     <h3>About the Company</h3>
 
+                    <a
+                        class="btn btn-outline-primary mt-3"
+                        href="<?= e(url(
+                            'company-public-profile.php?id='
+                            . (int) $internship['company_id']
+                        )) ?>">
+                        View Company Profile
+                        <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+
                     <h5><?= e($internship['company_name']) ?></h5>
 
                     <?php if (!empty($internship['industry'])): ?>
@@ -331,7 +419,10 @@ require __DIR__ . '/../app/views/student-header.php';
                     <section class="details-sidebar-card">
                         <h3>Your Match</h3>
 
-                        <div class="display-6 text-primary fw-bold mb-3">
+                        <div
+                            class="display-6 text-primary fw-bold mb-3"
+                            aria-label="Overall profile match score">
+
                             <?= number_format(
                                 (float) $matchScore['overall'],
                                 1
@@ -371,9 +462,7 @@ require __DIR__ . '/../app/views/student-header.php';
                             </div>
                         <?php endforeach; ?>
 
-                        <?php if (
-                            $matchScore['required_skill_count'] > 0
-                        ): ?>
+                        <?php if ($matchScore['required_skill_count'] > 0): ?>
                             <p class="small text-muted mb-0">
                                 <?= (int) $matchScore['matched_skill_count'] ?>
                                 of
@@ -381,7 +470,18 @@ require __DIR__ . '/../app/views/student-header.php';
                                 required skills match your profile.
                             </p>
                         <?php endif; ?>
+
+                    
+
+                        <p class="small text-muted mb-3">
+                            This is a transparent profile-fit score based on your skills,
+                            academic field, interests, availability, and location.
+                            It is not a hiring probability.
+                        </p>
+
+                        
                     </section>
+
                 <?php endif; ?>
 
 

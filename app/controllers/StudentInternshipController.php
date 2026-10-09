@@ -81,8 +81,14 @@ final class StudentInternshipController
 
         if ($filters['q'] !== '') {
             $where[] = '(
-                LOCATE(:title_keyword, i.title) > 0
-                OR LOCATE(:company_keyword, c.company_name) > 0
+                LOCATE(
+                    LOWER(:title_keyword),
+                    LOWER(COALESCE(i.title, \'\'))
+                ) > 0
+                OR LOCATE(
+                    LOWER(:company_keyword),
+                    LOWER(COALESCE(c.company_name, \'\'))
+                ) > 0
             )';
 
             $parameters['title_keyword'] = $filters['q'];
@@ -90,7 +96,10 @@ final class StudentInternshipController
         }
 
         if ($filters['location'] !== '') {
-            $where[] = 'LOCATE(:location_keyword, i.location) > 0';
+            $where[] = 'LOCATE(
+                LOWER(:location_keyword),
+                LOWER(COALESCE(i.location, \'\'))
+            ) > 0';
             $parameters['location_keyword'] = $filters['location'];
         }
 
@@ -168,7 +177,12 @@ final class StudentInternshipController
         $statement = db()->prepare(
             'SELECT
                 i.*,
+                c.company_id,
                 c.company_name,
+                CASE
+                    WHEN c.logo_path IS NOT NULL THEN 1
+                    ELSE 0
+                END AS company_has_logo,
                 af.field_name
              ' . $from . '
              WHERE ' . $condition . '
@@ -208,7 +222,12 @@ final class StudentInternshipController
         $statement = db()->prepare(
             'SELECT
                 i.*,
+                c.company_id,
                 c.company_name,
+                CASE
+                    WHEN c.logo_path IS NOT NULL THEN 1
+                    ELSE 0
+                END AS company_has_logo,
                 c.description AS company_description,
                 c.industry,
                 c.location AS company_location,

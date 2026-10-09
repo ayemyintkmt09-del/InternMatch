@@ -261,9 +261,44 @@ final class ApplicationController
         }
     }
 
-    public static function listing(int $userId): array
-    {
+
+
+    public static function listing(
+        int $userId,
+        ?string $status = null
+    ): array {
         $student = self::student($userId);
+
+        $allowedStatuses = [
+            'Pending',
+            'Under Review',
+            'Shortlisted',
+            'Accepted',
+            'Rejected',
+            'Withdrawn',
+        ];
+
+        if (
+            $status !== null
+            && !in_array($status, $allowedStatuses, true)
+        ) {
+            throw new InvalidArgumentException(
+                'Invalid application status.'
+            );
+        }
+
+        $where = [
+            'a.student_id = :student_id',
+        ];
+
+        $parameters = [
+            'student_id' => $student['student_id'],
+        ];
+
+        if ($status !== null) {
+            $where[] = 'a.status = :status';
+            $parameters['status'] = $status;
+        }
 
         $statement = db()->prepare(
             'SELECT
@@ -272,21 +307,21 @@ final class ApplicationController
                 i.location,
                 i.internship_type,
                 c.company_name
-             FROM applications AS a
-             JOIN internships AS i
+            FROM applications AS a
+            JOIN internships AS i
                 ON i.internship_id = a.internship_id
-             JOIN companies AS c
+            JOIN companies AS c
                 ON c.company_id = i.company_id
-             WHERE a.student_id = :student_id
-             ORDER BY a.application_date DESC, a.application_id DESC'
+            WHERE ' . implode(' AND ', $where) . '
+            ORDER BY a.application_date DESC,
+                    a.application_id DESC'
         );
 
-        $statement->execute([
-            'student_id' => $student['student_id'],
-        ]);
+        $statement->execute($parameters);
 
         return $statement->fetchAll();
     }
+
 
     public static function withdraw(
         int $userId,

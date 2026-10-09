@@ -41,7 +41,9 @@
         <div class="container">
 
             <!-- Logo -->
-            <a class="navbar-brand logo" href="index.html">
+            <a
+                class="navbar-brand logo"
+                href="<?= e(url('company-dashboard.php')) ?>">
                 <i class="bi bi-mortarboard-fill"></i>
                 <span>Intern<span class="logo-green">Match</span></span>
             </a>

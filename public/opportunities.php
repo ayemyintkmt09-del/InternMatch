@@ -5,8 +5,35 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
 require_once __DIR__ . '/../app/controllers/MatchingController.php';
+require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
+
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'GET'
+    && current_user() === null
+) {
+    $entryFilters = [];
+
+    foreach (['q', 'location', 'field_id', 'type', 'sort'] as $key) {
+        if (array_key_exists($key, $_GET)) {
+            $entryFilters[$key] = $_GET[$key];
+        }
+    }
+
+    $entryQuery = http_build_query($entryFilters);
+
+    redirect(
+        'explore.php'
+        . ($entryQuery !== '' ? '?' . $entryQuery : '')
+    );
+}
+
 
 $user = require_role('student');
+
+$savedInternshipIds = [];
+$savedSuccess = take_flash('saved_internship_success');
+$savedError = take_flash('saved_internship_error');
 
 try {
     $result = StudentInternshipController::search($_GET);
@@ -17,6 +44,11 @@ try {
     );
 
     $fields = StudentInternshipController::fields();
+
+    $savedInternshipIds =
+    SavedInternshipController::savedIds(
+        (int) $user['user_id']
+    );
 
 
 } catch (InvalidArgumentException $exception) {
@@ -43,12 +75,26 @@ $pageTitle = 'Opportunities';
 $activeNav = 'opportunities';
 
 require __DIR__ . '/../app/views/student-header.php';
-?>
 
+
+?>
 
 
 <main class="opportunities-page">
     <div class="container">
+
+
+        <?php if ($savedSuccess !== null): ?>
+            <div class="alert alert-success" role="status">
+                <?= e($savedSuccess) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($savedError !== null): ?>
+            <div class="alert alert-danger" role="alert">
+                <?= e($savedError) ?>
+            </div>
+        <?php endif; ?>
 
         <div class="opportunities-header">
             <div>
@@ -85,9 +131,28 @@ require __DIR__ . '/../app/views/student-header.php';
 
         </form>
 
+
+
+        <button
+            type="button"
+            id="opportunityFilterToggle"
+            class="btn btn-outline-primary d-lg-none mb-3"
+            data-bs-toggle="collapse"
+            data-bs-target="#opportunityFiltersPanel"
+            aria-expanded="false"
+            aria-controls="opportunityFiltersPanel">
+
+            <i class="bi bi-sliders me-2" aria-hidden="true"></i>
+            <span data-filter-toggle-label>Show filters</span>
+        </button>
+
         <div class="row g-4">
 
-            <aside class="col-lg-3">
+            <aside
+                id="opportunityFiltersPanel"
+                class="col-lg-3 collapse d-lg-block">
+
+
                 <div class="opportunity-filter-card">
 
                     <div class="filter-header">
@@ -177,10 +242,29 @@ require __DIR__ . '/../app/views/student-header.php';
             <div class="col-lg-9">
 
                 <div class="opportunity-results-header">
-                    <p class="mb-0">
-                        <strong><?= (int) $result['total'] ?></strong>
-                        opportunities found
-                    </p>
+                    <?php
+                        $totalResults = (int) $result['total'];
+
+                        $firstResult = $totalResults > 0
+                            ? (((int) $result['page'] - 1) * (int) $result['per_page']) + 1
+                            : 0;
+
+                        $lastResult = $totalResults > 0
+                            ? $firstResult + count($result['items']) - 1
+                            : 0;
+                        ?>
+
+                        <p class="mb-0">
+                            <?php if ($totalResults > 0): ?>
+                                Showing
+                                <strong><?= $firstResult ?>–<?= $lastResult ?></strong>
+                                of
+                                <strong><?= $totalResults ?></strong>
+                                <?= $totalResults === 1 ? 'opportunity' : 'opportunities' ?>
+                            <?php else: ?>
+                                No opportunities found
+                            <?php endif; ?>
+                        </p>
 
                     <div>
                         <label for="sortOrder" class="visually-hidden">
@@ -212,42 +296,192 @@ require __DIR__ . '/../app/views/student-header.php';
                     </div>
                 </div>
 
-                                <?php if ($result['items'] === []): ?>
 
-                    <div class="opportunity-card text-center py-5">
-                        <i class="bi bi-search fs-1 text-primary"></i>
+                <?php
+                    $activeFilters = [];
 
-                        <h4 class="mt-3">No opportunities found</h4>
+                    if ($filters['q'] !== '') {
+                        $activeFilters['q'] = 'Search: ' . $filters['q'];
+                    }
 
-                        <p class="text-muted">
-                            Try different keywords or reset your filters.
-                        </p>
+                    if ($filters['location'] !== '') {
+                        $activeFilters['location'] =
+                            'Location: ' . $filters['location'];
+                    }
 
-                        <a
-                            class="btn btn-outline-primary"
-                            href="<?= e(url('opportunities.php')) ?>">
-                            Reset Filters
-                        </a>
+                    if ($filters['type'] !== '') {
+                        $activeFilters['type'] = 'Type: ' . $filters['type'];
+                    }
+
+                    if ($filters['field_id'] !== '') {
+                        $fieldLabel = 'Selected academic field';
+
+                        foreach ($fields as $field) {
+                            if ((string) $field['field_id'] === $filters['field_id']) {
+                                $fieldLabel = (string) $field['field_name'];
+                                break;
+                            }
+                        }
+
+                        $activeFilters['field_id'] = 'Field: ' . $fieldLabel;
+                    }
+                    ?>
+
+                    <?php if ($activeFilters !== []): ?>
+                        <div
+                            class="active-filter-list"
+                            role="group"
+                            aria-label="Remove individual search filters">
+
+                            <?php foreach ($activeFilters as $filterKey => $filterLabel): ?>
+                                <?php
+                                $remainingFilters = $filters;
+                                unset($remainingFilters[$filterKey]);
+
+                                $removeFilterUrl = url(
+                                    'opportunities.php?'
+                                    . http_build_query($remainingFilters)
+                                );
+                                ?>
+
+                                <a
+                                    class="active-filter-chip filter-remove-link"
+                                    href="<?= e($removeFilterUrl) ?>"
+                                    aria-label="<?= e('Remove ' . $filterLabel) ?>">
+                                    <?= e($filterLabel) ?>
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                </a>
+                            <?php endforeach; ?>
+
+                            <a
+                                class="btn btn-sm btn-link"
+                                href="<?= e(url('opportunities.php')) ?>">
+                                Clear all
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($activeFilters !== []): ?>
+                        <div
+                            class="active-filter-list"
+                            role="group"
+                            aria-label="Active filters">
+
+                            <?php foreach ($activeFilters as $activeFilter): ?>
+                                <span class="active-filter-chip">
+                                    <?= e($activeFilter) ?>
+                                </span>
+                            <?php endforeach; ?>
+
+                            <a
+                                class="btn btn-sm btn-link p-0"
+                                href="<?= e(url('opportunities.php')) ?>">
+                                Clear all
+                            </a>
+                        </div>
+                <?php endif; ?>
+
+                <?php if ($result['items'] === []): ?>
+
+                    <div class="opportunity-card empty-state">
+                        <i class="bi bi-search fs-1 text-primary" aria-hidden="true"></i>
+
+                        <?php if ($activeFilters !== []): ?>
+                            <h2 class="h4 mt-3">
+                                No opportunities match these filters
+                            </h2>
+
+                            <p class="text-muted">
+                                Remove a filter or try a broader keyword or location.
+                            </p>
+
+                            <a
+                                class="btn btn-outline-primary"
+                                href="<?= e(url('opportunities.php')) ?>">
+                                Clear filters
+                            </a>
+                        <?php else: ?>
+                            <h2 class="h4 mt-3">
+                                No open internships right now
+                            </h2>
+
+                            <p class="text-muted">
+                                Check back for new opportunities from verified companies.
+                                You can update your profile while you wait.
+                            </p>
+
+                            <a
+                                class="btn btn-outline-primary"
+                                href="<?= e(url('student-profile.php')) ?>">
+                                Update my profile
+                            </a>
+                        <?php endif; ?>
                     </div>
 
                 <?php else: ?>
 
                     <?php foreach ($result['items'] as $internship): ?>
 
-                        <div class="opportunity-card">
+
+
+                        <?php
+                            $deadlineLabel = 'Deadline not specified';
+                            $deadlineTone = 'deadline-badge--neutral';
+
+                            if (!empty($internship['deadline'])) {
+                                try {
+                                    $deadlineDate = new DateTimeImmutable(
+                                        (string) $internship['deadline']
+                                    );
+
+                                    $todayDate = new DateTimeImmutable('today');
+
+                                    $daysRemaining = (int) $todayDate
+                                        ->diff($deadlineDate)
+                                        ->format('%r%a');
+
+                                    if ($daysRemaining < 0) {
+                                        $deadlineLabel = 'Expired';
+                                        $deadlineTone = 'deadline-badge--expired';
+                                    } elseif ($daysRemaining <= 3) {
+                                        $deadlineLabel = 'Closing soon';
+                                        $deadlineTone = 'deadline-badge--soon';
+                                    } else {
+                                        $deadlineLabel = 'Deadline: '
+                                            . $deadlineDate->format('M j, Y');
+                                        $deadlineTone = 'deadline-badge--normal';
+                                    }
+                                } catch (Throwable $exception) {
+                                    $deadlineLabel = 'Deadline unavailable';
+                                }
+                            }
+                            ?>
+
+
+
+                            <?php
+                            $isSaved = in_array(
+                                (int) $internship['internship_id'],
+                                $savedInternshipIds,
+                                true
+                            );
+                            ?>
+                                                    
+                            <article class="opportunity-card">
 
                             <div class="opportunity-card-top">
 
                                 <div class="company-logo-placeholder">
-                                    <?= e(mb_strtoupper(
-                                        mb_substr(
-                                            $internship['company_name'],
-                                            0,
-                                            1,
-                                            'UTF-8'
-                                        ),
-                                        'UTF-8'
-                                    )) ?>
+
+                                   <div class="company-logo-placeholder">
+    `                                    <?= company_logo(
+                                            (int) $internship['company_id'],
+                                            (string) $internship['company_name'],
+                                            (int) ($internship['company_has_logo'] ?? 0) === 1,
+                                            'opportunity-company-logo-image'
+                                        ) ?>
+                                    </div>`
+
                                 </div>
 
                                 <div class="opportunity-main">
@@ -255,16 +489,38 @@ require __DIR__ . '/../app/views/student-header.php';
                                     <div class="opportunity-title-row">
                                         <div>
                                             <h3>
-                                                <?= e($internship['title']) ?>
+                                                <a
+                                                    class="opportunity-title-link"
+                                                    href="<?= e(url(
+                                                        'internship-details.php?id='
+                                                        . (int) $internship['internship_id']
+                                                    )) ?>">
+                                                    <?= e($internship['title']) ?>
+                                                </a>
                                             </h3>
 
-                                            <p>
-                                                <?= e($internship['company_name']) ?>
 
-                                                <i
-                                                    class="bi bi-patch-check-fill text-success"
-                                                    title="Verified company"
-                                                    aria-label="Verified company"></i>
+
+                                            <p>
+                                                <a
+                                                    class="opportunity-company-link"
+                                                    href="<?= e(url(
+                                                        'company-public-profile.php?id='
+                                                        . (int) $internship['company_id']
+                                                    )) ?>">
+                                                    <?= e($internship['company_name']) ?>
+                                                </a>
+
+                                                <span
+                                                    class="verified-badge"
+                                                    title="This company has been verified by InternMatch">
+
+                                                    <i
+                                                        class="bi bi-patch-check-fill"
+                                                        aria-hidden="true"></i>
+
+                                                    <span>Verified</span>
+                                                </span>
                                             </p>
                                         </div>
                                     </div>
@@ -324,57 +580,159 @@ require __DIR__ . '/../app/views/student-header.php';
                             </div>
 
                             <div class="opportunity-card-bottom">
-                                <span class="posted-date">
-                                    <i class="bi bi-calendar3"></i>
-                                    Apply by <?= e($internship['deadline']) ?>
+
+                                <span class="deadline-badge <?= e($deadlineTone) ?>">
+                                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                    <?= e($deadlineLabel) ?>
                                 </span>
 
-                                <a
-                                    class="btn btn-small-primary"
-                                    href="<?= e(url(
-                                        'internship-details.php?id='
-                                        . (int) $internship['internship_id']
-                                    )) ?>">
-                                    View Details
-                                    <i class="bi bi-arrow-right ms-1"></i>
-                                </a>
+                                <div class="opportunity-card-actions">
+
+                                    <form
+                                        method="post"
+                                        action="<?= e(url('saved-internship-action.php')) ?>"
+                                        class="opportunity-save-form">
+
+                                        <?= csrf_field() ?>
+
+                                        <input
+                                            type="hidden"
+                                            name="internship_id"
+                                            value="<?= (int) $internship['internship_id'] ?>">
+
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="<?= $isSaved ? 'remove' : 'save' ?>">
+
+                                        <input
+                                            type="hidden"
+                                            name="return_to"
+                                            value="opportunities.php">
+
+
+                                        <?php foreach ($filters as $filterName => $filterValue): ?>
+                                            <input
+                                                type="hidden"
+                                                name="return_filters[<?= e($filterName) ?>]"
+                                                value="<?= e((string) $filterValue) ?>">
+                                        <?php endforeach; ?>
+
+                                        <input
+                                            type="hidden"
+                                            name="return_filters[page]"
+                                            value="<?= (int) $result['page'] ?>">
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm opportunity-save-button
+                                                <?= $isSaved ? 'is-saved' : '' ?>"
+                                            aria-pressed="<?= $isSaved ? 'true' : 'false' ?>"
+                                            title="<?= $isSaved
+                                                ? 'Remove from saved internships'
+                                                : 'Save internship' ?>">
+
+                                            <i class="bi <?= $isSaved
+                                                ? 'bi-bookmark-fill'
+                                                : 'bi-bookmark' ?>"
+                                            aria-hidden="true"></i>
+
+                                            <?= $isSaved ? 'Saved' : 'Save' ?>
+                                        </button>
+                                    </form>
+
+                                    <a
+                                        class="btn btn-small-primary"
+                                        href="<?= e(url(
+                                            'internship-details.php?id='
+                                            . (int) $internship['internship_id']
+                                        )) ?>">
+                                        View Details
+                                        <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+
+                                </div>
                             </div>
 
-                        </div>
+                        </article>
 
                     <?php endforeach; ?>
 
                     <?php endif; ?>
 
+
+
+
                     <?php if ($result['pages'] > 1): ?>
+                        <?php
+                        $currentPage = (int) $result['page'];
+                        $totalPages = (int) $result['pages'];
+
+                        $visiblePages = [1, $totalPages];
+
+                        for (
+                            $number = max(1, $currentPage - 2);
+                            $number <= min($totalPages, $currentPage + 2);
+                            $number++
+                        ) {
+                            $visiblePages[] = $number;
+                        }
+
+                        $visiblePages = array_values(array_unique($visiblePages));
+                        sort($visiblePages);
+
+                        $previousNumber = 0;
+                        ?>
+
                         <nav
-                            class="d-flex justify-content-between align-items-center mt-4"
-                            aria-label="Opportunity pages">
+                            class="opportunity-pagination"
+                            aria-label="Opportunity result pages">
 
-                            <div>
-                                <?php if ($result['page'] > 1): ?>
+                            <?php if ($currentPage > 1): ?>
+                                <a
+                                    class="btn btn-outline-primary"
+                                    href="<?= e($pageLink($currentPage - 1)) ?>"
+                                    rel="prev">
+                                    Previous
+                                </a>
+                            <?php endif; ?>
+
+                            <div class="opportunity-page-numbers">
+                                <?php foreach ($visiblePages as $number): ?>
+
+                                    <?php if (
+                                        $previousNumber > 0
+                                        && $number > $previousNumber + 1
+                                    ): ?>
+                                        <span class="pagination-gap" aria-hidden="true">
+                                            …
+                                        </span>
+                                    <?php endif; ?>
+
                                     <a
-                                        class="btn btn-outline-primary"
-                                        href="<?= e($pageLink($result['page'] - 1)) ?>">
-                                        Previous
+                                        class="btn <?= $number === $currentPage
+                                            ? 'btn-primary'
+                                            : 'btn-outline-primary' ?>"
+                                        href="<?= e($pageLink($number)) ?>"
+                                        aria-label="Page <?= $number ?>"
+                                        <?= $number === $currentPage
+                                            ? 'aria-current="page"'
+                                            : '' ?>>
+                                        <?= $number ?>
                                     </a>
-                                <?php endif; ?>
+
+                                    <?php $previousNumber = $number; ?>
+                                <?php endforeach; ?>
                             </div>
 
-                            <span>
-                                Page <?= (int) $result['page'] ?>
-                                of <?= (int) $result['pages'] ?>
-                            </span>
-
-                            <div>
-                                <?php if ($result['page'] < $result['pages']): ?>
-                                    <a
-                                        class="btn btn-outline-primary"
-                                        href="<?= e($pageLink($result['page'] + 1)) ?>">
-                                        Next
-                                    </a>
-                                <?php endif; ?>
-                            </div>
+                            <?php if ($currentPage < $totalPages): ?>
+                                <a
+                                    class="btn btn-outline-primary"
+                                    href="<?= e($pageLink($currentPage + 1)) ?>"
+                                    rel="next">
+                                    Next
+                                </a>
+                            <?php endif; ?>
 
                         </nav>
                     <?php endif; ?>
