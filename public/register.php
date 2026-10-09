@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/RegistrationController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 require_guest();
 
@@ -36,46 +38,11 @@ $registrationError = take_flash('registration_error');
 ?>
 
 
-<!DOCTYPE html>
-
-
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Create Account - InternMatch</title>
-
-    <!-- Bootstrap CSS -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <!-- Bootstrap Icons -->
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-    >
-
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-
-</head>
-
-<body>
-
-
-    <!-- ================= NAVBAR ================= -->
-
-    <?php require __DIR__ . '/../app/views/public-nav.php'; ?>
-
+<?php render_header(null, 'Create Account'); ?>
 
     <!-- REGISTRATION SECTION  -->
 
-    <main class="registration-section">
+    <main class="registration-section" id="main-content" tabindex="-1">
 
         <div class="container">
 
@@ -431,42 +398,4 @@ $registrationError = take_flash('registration_error');
     </main>
 
 
-
-    <!--  FOOTER  -->
-
-    <footer class="simple-footer">
-
-        <div class="container">
-
-            <div class="simple-footer-content">
-
-                <span>
-                    © 2026 InternMatch. All rights reserved.
-                </span>
-
-                <span>
-                    Internship Opportunity & Student Matching System
-                </span>
-
-            </div>
-
-        </div>
-
-    </footer>
-
-
-
-    <!-- Bootstrap JavaScript -->
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-    </script>
-
-
-    <!-- Custom JavaScript -->
-
-    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
-
-</body>
-
-</html>
+<?php render_footer(null); ?>

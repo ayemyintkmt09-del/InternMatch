@@ -653,7 +653,7 @@ function submitApplication() {
             "Application Status: Pending"
         );
 
-        window.location.href = "student-dashboard.html";
+        window.location.href = "student-dashboard.php";
     }
 }
 
@@ -1148,17 +1148,7 @@ function showPostInternshipMessage() {
 }
 
 
-function showManagementMessage(title) {
 
-    alert(
-        "Manage Internship\n\n" +
-        title +
-        "\n\n" +
-        "Edit, close, or delete options will be connected " +
-        "to the backend later."
-    );
-
-}
 
 
 function scrollToApplications() {

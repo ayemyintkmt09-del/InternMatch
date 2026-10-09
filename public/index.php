@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
+require_once __DIR__ . '/../app/layout.php';
 
 header('Cache-Control: no-store');
 
@@ -28,29 +29,13 @@ try {
     $homeLoadError = true;
 }
 
+$publicUser = current_user();
+
 ?>
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InternMatch</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-    <!--NAVBAR -->
-    <?php require __DIR__ . '/../app/views/public-nav.php'; ?>
-
+<?php render_header($publicUser, 'Home', 'home'); ?>  
 
     <!--  HERO SECTION  -->
 
@@ -602,115 +587,5 @@ try {
 
     <!--  FOOTER  -->
 
-    <footer class="footer">
+    <?php render_footer($publicUser); ?>
 
-        <div class="container">
-
-            <div class="row g-4">
-
-                <div class="col-lg-5">
-
-                    <a class="navbar-brand logo footer-logo" href="index.php">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <span>Intern<span class="logo-green">Match</span></span>
-                    </a>
-
-                    <p>
-                        Connecting students with internship opportunities
-                        that match their skills, education and interests.
-                    </p>
-
-                </div>
-
-
-                <div class="col-6 col-lg-2">
-
-                    <h6>Platform</h6>
-
-                    <a href="explore.php">Opportunities</a>
-                    <a href="#how-it-works">How It Works</a>
-                    <a href="#about">About</a>
-                    <a href="<?= e(url('help.php')) ?>">Help & Guidance</a>
-
-                </div>
-
-
-                <div class="col-6 col-lg-2">
-
-                    <h6>Account</h6>
-
-                    <?php if ($publicUser === null): ?>
-
-                        <a href="<?= e(url('login.php')) ?>">Login</a>
-                        <a href="<?= e(url('register.php')) ?>">Register</a>
-
-                    <?php else: ?>
-
-                        <a href="<?= e(url(dashboard_path($publicUser['role']))) ?>">
-                            My Dashboard
-                        </a>
-
-                        <?php if ($publicUser['role'] === 'student'): ?>
-                            <a href="<?= e(url('student-profile.php')) ?>">
-                                My Profile
-                            </a>
-                        <?php elseif ($publicUser['role'] === 'company'): ?>
-                            <a href="<?= e(url('company-profile.php')) ?>">
-                                Company Profile
-                            </a>
-                        <?php endif; ?>
-
-                    <?php endif; ?>
-
-                </div>
-
-
-                <div class="col-lg-3">
-
-                    <h6>Contact</h6>
-
-                    <p>
-                        <i class="bi bi-envelope"></i>
-                        info@internmatch.com
-                    </p>
-
-                    <p>
-                        <i class="bi bi-geo-alt"></i>
-                        Myanmar
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <hr>
-
-            <div class="footer-bottom">
-
-                <span>
-                    © 2026 InternMatch. All rights reserved.
-                </span>
-
-                <span>
-                    Internship Opportunity & Student Matching System
-                </span>
-
-            </div>
-
-        </div>
-
-    </footer>
-
-
-    <!-- Bootstrap JavaScript -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-    </script>
-
-    <!-- Custom JavaScript -->
-    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
-
-</body>
-
-</html>

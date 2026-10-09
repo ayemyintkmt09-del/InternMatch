@@ -6,6 +6,8 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/CompanyProfileController.php';
 
 require_once __DIR__ . '/../app/controllers/CompanyFileController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 $user = require_role('company');
 $userId = (int) $user['user_id'];
@@ -94,124 +96,10 @@ $hasVerificationDocument =
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Company Profile | InternMatch</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-
-<nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
-    <div class="container">
-
-        <a
-            class="navbar-brand logo"
-            href="<?= e(url('company-dashboard.php')) ?>">
-
-            <i class="bi bi-mortarboard-fill"></i>
-            <span>Intern<span class="logo-green">Match</span></span>
-        </a>
-
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#companyProfileNavbar"
-            aria-controls="companyProfileNavbar"
-            aria-expanded="false"
-            aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="companyProfileNavbar">
-
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="<?= e(url('company-dashboard.php')) ?>">
-                        Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a
-                        class="nav-link active"
-                        aria-current="page"
-                        href="<?= e(url('company-profile.php')) ?>">
-                        Company Profile
-                    </a>
-                </li>
-            </ul>
-
-            <div class="dashboard-nav-right">
-
-                <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
-
-            <div class="dropdown">
-                <button
-                    type="button"
-                    class="dashboard-user border-0 bg-transparent text-start"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    aria-label="Company account menu">
-
-                    <span class="dashboard-avatar company-avatar">
-                        <?= e(mb_strtoupper(
-                            mb_substr($user['name'], 0, 1, 'UTF-8'),
-                            'UTF-8'
-                        )) ?>
-                    </span>
-
-                    <span class="dashboard-user-info">
-                        <strong><?= e($user['name']) ?></strong>
-                        <span>Company</span>
-                    </span>
-
-                    <i class="bi bi-chevron-down dashboard-chevron"></i>
-                </button>
-
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <form
-                            method="post"
-                            action="<?= e(url('logout.php')) ?>"
-                            class="m-0">
-
-                            <?= csrf_field() ?>
-
-                            <button type="submit" class="dropdown-item">
-                                <i class="bi bi-box-arrow-right me-2"></i>
-                                Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-            </div>
-
-        </div>
-    </div>
-</nav>
+<?php render_header($user, 'Company Profile', 'profile'); ?>
 
 
-
-
-<main class="profile-page">
+<main class="profile-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="profile-page-header">
@@ -630,18 +518,4 @@ $hasVerificationDocument =
 
         </div>
     </main>
-
-    <footer class="dashboard-footer">
-        <div class="container">
-            <p>
-                © <?= date('Y') ?> InternMatch
-                <span>•</span>
-                Internship Opportunity & Student Matching System
-            </p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-    </body>
-</html>
+<?php render_footer($user); ?>

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/NotificationController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 header('Cache-Control: no-store');
 
@@ -123,66 +125,10 @@ $displayTime = static function (string $value): string {
 };
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php render_header($user, 'Notifications', 'notifications'); ?>
 
-    <title>Notifications | InternMatch</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-
-    <link
-        href="<?= e(asset_url('css/style.css')) ?>"
-        rel="stylesheet">
-</head>
-
-<body>
-
-<nav class="navbar bg-white border-bottom">
-    <div class="container gap-3">
-
-        <a
-            class="navbar-brand logo"
-            href="<?= e(url(dashboard_path($user['role']))) ?>">
-            <i class="bi bi-mortarboard-fill"></i>
-            Intern<span class="logo-green">Match</span>
-        </a>
-
-        <div class="d-flex align-items-center gap-3">
-            <span class="small"><?= e($user['name']) ?></span>
-
-            <a
-                class="btn btn-outline-primary btn-sm"
-                href="<?= e(url(dashboard_path($user['role']))) ?>">
-                Dashboard
-            </a>
-
-            <form
-                method="post"
-                action="<?= e(url('logout.php')) ?>"
-                class="m-0">
-                <?= csrf_field() ?>
-
-                <button
-                    type="submit"
-                    class="btn btn-outline-secondary btn-sm">
-                    Logout
-                </button>
-            </form>
-        </div>
-
-    </div>
-</nav>
-
-<main class="notifications-page">
+<main class="notifications-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="notifications-page-header">
@@ -395,11 +341,4 @@ $displayTime = static function (string $value): string {
     </div>
 </main>
 
-<footer class="dashboard-footer">
-    <div class="container">
-        © <?= date('Y') ?> InternMatch
-    </div>
-</footer>
-
-</body>
-</html>
+<?php render_footer($user); ?>

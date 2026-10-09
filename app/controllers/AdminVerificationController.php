@@ -6,7 +6,7 @@ require_once __DIR__ . '/../middleware/auth.php';
 
 require_once __DIR__ . '/CompanyFileController.php';
 require_once __DIR__ . '/NotificationController.php';
-
+require_once __DIR__ . '/AdminActivityController.php';
 
 final class AdminVerificationController
 {
@@ -211,6 +211,20 @@ final class AdminVerificationController
                 $message,
                 'System'
             );
+
+            AdminActivityController::record(
+    $pdo,
+    $adminUserId,
+    $status === 'verified'
+        ? 'verification_approved'
+        : 'verification_rejected',
+    'company',
+    $companyId,
+    (string) $company['company_name'],
+    $notes !== ''
+        ? $notes
+        : 'No review notes provided.'
+);
         }
 
         $pdo->commit();

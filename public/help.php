@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 header('Cache-Control: no-store');
 
@@ -127,65 +129,15 @@ $helpGroups = [
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<?php render_header($user, 'Help & Guidance', 'help'); ?>
 
-    <meta
-        name="description"
-        content="Help for InternMatch students and companies: profiles, applications, saved internships, and verification.">
 
-    <title>Help & Guidance | InternMatch</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+<main
+    id="main-content"
+    class="im-help-page"
+    tabindex="-1">
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-
-    <link
-        href="<?= e(asset_url('css/style.css')) ?>"
-        rel="stylesheet">
-</head>
-
-<body class="im-help-page">
-
-<a class="im-skip-link" href="#help-content">
-    Skip to help content
-</a>
-
-<header class="bg-white border-bottom">
-    <nav
-        class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
-        aria-label="Help navigation">
-
-        <a
-            class="navbar-brand logo"
-            href="<?= e(url('index.php')) ?>">
-            <i
-                class="bi bi-mortarboard-fill"
-                aria-hidden="true"></i>
-
-            <span>
-                Intern<span class="logo-green">Match</span>
-            </span>
-        </a>
-
-        <a
-            class="btn btn-outline-success"
-            href="<?= e(url($dashboardPath)) ?>">
-            <?= e($dashboardLabel) ?>
-        </a>
-    </nav>
-</header>
-
-<main id="help-content" tabindex="-1">
     <section class="im-help-hero">
         <div class="container">
             <p class="text-uppercase fw-semibold text-success mb-2">
@@ -276,18 +228,4 @@ $helpGroups = [
         </div>
     </div>
 </main>
-
-<footer class="border-top bg-white py-4">
-    <div class="container d-flex flex-wrap justify-content-between gap-2">
-        <span class="text-secondary">
-            © <?= date('Y') ?> InternMatch
-        </span>
-
-        <a href="<?= e(url('index.php')) ?>">
-            Back to homepage
-        </a>
-    </div>
-</footer>
-
-</body>
-</html>
+<?php render_footer($user); ?>

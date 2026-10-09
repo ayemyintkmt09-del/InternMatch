@@ -10,6 +10,8 @@ date_default_timezone_set($config['app']['timezone']);
 
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
 
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.use_strict_mode', '1');
@@ -204,9 +206,10 @@ function format_utc_datetime(
 function asset_url(string $path): string
 {
     $assets = [
-        'css/style.css' => __DIR__ . '/../public/css/style.css',
-        'js/script.js' => __DIR__ . '/../public/js/script.js',
-    ];
+    'css/style.css' => __DIR__ . '/../public/css/style.css',
+    'css/ui.css' => __DIR__ . '/../public/css/ui.css',
+    'js/script.js' => __DIR__ . '/../public/js/script.js',
+];
 
     if (!isset($assets[$path])) {
         throw new InvalidArgumentException('Unknown asset.');

@@ -9,36 +9,15 @@ require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
 require_once __DIR__ . '/../app/controllers/ApplicationController.php';
 
 require_once __DIR__ . '/../app/controllers/MatchingController.php';
+require_once __DIR__ . '/../app/layout.php';
 
 
 
-if (
-    $_SERVER['REQUEST_METHOD'] === 'GET'
-    && current_user() === null
-) {
-    $entryId = $_GET['id'] ?? null;
 
-    if (!is_string($entryId)) {
-        http_response_code(400);
-        exit('Invalid internship ID.');
-    }
+header('Cache-Control: no-store');
 
-    $entryId = filter_var(
-        $entryId,
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
-
-    if ($entryId === false) {
-        http_response_code(400);
-        exit('Invalid internship ID.');
-    }
-
-    redirect('explore.php?id=' . $entryId);
-}
-
-
-$user = require_role('student');
+$user = current_user();
+$isStudent = ($user['role'] ?? null) === 'student';
 
 $rawId = $_GET['id'] ?? null;
 
@@ -59,40 +38,41 @@ if ($internshipId === false) {
 }
 
 try {
+
+
     $internship = StudentInternshipController::detail($internshipId);
 
-    $isSaved = $internship !== null
-        && SavedInternshipController::isSaved(
+    $isSaved = false;
+    $applicationStatus = null;
+    $matchScore = null;
+
+    if ($internship !== null && $isStudent) {
+        $isSaved = SavedInternshipController::isSaved(
             (int) $user['user_id'],
             $internshipId
         );
 
-        $applicationStatus = $internship !== null
-        ? ApplicationController::applicationStatus(
+        $applicationStatus = ApplicationController::applicationStatus(
             (int) $user['user_id'],
             $internshipId
-        )
-        : null;
+        );
+
+        $matchScore = MatchingController::forInternship(
+            (int) $user['user_id'],
+            $internship
+        );
+    }
 
     $hasApplied = $applicationStatus !== null;
 
     $applicationButtonClass = match ($applicationStatus) {
-    'Accepted' => 'btn-success',
-    'Rejected' => 'btn-danger',
-    'Shortlisted' => 'btn-info text-dark',
-    'Under Review' => 'btn-warning text-dark',
-    'Withdrawn' => 'btn-outline-secondary',
-    default => 'btn-secondary',
-};
-
-
-    $matchScore = $internship !== null
-    ? MatchingController::forInternship(
-        (int) $user['user_id'],
-        $internship
-    )
-    : null;
-
+        'Accepted' => 'btn-success',
+        'Rejected' => 'btn-danger',
+        'Shortlisted' => 'btn-info text-dark',
+        'Under Review' => 'btn-warning text-dark',
+        'Withdrawn' => 'btn-outline-secondary',
+        default => 'btn-secondary',
+    };
 
 
 
@@ -112,10 +92,12 @@ if ($internship === null) {
 
     $pageTitle = 'Opportunity unavailable';
 
-    require __DIR__ . '/../app/views/student-header.php';
-    ?>
+    render_header($user, $pageTitle, $activeNav);
+?>
 
-    <main class="internship-details-page">
+
+
+    <main class="internship-details-page" id="main-content" tabindex="-1">
         <div class="container">
             
                 <?php if ($savedSuccess !== null): ?>
@@ -148,18 +130,21 @@ if ($internship === null) {
     </main>
 
     <?php
-    require __DIR__ . '/../app/views/student-footer.php';
+    render_footer($user);
+
+
     exit;
 }
 
 $pageTitle = $internship['title'];
 
-require __DIR__ . '/../app/views/student-header.php';
+render_header($user, $pageTitle, $activeNav);
 ?>
 
 
 
-<main class="internship-details-page">
+
+<main class="internship-details-page" id="main-content" tabindex="-1">
     <div class="container">
 
 
@@ -256,86 +241,95 @@ require __DIR__ . '/../app/views/student-header.php';
 
 
 
+        <div class="internship-action-bar d-flex flex-wrap gap-2">
 
-        <div class="internship-action-bar">
+            <?php if ($isStudent): ?>
 
-            <form
-                method="post"
-                action="<?= e(url('saved-internship-action.php')) ?>"
-                class="m-0">
+                <form
+                    method="post"
+                    action="<?= e(url('saved-internship-action.php')) ?>"
+                    class="m-0">
 
-                <?= csrf_field() ?>
+                    <?= csrf_field() ?>
 
-                <input
-                    type="hidden"
-                    name="return_to"
-                    value="internship-details.php">
+                    <input
+                        type="hidden"
+                        name="return_to"
+                        value="internship-details.php">
 
-                <input
-                    type="hidden"
-                    name="internship_id"
-                    value="<?= (int) $internship['internship_id'] ?>">
+                    <input
+                        type="hidden"
+                        name="internship_id"
+                        value="<?= (int) $internship['internship_id'] ?>">
 
-                <input
-                    type="hidden"
-                    name="action"
-                    value="<?= $isSaved ? 'remove' : 'save' ?>">
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="<?= $isSaved ? 'remove' : 'save' ?>">
 
-                <button
-                    type="submit"
-                    class="btn <?= $isSaved
-                        ? 'btn-outline-secondary'
-                        : 'btn-outline-primary' ?>">
+                    <button
+                        type="submit"
+                        class="btn btn-outline-primary">
+                        <?= $isSaved
+                            ? 'Remove from Saved'
+                            : 'Save Internship' ?>
+                    </button>
+                </form>
 
-                    <i class="bi <?= $isSaved
-                        ? 'bi-bookmark-fill'
-                        : 'bi-bookmark' ?> me-2"></i>
+                <a
+                    class="btn btn-outline-secondary"
+                    href="<?= e(url('saved-internships.php')) ?>">
+                    View Saved
+                </a>
 
-                    <?= $isSaved ? 'Remove from Saved' : 'Save Internship' ?>
+                <?php if ($hasApplied): ?>
 
-                </button>
-            </form>
+                    <span
+                        class="btn <?= e($applicationButtonClass) ?>"
+                        role="status">
+                        Application <?= e((string) $applicationStatus) ?>
+                    </span>
 
-            <a
-                class="btn btn-outline-primary ms-2"
-                href="<?= e(url('saved-internships.php')) ?>">
-                View Saved Internships
-            </a>
-
-
-
-
-
-            <?php if ($hasApplied): ?>
-
-            <button
-                type="button"
-                class="btn <?= e($applicationButtonClass) ?>"
-                disabled>
-                <i class="bi bi-check-circle me-2"></i>
-                <?php if ($applicationStatus === 'Withdrawn'): ?>
-                    Application Withdrawn
                 <?php else: ?>
-                    Application <?= e((string) $applicationStatus) ?>
+
+                    <a
+                        class="btn btn-primary"
+                        href="<?= e(url(
+                            'apply.php?id='
+                            . (int) $internship['internship_id']
+                        )) ?>">
+                        Apply Now
+                    </a>
+
                 <?php endif; ?>
-            </button>
 
-        <?php else: ?>
+            <?php elseif ($user === null): ?>
 
-            <a
-                class="btn btn-primary"
-                href="<?= e(url(
-                    'apply.php?id=' . (int) $internship['internship_id']
-                )) ?>">
-                <i class="bi bi-send me-2"></i>
-                Apply Now
-            </a>
+                <a
+                    class="btn btn-primary"
+                    href="<?= e(url(
+                        'student-access.php?id='
+                        . (int) $internship['internship_id']
+                    )) ?>">
+                    Sign in to apply or save
+                </a>
 
-        <?php endif; ?>
+                <p class="text-muted small mb-0 align-self-center">
+                    New here? You can create an account from the sign-in page.
+                </p>
+
+            <?php else: ?>
+
+                <p class="text-muted mb-0">
+                    You are viewing this internship with a
+                    <?= e($user['role']) ?> account.
+                    Applications and saved internships are available
+                    to student accounts.
+                </p>
+
+            <?php endif; ?>
 
         </div>
-
-
 
 
 
@@ -541,4 +535,4 @@ require __DIR__ . '/../app/views/student-header.php';
     </div>
 </main>
 
-<?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+render_footer($user);

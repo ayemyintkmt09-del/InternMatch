@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/ApplicationController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 $user = require_role('student');
 $userId = (int) $user['user_id'];
@@ -118,10 +120,13 @@ $pageTitle = 'My Applications';
 $activeNav = 'applications';
 
 
-require __DIR__ . '/../app/views/student-header.php';
-?>
+render_header(
+    $user,
+    $pageTitle ?? 'InternMatch',
+    $activeNav ?? ''
+);?>
 
-<main class="opportunities-page">
+<main class="opportunities-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="opportunities-header">
@@ -239,7 +244,9 @@ require __DIR__ . '/../app/views/student-header.php';
         <?php else: ?>
 
             <section class="profile-section">
-                <div class="table-responsive">
+                <div class="table-responsive" role="region"
+                    aria-label="My applications"
+                    tabindex="0">
                     <table class="table align-middle application-table">
                         <caption class="visually-hidden">
                             Applications submitted by the current student
@@ -323,10 +330,11 @@ require __DIR__ . '/../app/views/student-header.php';
                                                     class="bi bi-calendar-event me-1"></i>
 
                                                 <?= e(
-                                                    $application[
-                                                        'interview_date'
-                                                    ]
-                                                ) ?>
+                                                        (new DateTimeImmutable(
+                                                            $application['interview_date'],
+                                                            new DateTimeZone(date_default_timezone_get())
+                                                        ))->format('d M Y, g:i A')
+                                                    ) ?>
                                             </span>
 
                                         <?php else: ?>
@@ -490,4 +498,4 @@ require __DIR__ . '/../app/views/student-header.php';
     </div>
 </main>
 
-<?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+<?php render_footer($user); ?>

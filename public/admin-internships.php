@@ -4,8 +4,65 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminInternshipController.php';
+require_once __DIR__ . '/../app/layout.php';
 
-require_role('admin');
+$user = require_role('admin');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_post();
+    verify_csrf();
+
+    try {
+        $action = $_POST['action'] ?? '';
+
+        $internshipId = filter_input(
+            INPUT_POST,
+            'internship_id',
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]]
+        );
+
+        $expectedStatus = is_string(
+            $_POST['expected_status'] ?? null
+        )
+            ? $_POST['expected_status']
+            : '';
+
+        if (
+            $action !== 'close'
+            || $internshipId === false
+        ) {
+            throw new InvalidArgumentException(
+                'Invalid internship action.'
+            );
+        }
+
+        AdminInternshipController::close(
+            (int) $user['user_id'],
+            (int) $internshipId,
+            $expectedStatus
+        );
+
+        flash(
+            'admin_internship_success',
+            'Internship closed successfully.'
+        );
+    } catch (InvalidArgumentException $exception) {
+        flash(
+            'admin_internship_error',
+            $exception->getMessage()
+        );
+    } catch (Throwable $exception) {
+        error_log((string) $exception);
+
+        flash(
+            'admin_internship_error',
+            'The internship could not be closed.'
+        );
+    }
+
+    redirect('admin-internships.php');
+}
 
 $query = is_string($_GET['q'] ?? null)
     ? trim($_GET['q'])
@@ -43,31 +100,26 @@ try {
     http_response_code(500);
     exit('Internships could not be loaded.');
 }
+
+$success = take_flash('admin_internship_success');
+$error = take_flash('admin_internship_error');
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<?php render_header($user, 'Internships', 'internships'); ?>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
+<?php if ($success !== null): ?>
+    <div class="alert alert-success" role="status">
+        <?= e($success) ?>
+    </div>
+<?php endif; ?>
 
-    <title>Internship Management - InternMatch</title>
+<?php if ($error !== null): ?>
+    <div class="alert alert-danger" role="alert">
+        <?= e($error) ?>
+    </div>
+<?php endif; ?>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-       href="<?= e(asset_url('css/style.css')) ?>"
-        rel="stylesheet">
-</head>
-
-<body>
-
-<main class="container py-5">
+<main class="container py-5" id="main-content" tabindex="-1">
 
     <div class="d-flex flex-wrap justify-content-between
                 align-items-center gap-3 mb-4">
@@ -158,8 +210,11 @@ try {
     </p>
 
     <div class="card">
-        <div class="table-responsive">
-
+<div
+    class="table-responsive"
+    role="region"
+    aria-label="Internship management results"
+    tabindex="0">
             <table class="table align-middle mb-0">
 
                 <thead>
@@ -170,6 +225,7 @@ try {
                         <th scope="col">Deadline</th>
                         <th scope="col">Applications</th>
                         <th scope="col">Student availability</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
 
@@ -177,7 +233,7 @@ try {
 
                 <?php if ($result['items'] === []): ?>
                     <tr>
-                        <td colspan="6" class="empty-table-cell">
+                        <td colspan="7" class="empty-table-cell">
                             No internships match your search.
                         </td>
                     </tr>
@@ -324,6 +380,51 @@ try {
                                     : 'Unavailable' ?>
                             </span>
                         </td>
+
+
+                        <td>
+    <?php if ($internship['status'] === 'Published'): ?>
+
+        <form
+            method="post"
+            action="<?= e(url('admin-internships.php')) ?>"
+            onsubmit="return confirm(
+                'Close this internship? It will no longer be visible to students, but existing applications will be preserved.'
+            );">
+
+            <?= csrf_field() ?>
+
+            <input
+                type="hidden"
+                name="action"
+                value="close">
+
+            <input
+                type="hidden"
+                name="internship_id"
+                value="<?= (int) $internship['internship_id'] ?>">
+
+            <input
+                type="hidden"
+                name="expected_status"
+                value="Published">
+
+            <button
+                type="submit"
+                class="btn btn-sm btn-outline-danger"
+                aria-label="<?= e(
+                    'Close internship ' . $internship['title']
+                ) ?>">
+                Close
+            </button>
+        </form>
+
+    <?php else: ?>
+
+        <span class="text-muted small">No action</span>
+
+    <?php endif; ?>
+</td>
                     </tr>
 
                 <?php endforeach; ?>
@@ -371,6 +472,4 @@ try {
     </p>
 
 </main>
-
-</body>
-</html>
+<?php render_footer($user); ?>

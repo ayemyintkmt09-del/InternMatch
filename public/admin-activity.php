@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminActivityController.php';
+require_once __DIR__ . '/../app/layout.php';
 
-require_role('admin');
 
+$user = require_role('admin');
 try {
     $activities = AdminActivityController::recent(100);
 } catch (Throwable $exception) {
@@ -17,33 +18,10 @@ try {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php render_header($user, 'Activity', 'activity'); ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
 
-    <title>System Activity - InternMatch</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-        rel="stylesheet">
-
-    <link
-        href="<?= e(asset_url('css/style.css')) ?>" 
-               rel="stylesheet">
-</head>
-
-<body>
-
-<main class="container py-5">
+<main class="container py-5" id="main-content" tabindex="-1">
 
     <div class="d-flex flex-wrap justify-content-between
                 align-items-center gap-3 mb-4">
@@ -73,7 +51,11 @@ try {
 
         <?php else: ?>
 
-            <div class="table-responsive">
+            <div
+    class="table-responsive"
+    role="region"
+    aria-label="System activity"
+    tabindex="0">
 
                 <table class="table align-middle">
                     <thead>
@@ -127,7 +109,10 @@ try {
                             </td>
 
                             <td class="text-nowrap">
-                                <?= e($activity['event_at']) ?>
+                                <?= e(format_utc_datetime(
+                                    (string) $activity['event_at'],
+                                    'd M Y, H:i'
+                                )) ?>
                             </td>
                         </tr>
 
@@ -143,12 +128,10 @@ try {
     </section>
 
     <p class="text-muted small mt-3">
-        Times are displayed as stored in the database.
-        Company reviews show the latest stored decision.
-        This feed does not retain every previous edit or deleted record.
+Times are displayed in the application timezone.
+Recorded events include the actor, action, target, and timestamp.
     </p>
 
 </main>
 
-</body>
-</html>
+<?php render_footer($user); ?>

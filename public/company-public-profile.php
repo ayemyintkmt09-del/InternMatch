@@ -5,8 +5,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/CompanyProfileController.php';
 
-$user = require_role('student');
+require_once __DIR__ . '/../app/layout.php';
 
+
+header('Cache-Control: no-store');
+
+$user = current_user();
 $rawId = $_GET['id'] ?? null;
 
 $companyId = is_string($rawId)
@@ -39,19 +43,19 @@ try {
 }
 
 $pageTitle = $company['company_name'];
-$activeNav = 'opportunities';
+$activeNav = 'companies';
+render_header($user, $pageTitle, $activeNav);
 
-require __DIR__ . '/../app/views/student-header.php';
 ?>
 
-<main class="company-public-profile-page">
+<main class="company-public-profile-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <a
             class="back-opportunities"
-            href="<?= e(url('opportunities.php')) ?>">
+            href="<?= e(url('companies.php')) ?>">
             <i class="bi bi-arrow-left"></i>
-            Back to Opportunities
+            Back to Companies
         </a>
 
         <section class="public-company-hero">
@@ -181,4 +185,4 @@ require __DIR__ . '/../app/views/student-header.php';
     </div>
 </main>
 
-<?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+<?php render_footer($user); ?>

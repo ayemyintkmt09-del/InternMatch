@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
-
+require_once __DIR__ . '/../app/layout.php';
 $user = require_role('student');
 
 $savedQuery = $_GET['q'] ?? '';
@@ -153,10 +153,13 @@ $error = take_flash('saved_internship_error');
 $pageTitle = 'Saved Internships';
 $activeNav = 'saved';
 
-require __DIR__ . '/../app/views/student-header.php';
-?>
+render_header(
+    $user,
+    $pageTitle ?? 'InternMatch',
+    $activeNav ?? ''
+);?>
 
-<main class="opportunities-page">
+<main class="opportunities-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="opportunities-header">
@@ -556,4 +559,4 @@ require __DIR__ . '/../app/views/student-header.php';
     </div>
 </main>
 
-<?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+<?php render_footer($user); ?>

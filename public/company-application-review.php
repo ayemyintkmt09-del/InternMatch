@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/CompanyApplicationController.php';
+require_once __DIR__ . '/../app/layout.php';
 
 $user = require_role('company');
 $userId = (int) $user['user_id'];
@@ -76,10 +77,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Review Application';
-require __DIR__ . '/../app/views/company-header.php';
+render_header(
+    $user,
+    $pageTitle ?? 'InternMatch',
+    $activeNav ?? ''
+);
+
 ?>
 
-<main class="profile-page">
+<main class="profile-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="profile-page-header">
@@ -240,6 +246,13 @@ require __DIR__ . '/../app/views/company-header.php';
                         id="interview_date"
                         name="interview_date"
                         class="form-control profile-input"
+                        min="<?= e(
+                            (new DateTimeImmutable(
+                                'now',
+                                new DateTimeZone(date_default_timezone_get())
+                            ))->format('Y-m-d\TH:i')
+                        ) ?>"
+
                         value="<?= !empty(
                             $application['interview_date']
                         ) ? e(str_replace(
@@ -284,5 +297,4 @@ require __DIR__ . '/../app/views/company-header.php';
         </section>
     </div>
 </main>
-
-<?php require __DIR__ . '/../app/views/company-footer.php'; ?>
+<?php render_footer($user); ?>

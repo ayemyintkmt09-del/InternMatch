@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/StudentInternshipController.php';
 require_once __DIR__ . '/CvController.php';
 require_once __DIR__ . '/NotificationController.php';
+require_once __DIR__ . '/AdminActivityController.php';
 
 final class ApplicationController
 {
@@ -55,21 +56,64 @@ final class ApplicationController
         return $status === false ? null : (string) $status;
     }
 
-    public static function hasApplied(
-        int $userId,
-        int $internshipId
-    ): bool {
-        return self::applicationStatus(
-            $userId,
-            $internshipId
-        ) !== null;
-    }
+public static function hasApplied(
+    int $userId,
+    int $internshipId
+): bool {
+    return self::applicationStatus(
+        $userId,
+        $internshipId
+    ) !== null;
+}
+
+public static function findForStudent(
+    int $userId,
+    int $applicationId
+): ?array {
+    $student = self::student($userId);
+
+    $statement = db()->prepare(
+        'SELECT
+            a.application_id,
+            a.internship_id,
+            a.cv_original_name,
+            a.message,
+            a.application_date,
+            a.status,
+            a.interview_date,
+            a.interview_notes,
+            a.reviewed_at,
+            i.title,
+            i.location,
+            i.internship_type,
+            i.deadline,
+            c.company_id,
+            c.company_name
+         FROM applications AS a
+         INNER JOIN internships AS i
+             ON i.internship_id = a.internship_id
+         INNER JOIN companies AS c
+             ON c.company_id = i.company_id
+         WHERE a.application_id = :application_id
+           AND a.student_id = :student_id
+         LIMIT 1'
+    );
+
+    $statement->execute([
+        'application_id' => $applicationId,
+        'student_id' => $student['student_id'],
+    ]);
+
+    $application = $statement->fetch();
+
+    return $application ?: null;
+}
 
     public static function apply(
         int $userId,
         int $internshipId,
         array $input
-    ): void {
+    ): int {
         $message = $input['message'] ?? '';
 
         if (!is_string($message)) {
@@ -252,6 +296,9 @@ final class ApplicationController
             );
 
             $pdo->commit();
+            return $applicationId;
+
+
         } catch (Throwable $exception) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -260,6 +307,9 @@ final class ApplicationController
             throw $exception;
         }
     }
+
+
+
 
 
 
@@ -401,6 +451,16 @@ final class ApplicationController
                 'changed_by' => $userId,
                 'notes' => 'Application withdrawn by student.',
             ]);
+
+            AdminActivityController::record(
+    $pdo,
+    $userId,
+    'application_status_changed',
+    'application',
+    $applicationId,
+    'Application #' . $applicationId,
+    $application['status'] . ' → Withdrawn'
+);
 
             NotificationController::applicationEvent(
                 $pdo,

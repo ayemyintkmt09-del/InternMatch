@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/CompanyApplicationController.php';
+    require_once __DIR__ . '/../app/layout.php';
 
+
+    
 $user = require_role('company');
 $userId = (int) $user['user_id'];
 
@@ -56,13 +59,18 @@ try {
 }
 
 $pageTitle = 'Applicants';
-require __DIR__ . '/../app/views/company-header.php';
+render_header(
+    $user,
+    $pageTitle ?? 'InternMatch',
+    $activeNav ?? ''
+);
+
 ?>
 
 
 
 
-<main class="profile-page">
+<main class="profile-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="profile-page-header">
@@ -105,7 +113,7 @@ require __DIR__ . '/../app/views/company-header.php';
                     </div>
                 <?php endif; ?>
 
-
+                <div class="table-responsive">
                     <table class="table align-middle">
 
                         <thead>
@@ -203,5 +211,4 @@ require __DIR__ . '/../app/views/company-header.php';
 
     </div>
 </main>
-
-<?php require __DIR__ . '/../app/views/company-footer.php'; ?>
+<?php render_footer($user); ?>

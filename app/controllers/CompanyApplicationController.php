@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/NotificationController.php';
+require_once __DIR__ . '/AdminActivityController.php';
 
 final class CompanyApplicationController
 {
@@ -223,19 +224,41 @@ final class CompanyApplicationController
         $interviewDate = trim($interviewDate);
 
         if ($interviewDate !== '') {
+            $timezone = new DateTimeZone(
+                date_default_timezone_get()
+            );
+
             $date = DateTimeImmutable::createFromFormat(
                 '!Y-m-d\TH:i',
-                $interviewDate
+                $interviewDate,
+                $timezone
             );
+
+            $dateErrors = DateTimeImmutable::getLastErrors();
 
             if (
                 !$date
+                || (
+                    $dateErrors !== false
+                    && (
+                        $dateErrors['warning_count'] > 0
+                        || $dateErrors['error_count'] > 0
+                    )
+                )
                 || $date->format('Y-m-d\TH:i') !== $interviewDate
                 || (int) $date->format('Y') < 1000
                 || (int) $date->format('Y') > 9999
             ) {
                 throw new InvalidArgumentException(
                     'Please enter a valid interview date.'
+                );
+            }
+
+            $now = new DateTimeImmutable('now', $timezone);
+
+            if ($date < $now) {
+                throw new InvalidArgumentException(
+                    'The interview date cannot be in the past.'
                 );
             }
 
@@ -416,14 +439,30 @@ if (
                     )'
                 );
 
-                $history->execute([
-                    'application_id' => $applicationId,
-                    'old_status' => $current['status'],
-                    'new_status' => $newStatus,
-                    'changed_by' => $userId,
-                    'notes' => $notes === '' ? null : $notes,
-                ]);
-            }
+
+$history->execute([
+    'application_id' => $applicationId,
+    'old_status' => $current['status'],
+    'new_status' => $newStatus,
+    'changed_by' => $userId,
+    'notes' => $notes === '' ? null : $notes,
+]);
+
+AdminActivityController::record(
+    $pdo,
+    $userId,
+    'application_status_changed',
+    'application',
+    $applicationId,
+    'Application #' . $applicationId
+        . ' — '
+        . $application['title'],
+    $current['status'] . ' → ' . $newStatus
+);
+
+
+
+}
 
             $activeInterviewStatus = in_array(
                 $newStatus,

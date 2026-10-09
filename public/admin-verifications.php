@@ -4,28 +4,17 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminVerificationController.php';
+require_once __DIR__ . '/../app/layout.php';
 
-require_role('admin');
 
+$user = require_role('admin');
 $companies = AdminVerificationController::all();
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<?php render_header($user, 'Company Verification', 'verifications'); ?>
 
-    <title>Company Verification</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-</head>
-
-<body>
-
-<main class="container py-5">
+<main class="container py-5" id="main-content" tabindex="-1">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -53,8 +42,11 @@ $companies = AdminVerificationController::all();
 
             <?php else: ?>
 
-                <div class="table-responsive">
-
+<div
+    class="table-responsive"
+    role="region"
+    aria-label="Accounts Verification results"
+    tabindex="0">
                     <table class="table align-middle">
 
                         <thead>
@@ -133,5 +125,4 @@ $companies = AdminVerificationController::all();
 
 </main>
 
-</body>
-</html>
+<?php render_footer($user); ?>

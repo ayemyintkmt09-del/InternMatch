@@ -2,34 +2,15 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../app/middleware/auth.php';
+require_once __DIR__ . '/../app/layout.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
 require_once __DIR__ . '/../app/controllers/MatchingController.php';
 require_once __DIR__ . '/../app/controllers/SavedInternshipController.php';
 
+header('Cache-Control: no-store');
 
-if (
-    $_SERVER['REQUEST_METHOD'] === 'GET'
-    && current_user() === null
-) {
-    $entryFilters = [];
-
-    foreach (['q', 'location', 'field_id', 'type', 'sort'] as $key) {
-        if (array_key_exists($key, $_GET)) {
-            $entryFilters[$key] = $_GET[$key];
-        }
-    }
-
-    $entryQuery = http_build_query($entryFilters);
-
-    redirect(
-        'explore.php'
-        . ($entryQuery !== '' ? '?' . $entryQuery : '')
-    );
-}
-
-
-$user = require_role('student');
+$user = current_user();
+$isStudent = ($user['role'] ?? null) === 'student';
 
 $savedInternshipIds = [];
 $savedSuccess = take_flash('saved_internship_success');
@@ -37,20 +18,18 @@ $savedError = take_flash('saved_internship_error');
 
 try {
     $result = StudentInternshipController::search($_GET);
-
-    $result['items'] = MatchingController::attachToList(
-        (int) $user['user_id'],
-        $result['items']
-    );
-
     $fields = StudentInternshipController::fields();
 
-    $savedInternshipIds =
-    SavedInternshipController::savedIds(
-        (int) $user['user_id']
-    );
+    if ($isStudent) {
+        $result['items'] = MatchingController::attachToList(
+            (int) $user['user_id'],
+            $result['items']
+        );
 
-
+        $savedInternshipIds = SavedInternshipController::savedIds(
+            (int) $user['user_id']
+        );
+    }
 } catch (InvalidArgumentException $exception) {
     http_response_code(400);
     exit(e($exception->getMessage()));
@@ -71,16 +50,15 @@ $pageLink = static function (int $page) use ($filters): string {
     );
 };
 
-$pageTitle = 'Opportunities';
+$pageTitle = 'Internships';
 $activeNav = 'opportunities';
 
-require __DIR__ . '/../app/views/student-header.php';
-
+render_header($user, $pageTitle, $activeNav);
 
 ?>
 
 
-<main class="opportunities-page">
+<main class="opportunities-page" id="main-content" tabindex="-1">
     <div class="container">
 
 
@@ -473,15 +451,14 @@ require __DIR__ . '/../app/views/student-header.php';
 
                                 <div class="company-logo-placeholder">
 
-                                   <div class="company-logo-placeholder">
-    `                                    <?= company_logo(
-                                            (int) $internship['company_id'],
-                                            (string) $internship['company_name'],
-                                            (int) ($internship['company_has_logo'] ?? 0) === 1,
-                                            'opportunity-company-logo-image'
-                                        ) ?>
-                                    </div>`
-
+<div class="company-logo-placeholder">
+    <?= company_logo(
+        (int) $internship['company_id'],
+        (string) $internship['company_name'],
+        (int) ($internship['company_has_logo'] ?? 0) === 1,
+        'opportunity-company-logo-image'
+    ) ?>
+</div>
                                 </div>
 
                                 <div class="opportunity-main">
@@ -586,72 +563,88 @@ require __DIR__ . '/../app/views/student-header.php';
                                     <?= e($deadlineLabel) ?>
                                 </span>
 
-                                <div class="opportunity-card-actions">
+<div class="opportunity-card-actions">
 
-                                    <form
-                                        method="post"
-                                        action="<?= e(url('saved-internship-action.php')) ?>"
-                                        class="opportunity-save-form">
+    <?php if ($isStudent): ?>
 
-                                        <?= csrf_field() ?>
+        <form
+            method="post"
+            action="<?= e(url('saved-internship-action.php')) ?>"
+            class="opportunity-save-form">
 
-                                        <input
-                                            type="hidden"
-                                            name="internship_id"
-                                            value="<?= (int) $internship['internship_id'] ?>">
+            <?= csrf_field() ?>
 
-                                        <input
-                                            type="hidden"
-                                            name="action"
-                                            value="<?= $isSaved ? 'remove' : 'save' ?>">
+            <input
+                type="hidden"
+                name="internship_id"
+                value="<?= (int) $internship['internship_id'] ?>">
 
-                                        <input
-                                            type="hidden"
-                                            name="return_to"
-                                            value="opportunities.php">
+            <input
+                type="hidden"
+                name="action"
+                value="<?= $isSaved ? 'remove' : 'save' ?>">
 
+            <input
+                type="hidden"
+                name="return_to"
+                value="opportunities.php">
 
-                                        <?php foreach ($filters as $filterName => $filterValue): ?>
-                                            <input
-                                                type="hidden"
-                                                name="return_filters[<?= e($filterName) ?>]"
-                                                value="<?= e((string) $filterValue) ?>">
-                                        <?php endforeach; ?>
+            <?php foreach ($filters as $filterName => $filterValue): ?>
+                <input
+                    type="hidden"
+                    name="return_filters[<?= e($filterName) ?>]"
+                    value="<?= e((string) $filterValue) ?>">
+            <?php endforeach; ?>
 
-                                        <input
-                                            type="hidden"
-                                            name="return_filters[page]"
-                                            value="<?= (int) $result['page'] ?>">
+            <input
+                type="hidden"
+                name="return_filters[page]"
+                value="<?= (int) $result['page'] ?>">
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-sm opportunity-save-button
-                                                <?= $isSaved ? 'is-saved' : '' ?>"
-                                            aria-pressed="<?= $isSaved ? 'true' : 'false' ?>"
-                                            title="<?= $isSaved
-                                                ? 'Remove from saved internships'
-                                                : 'Save internship' ?>">
+            <button
+                type="submit"
+                class="btn btn-sm opportunity-save-button<?= $isSaved ? ' is-saved' : '' ?>"
+                aria-pressed="<?= $isSaved ? 'true' : 'false' ?>"
+                title="<?= $isSaved
+                    ? 'Remove from saved internships'
+                    : 'Save internship' ?>">
 
-                                            <i class="bi <?= $isSaved
-                                                ? 'bi-bookmark-fill'
-                                                : 'bi-bookmark' ?>"
-                                            aria-hidden="true"></i>
+                <i
+                    class="bi <?= $isSaved
+                        ? 'bi-bookmark-fill'
+                        : 'bi-bookmark' ?>"
+                    aria-hidden="true"></i>
 
-                                            <?= $isSaved ? 'Saved' : 'Save' ?>
-                                        </button>
-                                    </form>
+                <?= $isSaved ? 'Saved' : 'Save' ?>
+            </button>
+        </form>
 
-                                    <a
-                                        class="btn btn-small-primary"
-                                        href="<?= e(url(
-                                            'internship-details.php?id='
-                                            . (int) $internship['internship_id']
-                                        )) ?>">
-                                        View Details
-                                        <i class="bi bi-arrow-right ms-1"></i>
-                                    </a>
+    <?php elseif ($user === null): ?>
 
-                                </div>
+        <a
+            class="btn btn-sm btn-outline-secondary"
+            href="<?= e(url(
+                'student-access.php?id='
+                . (int) $internship['internship_id']
+            )) ?>">
+            Sign in to save
+        </a>
+
+    <?php endif; ?>
+
+    <a
+        class="btn btn-small-primary"
+        href="<?= e(url(
+            'internship-details.php?id='
+            . (int) $internship['internship_id']
+        )) ?>">
+        View Details
+        <i
+            class="bi bi-arrow-right ms-1"
+            aria-hidden="true"></i>
+    </a>
+
+</div>
                             </div>
 
                         </article>
@@ -742,4 +735,4 @@ require __DIR__ . '/../app/views/student-header.php';
         </div>
     </main>
 
-    <?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+<?php render_footer($user); ?>

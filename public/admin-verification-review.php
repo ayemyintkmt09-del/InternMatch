@@ -5,6 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminVerificationController.php';
 require_once __DIR__ . '/../app/controllers/CompanyFileController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 $user = require_role('admin');
 
@@ -94,26 +96,10 @@ $statusClass = match ($company['verification_status']) {
 };
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
+<?php render_header($user, 'Verification Review', 'verifications'); ?>
 
-    <title>Review Company - InternMatch</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-
-<main class="container py-5">
+<main class="container py-5" id="main-content" tabindex="-1">
 
     <div class="d-flex flex-wrap justify-content-between
                 align-items-center gap-3 mb-4">
@@ -344,6 +330,4 @@ $statusClass = match ($company['verification_status']) {
     </div>
 
 </main>
-
-</body>
-</html>
+<?php render_footer($user); ?>

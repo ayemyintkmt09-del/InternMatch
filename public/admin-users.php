@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminUserController.php';
+require_once __DIR__ . '/../app/layout.php';
 
-require_role('admin');
-
+$user = require_role('admin');
 $getText = static function (string $key): string {
     return is_string($_GET[$key] ?? null)
         ? trim($_GET[$key])
@@ -91,28 +91,10 @@ try {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
+<?php render_header($user, 'Users', 'users'); ?>
 
-    <title>User Management - InternMatch</title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
-        href="<?= e(asset_url('css/style.css')) ?>"
-        rel="stylesheet">
-</head>
-
-<body>
-
-<main class="container py-5">
+<main class="container py-5" id="main-content" tabindex="-1">
 
     <div class="d-flex flex-wrap justify-content-between
                 align-items-center gap-3 mb-4">
@@ -216,8 +198,13 @@ try {
     </p>
 
     <div class="card">
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
+<div
+    class="table-responsive"
+    role="region"
+    aria-label="User management results"
+    tabindex="0">
+    
+    <table class="table align-middle mb-0">
                 <thead>
                     <tr>
                         <th scope="col">Name</th>
@@ -362,5 +349,4 @@ try {
 
 </main>
 
-</body>
-</html>
+<?php render_footer($user); ?>

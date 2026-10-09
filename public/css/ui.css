@@ -1,0 +1,358 @@
+/* InternMatch shared interface */
+
+:root {
+    --im-brand: #166534;
+    --im-brand-hover: #14532d;
+    --im-brand-soft: #f0fdf4;
+    --im-text: #183229;
+    --im-muted: #52635c;
+    --im-border: #dce5df;
+    --im-surface: #ffffff;
+    --im-background: #f8fafc;
+    --im-radius: 16px;
+    --im-shadow: 0 8px 24px rgb(24 50 41 / 5%);
+
+    --bs-success: #166534;
+    --bs-success-rgb: 22, 101, 52;
+}
+
+.im-app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    background: var(--im-background);
+    color: var(--im-text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    line-height: 1.6;
+}
+
+.im-app > main {
+    flex: 1 0 auto;
+}
+
+.im-app h1,
+.im-app h2,
+.im-app h3,
+.im-app h4,
+.im-app h5 {
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.im-app h1 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    letter-spacing: -0.025em;
+}
+
+.im-app p,
+.im-app td,
+.im-app .alert {
+    overflow-wrap: anywhere;
+}
+
+.im-app .text-muted,
+.im-app .text-secondary {
+    color: var(--im-muted) !important;
+}
+
+/* Keyboard navigation */
+
+.im-app .im-skip-link {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2000;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--im-brand);
+    color: #fff;
+    transform: translateY(-200%);
+}
+
+.im-app .im-skip-link:focus {
+    transform: translateY(0);
+}
+
+.im-app :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid var(--im-brand);
+    outline-offset: 3px;
+}
+
+/* Shared navigation */
+
+.im-app .im-main-nav {
+    padding-block: 0.9rem;
+}
+
+.im-app .im-main-nav .container {
+    gap: 0.75rem;
+}
+
+.im-app .im-main-nav .navbar-brand {
+    margin-right: 0.75rem;
+    white-space: nowrap;
+}
+
+.im-app .im-main-nav .navbar-nav {
+    gap: 0.25rem;
+}
+
+.im-app .im-main-nav .nav-link {
+    padding: 0.6rem 0.7rem;
+    border-radius: 9px;
+    color: var(--im-muted);
+    font-size: 0.925rem;
+    font-weight: 600;
+}
+
+.im-app .im-main-nav .nav-link:hover,
+.im-app .im-main-nav .nav-link.active {
+    background: var(--im-brand-soft);
+    color: var(--im-brand);
+}
+
+.im-app .im-main-nav .dropdown-menu {
+    min-width: 200px;
+    padding: 0.5rem;
+    border-color: var(--im-border);
+    border-radius: 12px;
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .im-main-nav .dropdown-item {
+    padding: 0.65rem 0.75rem;
+    border-radius: 7px;
+    white-space: normal;
+}
+
+.im-app .im-main-nav .dropdown-item:hover {
+    background: var(--im-brand-soft);
+    color: var(--im-brand);
+}
+
+/* Controls */
+
+.im-app .btn {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.im-app .btn:not(.btn-sm) {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+}
+
+.im-app .btn-sm {
+    min-height: 38px;
+}
+
+.im-app .btn-success {
+    --bs-btn-bg: var(--im-brand);
+    --bs-btn-border-color: var(--im-brand);
+    --bs-btn-hover-bg: var(--im-brand-hover);
+    --bs-btn-hover-border-color: var(--im-brand-hover);
+    --bs-btn-active-bg: var(--im-brand-hover);
+    --bs-btn-active-border-color: var(--im-brand-hover);
+}
+
+.im-app .btn-outline-success {
+    --bs-btn-color: var(--im-brand);
+    --bs-btn-border-color: var(--im-brand);
+    --bs-btn-hover-bg: var(--im-brand);
+    --bs-btn-hover-border-color: var(--im-brand);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: var(--im-brand);
+    --bs-btn-active-border-color: var(--im-brand);
+}
+
+.im-app .form-label {
+    font-weight: 600;
+    color: var(--im-text);
+}
+
+.im-app .form-control,
+.im-app .form-select {
+    min-height: 46px;
+    border-color: var(--im-border);
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.im-app textarea.form-control {
+    min-height: 140px;
+    line-height: 1.7;
+}
+
+.im-app .form-control:focus,
+.im-app .form-select:focus {
+    border-color: var(--im-brand);
+    box-shadow: 0 0 0 0.2rem rgb(22 101 52 / 12%);
+}
+
+.im-app .form-control.is-invalid,
+.im-app .form-select.is-invalid {
+    border-color: #b42318;
+}
+
+.im-app .form-check-input:checked {
+    background-color: var(--im-brand);
+    border-color: var(--im-brand);
+}
+
+.im-app .alert {
+    border-radius: 12px;
+}
+
+/* Panels and cards: preserve their existing internal layouts */
+
+.im-app :where(
+    .dashboard-panel,
+    .details-content-card,
+    .details-sidebar-card,
+    .dashboard-stat-card,
+    .company-stat-card,
+    .admin-stat-card,
+    .im-company-card
+) {
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    box-shadow: var(--im-shadow);
+    min-width: 0;
+}
+
+.im-app .opportunity-card {
+    min-width: 0;
+    border-color: var(--im-border);
+    border-radius: var(--im-radius);
+}
+
+/* Homepage cards must not inherit dashboard-row alignment */
+
+.im-app .featured-section .home-live-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    height: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .featured-section .home-live-card .category-tag {
+    align-self: flex-start;
+}
+
+.im-app .featured-section .home-live-card .card-button {
+    width: 100%;
+}
+
+/* Table scrolling stays inside the table container */
+
+.im-app .table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.im-app .table {
+    font-size: 0.925rem;
+    --bs-table-border-color: var(--im-border);
+}
+
+.im-app .table th {
+    padding: 1rem;
+    color: var(--im-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.im-app .table td {
+    padding: 1rem;
+}
+
+.im-app .table :where(.btn, .badge) {
+    white-space: nowrap;
+}
+
+/* Footer */
+
+.im-app .dashboard-footer {
+    margin-top: auto !important;
+    flex-shrink: 0;
+    color: var(--im-muted);
+}
+
+.im-app .dashboard-footer a {
+    color: var(--im-brand);
+    text-decoration: none;
+}
+
+.im-app .dashboard-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Collapsed navigation */
+
+@media (max-width: 1199.98px) {
+    .im-app .im-main-nav .navbar-collapse {
+        padding-top: 0.75rem;
+    }
+
+    .im-app .im-main-nav .navbar-nav {
+        align-items: stretch;
+    }
+
+    .im-app .im-main-nav .nav-link {
+        padding: 0.75rem;
+    }
+}
+
+/* Mobile content */
+
+@media (max-width: 575.98px) {
+    .im-app .im-main-nav .navbar-brand {
+        font-size: 1.3rem;
+    }
+
+    .im-app :where(
+        .dashboard-header-actions,
+        .profile-bottom-actions,
+        .internship-action-bar,
+        .saved-controls-actions
+    ) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .im-app .internship-action-bar > :where(a, form),
+    .im-app .saved-controls-actions > :where(a, button) {
+        flex: 1 1 100%;
+    }
+
+    .im-app .internship-action-bar form > button {
+        width: 100%;
+    }
+
+    .im-app .table th,
+    .im-app .table td {
+        padding: 0.75rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .im-app *,
+    .im-app *::before,
+    .im-app *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentDashboardController.php';
+require_once __DIR__ . '/../app/layout.php';
+
 
 $user = require_role('student');
 
@@ -25,154 +27,9 @@ try {
 
 
 
-<!DOCTYPE html>
+<?php render_header($user, 'Student Dashboard', 'dashboard'); ?>
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - InternMatch</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-
-
-    <!-- NAVBAR-->
-
-    <nav class="navbar navbar-expand-lg bg-white sticky-top shadow-sm">
-
-        <div class="container-fluid dashboard-container">
-
-
-            <!-- Logo -->
-            <a
-                class="navbar-brand logo"
-                href="<?= e(url('student-dashboard.php')) ?>">
-                
-                <i class="bi bi-mortarboard-fill"></i>
-                <span>Intern<span class="logo-green">Match</span></span>
-            </a>
-
-            <!-- Mobile menu button -->
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#dashboardNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Navbar content -->
-            <div class="collapse navbar-collapse"
-                id="dashboardNavbar">
-                    <ul class="navbar-nav mx-auto dashboard-nav">
-
-                    <li class="nav-item">
-                        <a class="nav-link active" href="student-dashboard.php">Dashboard</a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= e(url('opportunities.php')) ?>">Opportunities</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= e(url('my-applications.php')) ?>">My Applications</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= e(url('saved-internships.php')) ?>">Saved</a>
-                    </li>
-
-                    </ul>
-
-
-                <!-- Right side -->
-
-                <div class="dashboard-nav-right">
-
-
-                    <!-- Notification -->
-
-                    <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
-
-
-                    <!-- Profile -->
-
-                    <div class="dashboard-user">
-                        
-                        <div class="dropdown">
-                            <button
-                                type="button"
-                                class="dashboard-user border-0 bg-transparent text-start"
-                                id="studentAccountMenu"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                aria-label="Student account menu">
-
-                                <div class="dashboard-avatar">
-                                    <?= e(mb_strtoupper(
-                                        mb_substr($user['name'], 0, 1, 'UTF-8'),
-                                        'UTF-8'
-                                    )) ?>
-                                </div>
-
-                                <div class="dashboard-user-info">
-                                    <strong><?= e($user['name']) ?></strong>
-                                    <small>Student</small>
-                                </div>
-
-                                <i class="bi bi-chevron-down"></i>
-                            </button>
-
-                            <ul
-                                class="dropdown-menu dropdown-menu-end"
-                                aria-labelledby="studentAccountMenu">
-                                <li>
-
-                                
-                                    <a
-                                        class="dropdown-item"
-                                        href="<?= e(url('student-profile.php')) ?>">
-                                        <i class="bi bi-person me-2"></i>
-                                        My Profile
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <form
-                                        method="post"
-                                        action="<?= e(url('logout.php')) ?>"
-                                        class="m-0">
-
-                                        <?= csrf_field() ?>
-
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="bi bi-box-arrow-right me-2"></i>
-                                            Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </nav>
-
-    <!--  DASHBOARD -->
-
-    <main class="dashboard-main">
+    <main class="dashboard-main" id="main-content" tabindex="-1">
 
         <div class="container-fluid dashboard-container">
 
@@ -534,7 +391,8 @@ try {
                                         <i class="bi bi-calendar-event me-1"></i>
                                         <?= e(
                                             (new DateTimeImmutable(
-                                                $interview['interview_date']
+                                                $interview['interview_date'],
+                                                new DateTimeZone(date_default_timezone_get())
                                             ))->format('d M Y, g:i A')
                                         ) ?>
                                     </div>
@@ -626,20 +484,4 @@ try {
 
     </main>
 
-
-
-    <!-- Bootstrap JavaScript -->
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-    </script>
-
-
-    <!-- Main JavaScript -->
-
-   <script src="<?= e(asset_url('js/script.js')) ?>"></script>
-
-
-</body>
-
-</html>
+<?php render_footer($user); ?>

@@ -7,6 +7,9 @@
 
     require_once __DIR__ . '/../app/controllers/AdminActivityController.php';
 
+    require_once __DIR__ . '/../app/layout.php';
+
+
     $user = require_role('admin');
 
     try {
@@ -26,166 +29,12 @@
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | InternMatch</title>
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Shared CSS -->
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-
-    <!--  NAVBAR -->
-    <nav class="navbar navbar-expand-lg main-navbar">
-        <div class="container">
-
-            <a
-                class="navbar-brand logo"
-                href="<?= e(url('admin-dashboard.php')) ?>">
-                <i class="bi bi-mortarboard-fill"></i>
-                <span>Intern<span class="logo-green">Match</span></span>
-            </a>
-
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#adminNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="adminNavbar">
-
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                    <li class="nav-item">
-                        <a class="nav-link active" href="<?= e(url('admin-dashboard.php')) ?>">
-                            Dashboard
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="<?= e(url('admin-users.php')) ?>">
-                            Users
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="<?= e(url('admin-verifications.php')) ?>">
-                            Companies
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="<?= e(url('admin-internships.php')) ?>">
-                            Internships
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="<?= e(url('admin-activity.php')) ?>">
-                            Applications
-                        </a>
-                    </li>
-
-                </ul>
-
-                <div class="d-flex align-items-center gap-3">
-
-                    <!-- Notification -->
-                    <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
-
-                    <!-- Admin Profile -->
-                    <div class="dropdown">
-                        
-                        <button
-                            class="btn admin-profile-button dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown">
-                            <span class="admin-avatar">
-                                <?= e(mb_strtoupper(mb_substr($user['name'], 0, 1, 'UTF-8'), 'UTF-8')) ?>
-                            </span>
-
-                            <span class="d-none d-md-inline">
-                                <?= e($user['name']) ?>
-                            </span>
-                        </button>
-
-                        <ul class="dropdown-menu dropdown-menu-end">
-
-                            <li>
-                                <a
-                                    class="dropdown-item"
-                                    href="<?= e(url('admin-users.php?role=admin')) ?>">
-                                    <i class="bi bi-person me-2"></i>
-                                    Admin Accounts
-                                </a>
-                            </li>
-
-                            <li>
-                                <a
-                                    class="dropdown-item"
-                                    href="<?= e(url('admin-activity.php')) ?>">
-                                    <i class="bi bi-clock-history me-2"></i>
-                                    Activity Log
-                                </a>
-                            </li>
-
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-
-
-
-
-                            
-
-                           <li>
-                                <form
-                                    method="post"
-                                    action="<?= e(url('logout.php')) ?>"
-                                    class="m-0">
-
-                                    <?= csrf_field() ?>
-
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="bi bi-box-arrow-right me-2"></i>
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
-
-                        </ul>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-    </nav>
+<?php render_header($user, 'Admin Dashboard', 'dashboard'); ?>
 
 
     <!--  MAIN CONTENT  -->
 
-    <main class="admin-dashboard-page">
+    <main class="admin-dashboard-page" id="main-content" tabindex="-1">
 
         <div class="container">
 
@@ -866,47 +715,5 @@
 
     </main>
 
-
-    <!--  FOOTER  -->
-
-    <footer class="dashboard-footer">
-
-        <div class="container">
-
-            <div class="footer-content">
-
-                <div>
-                    <strong>InternMatch</strong>
-                    <p>
-                        Connecting students with the right
-                        internship opportunities.
-                    </p>
-                </div>
-
-                <div>
-                    <p class="mb-0">
-                        © 2026 InternMatch. All rights reserved.
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-    </footer>
-
-
-    <!-- Bootstrap JS -->
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-    </script>
-
-    <!-- Shared JavaScript -->
-
-    <script src="<?= e(asset_url('js/script.js')) ?>"></script>
-
-</body>
-
-</html>
+<?php render_footer($user); ?>
 

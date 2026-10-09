@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentProfileController.php';
 
 require_once __DIR__ . '/../app/controllers/CvController.php';
-
+require_once __DIR__ . '/../app/layout.php';
 
 
 $user = require_role('student');
@@ -130,153 +130,9 @@ function profile_options(
 
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<?php render_header($user, 'My Profile', 'profile'); ?>
 
-    <title>My Profile | InternMatch</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="<?= e(asset_url('css/style.css')) ?>">
-</head>
-
-<body>
-
-<!-- =========================================
-     NAVBAR
-========================================= -->
-
-<nav class="navbar navbar-expand-lg dashboard-nav">
-    <div class="container">
-
-        <!-- Logo -->
-        <a
-            class="navbar-brand logo"
-            href="<?= e(url('student-dashboard.php')) ?>">
-            <i class="bi bi-mortarboard-fill"></i>
-            <span>Intern<span class="logo-green">Match</span></span>
-        </a>
-
-        <!-- Mobile Menu Button -->
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Navigation -->
-        <div class="collapse navbar-collapse" id="mainNavbar">
-
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="student-dashboard.php">
-                        Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="opportunities.php">
-                        Opportunities
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="my-applications.php">
-                        My Applications
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="saved-internships.php">
-                        Saved
-                    </a>
-                </li>
-
-                <!-- Notification -->
-                <?php require __DIR__ . '/../app/views/notification-link.php'; ?>
-
-                <!-- User -->
-                <li class="nav-item dropdown ms-lg-3">
-
-                    <a class="nav-link dropdown-toggle dashboard-user"
-                       href="#"
-                       role="button"
-                       data-bs-toggle="dropdown">
-
-                        <div class="dashboard-avatar">
-                            <?= e(mb_strtoupper(
-                                mb_substr($user['name'], 0, 1, 'UTF-8'),
-                                'UTF-8'
-                            )) ?>
-                        </div>
-
-                        <div class="dashboard-user-info">
-                            <strong><?= e($user['name']) ?></strong>
-                            <small>Student</small>
-                        </div>
-
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end">
-
-                        <li>
-                            <a class="dropdown-item active" href="student-profile.php">
-                                <i class="bi bi-person me-2"></i>
-                                My Profile
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item" href="#cv-section">
-                                <i class="bi bi-file-earmark-text me-2"></i>
-                                My CV
-                            </a>
-                        </li>
-
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-
-                        <li>
-                            <form
-                                method="post"
-                                action="<?= e(url('logout.php')) ?>"
-                                class="m-0">
-
-                                <?= csrf_field() ?>
-
-                                <button type="submit" class="dropdown-item">
-                                    <i class="bi bi-box-arrow-right me-2"></i>
-                                    Logout
-                                </button>
-                            </form>
-                        </li>
-
-                    </ul>
-
-                </li>
-
-            </ul>
-
-        </div>
-    </div>
-</nav>
-
-
-<!-- =========================================
-     PROFILE PAGE
-========================================= -->
-
-<main class="profile-page">
+<main class="profile-page" id="main-content" tabindex="-1">
 
     <div class="container">
 
@@ -1083,61 +939,47 @@ function profile_options(
 
 </main>
 
-
-<!-- FOOTER -->
-
-<footer class="dashboard-footer">
-
-    <div class="container">
-
-        <p>
-            © 2026 InternMatch
-            <span>•</span>
-            Internship Opportunity & Student Matching System
-        </p>
-
-    </div>
-
-</footer>
-
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Main JS -->
-<script src="<?= e(asset_url('js/script.js')) ?>"></script>
-
-
 <script>
-document.getElementById("cvFile").addEventListener("change", function () {
-    const file = this.files[0];
+(function () {
+    "use strict";
+
+    const input = document.getElementById("cvFile");
     const description = document.getElementById("cvFileDescription");
 
-    this.setCustomValidity("");
-
-    if (!file) {
-        description.textContent = "Choose a PDF, then click Upload CV.";
+    if (!input || !description) {
         return;
     }
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-        this.setCustomValidity("Please choose a PDF file.");
-    } else if (file.size > 5 * 1024 * 1024) {
-        this.setCustomValidity("The PDF must not exceed 5 MB.");
-    } else if (file.size === 0) {
-        this.setCustomValidity("The selected file is empty.");
-    }
+    input.addEventListener("change", function () {
+        const file = this.files[0];
 
-    if (!this.checkValidity()) {
-        description.textContent = this.validationMessage;
-        this.reportValidity();
-        return;
-    }
+        this.setCustomValidity("");
 
-    description.textContent =
-        "Selected: " + file.name + ". Click Upload CV or Replace CV to save.";
-});
+        if (!file) {
+            description.textContent =
+                "Choose a PDF, then click Upload CV.";
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            this.setCustomValidity("Please choose a PDF file.");
+        } else if (file.size > 5 * 1024 * 1024) {
+            this.setCustomValidity("The PDF must not exceed 5 MB.");
+        } else if (file.size === 0) {
+            this.setCustomValidity("The selected file is empty.");
+        }
+
+        if (!this.checkValidity()) {
+            description.textContent = this.validationMessage;
+            this.reportValidity();
+            return;
+        }
+
+        description.textContent =
+            "Selected: " + file.name +
+            ". Click Upload CV or Replace CV to save.";
+    });
+})();
 </script>
 
-</body>
-</html>
+<?php render_footer($user); ?>

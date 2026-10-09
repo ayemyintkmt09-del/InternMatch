@@ -56,18 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
 
     try {
-        ApplicationController::apply(
+        $applicationId = ApplicationController::apply(
             $userId,
             $internshipId,
             $_POST
         );
 
-        flash(
-            'application_success',
-            'Your application has been submitted successfully.'
+        redirect(
+            'application-confirmation.php?id='
+            . $applicationId
         );
 
-        redirect('my-applications.php');
+        
     } catch (InvalidArgumentException $exception) {
         http_response_code(422);
         $error = $exception->getMessage();
@@ -82,10 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Apply for Internship';
 $activeNav = 'opportunities';
 
-require __DIR__ . '/../app/views/student-header.php';
-?>
+render_header(
+    $user,
+    $pageTitle ?? 'InternMatch',
+    $activeNav ?? ''
+);?>
 
-<main class="profile-page">
+<main class="profile-page" id="main-content" tabindex="-1">
     <div class="container">
 
         <div class="profile-page-header">
@@ -190,4 +193,4 @@ require __DIR__ . '/../app/views/student-header.php';
     </div>
 </main>
 
-<?php require __DIR__ . '/../app/views/student-footer.php'; ?>
+<?php render_footer($user); ?>

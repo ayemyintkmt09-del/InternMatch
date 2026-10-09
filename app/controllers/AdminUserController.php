@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../middleware/auth.php';
-
+require_once __DIR__ . '/AdminActivityController.php';
 final class AdminUserController
 {
     public static function search(
@@ -113,7 +113,7 @@ final class AdminUserController
 
         try {
             $statement = $pdo->prepare(
-                'SELECT user_id, role, status
+                'SELECT user_id, name, role, status
                  FROM users
                  WHERE user_id = :user_id
                  FOR UPDATE'
@@ -181,12 +181,26 @@ final class AdminUserController
                  )'
             );
 
-            $history->execute([
-                'user_id' => $userId,
-                'changed_by' => (int) $admin['user_id'],
-                'old_status' => $target['status'],
-                'new_status' => $newStatus,
-            ]);
+
+$history->execute([
+    'user_id' => $userId,
+    'changed_by' => (int) $admin['user_id'],
+    'old_status' => $target['status'],
+    'new_status' => $newStatus,
+]);
+
+AdminActivityController::record(
+    $pdo,
+    (int) $admin['user_id'],
+    $newStatus === 'suspended'
+        ? 'user_suspended'
+        : 'user_reactivated',
+    'user',
+    (int) $target['user_id'],
+    (string) $target['name'],
+    $target['status'] . ' → ' . $newStatus
+);
+
 
 
             $pdo->commit();

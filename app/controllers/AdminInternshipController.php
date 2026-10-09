@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../middleware/auth.php';
+require_once __DIR__ . '/AdminActivityController.php';
 
 final class AdminInternshipController
 {
@@ -133,4 +134,100 @@ final class AdminInternshipController
             'pages' => $pages,
         ];
     }
+
+
+    public static function close(
+    int $adminUserId,
+    int $internshipId,
+    string $expectedStatus
+): void {
+    $admin = require_role('admin');
+
+    if ((int) $admin['user_id'] !== $adminUserId) {
+        throw new InvalidArgumentException(
+            'Invalid administrator.'
+        );
+    }
+
+    if ($internshipId < 1 || $expectedStatus !== 'Published') {
+        throw new InvalidArgumentException(
+            'Invalid internship closure request.'
+        );
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+
+    try {
+        $statement = $pdo->prepare(
+            'SELECT
+                i.internship_id,
+                i.title,
+                i.status,
+                c.company_name
+             FROM internships i
+             INNER JOIN companies c
+                ON c.company_id = i.company_id
+             WHERE i.internship_id = :internship_id
+             FOR UPDATE'
+        );
+
+        $statement->execute([
+            'internship_id' => $internshipId,
+        ]);
+
+        $internship = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if (!$internship) {
+            throw new InvalidArgumentException(
+                'Internship not found.'
+            );
+        }
+
+        if ($internship['status'] !== $expectedStatus) {
+            throw new InvalidArgumentException(
+                'This internship changed. Reload the page and try again.'
+            );
+        }
+
+        if ($internship['status'] !== 'Published') {
+            throw new InvalidArgumentException(
+                'Only published internships can be closed.'
+            );
+        }
+
+        $update = $pdo->prepare(
+            "UPDATE internships
+             SET status = 'Closed'
+             WHERE internship_id = :internship_id
+               AND status = 'Published'"
+        );
+
+        $update->execute([
+            'internship_id' => $internshipId,
+        ]);
+
+        AdminActivityController::record(
+            $pdo,
+            $adminUserId,
+            'internship_closed',
+            'internship',
+            $internshipId,
+            $internship['company_name']
+                . ' — '
+                . $internship['title'],
+            'Published → Closed'
+        );
+
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $exception;
+    }
+}
+
+
 }
