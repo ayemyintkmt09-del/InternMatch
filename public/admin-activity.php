@@ -8,14 +8,53 @@ require_once __DIR__ . '/../app/layout.php';
 
 
 $user = require_role('admin');
+
+
+
+$activityType = $_GET['type'] ?? '';
+
+if (
+    !is_string($activityType)
+    || mb_strlen($activityType, 'UTF-8') > 80
+) {
+    http_response_code(400);
+    exit('Invalid activity category.');
+}
+
+
 try {
-    $activities = AdminActivityController::recent(100);
+    $recentActivities = AdminActivityController::recent(100);
 } catch (Throwable $exception) {
     error_log((string) $exception);
     http_response_code(500);
 
     exit('System activity could not be loaded.');
 }
+
+
+
+$availableTypes = array_values(array_unique(
+    array_map(
+        static fn(array $item): string =>
+            (string) $item['event_type'],
+        $recentActivities
+    )
+));
+
+sort($availableTypes);
+
+$activities = array_values(array_filter(
+    $recentActivities,
+    static function (array $item) use (
+        $activityType
+    ): bool {
+        return $activityType === ''
+            || $item['event_type'] === $activityType;
+    }
+));
+
+
+
 ?>
 
 <?php render_header($user, 'Activity', 'activity'); ?>
@@ -41,12 +80,65 @@ try {
 
     </div>
 
+
+    
+<form method="get"
+      action="<?= e(url('admin-activity.php')) ?>"
+      class="im-admin-filter-bar">
+
+    <div>
+        <label for="activityType">
+            Activity Category
+        </label>
+
+        <select name="type"
+                id="activityType"
+                class="form-select">
+
+            <option value="">All Recent Activity</option>
+
+            <?php foreach ($availableTypes as $type): ?>
+
+                <option value="<?= e($type) ?>"
+                    <?= $activityType === $type
+                        ? 'selected' : '' ?>>
+
+                    <?= e(ucwords(
+                        str_replace('_', ' ', $type)
+                    )) ?>
+
+                </option>
+
+            <?php endforeach; ?>
+
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Filter
+    </button>
+
+    <a href="<?= e(url('admin-activity.php')) ?>"
+       class="btn btn-outline-secondary">
+        Clear
+    </a>
+
+</form>
+
+<p class="small text-muted">
+    Showing <?= count($activities) ?>
+    matching event(s) from the latest
+    <?= count($recentActivities) ?> records.
+</p>
+
+
     <section class="admin-panel">
 
         <?php if ($activities === []): ?>
 
             <p class="text-muted mb-0">
-                No activity has been recorded yet.
+                No activity matches the selected category
+                within the latest 100 recorded events.
             </p>
 
         <?php else: ?>

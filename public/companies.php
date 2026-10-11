@@ -55,6 +55,30 @@ render_header($user, 'Explore Companies', 'companies');
             <p class="text-secondary">
                 Discover verified companies and their available internships.
             </p>
+
+
+            
+<div class="im-company-discovery-actions">
+
+    <a href="<?= e(url(
+        'companies.php?hiring=1&sort=open'
+    )) ?>"
+       class="btn btn-primary">
+
+        <i class="bi bi-briefcase-fill me-1"></i>
+        Companies Hiring Now
+
+    </a>
+
+    <a href="<?= e(url('companies.php')) ?>"
+       class="btn btn-outline-primary">
+
+        All Verified Companies
+
+    </a>
+
+</div>
+
         </header>
 
         <form

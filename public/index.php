@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/bootstrap.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
+require_once __DIR__ . '/../app/controllers/CompanyDirectoryController.php';
+require_once __DIR__ . '/../app/controllers/CareerArticleController.php';
 require_once __DIR__ . '/../app/layout.php';
 
 header('Cache-Control: no-store');
@@ -11,6 +13,8 @@ header('Cache-Control: no-store');
 $homeFields = [];
 $homeInternships = [];
 $homeLoadError = false;
+$homeCompanies = [];
+$homeCompanyError = false;
 
 try {
     $homeFields = StudentInternshipController::fields();
@@ -29,13 +33,63 @@ try {
     $homeLoadError = true;
 }
 
+try {
+    $companyResult = CompanyDirectoryController::search(['sort' => 'open']);
+    $homeCompanies = array_slice($companyResult['items'], 0, 6);
+} catch (Throwable $exception) {
+    error_log((string) $exception);
+    $homeCompanyError = true;
+}
+
+
+
+
+$homeFeaturedArticles = [];
+
+try {
+    $homeFeaturedArticles =
+        CareerArticleController::featured(3);
+
+} catch (Throwable $exception) {
+    error_log((string) $exception);
+}
+
+
 $publicUser = current_user();
+
+
+
+$homeStats = [
+    [
+        'icon' => 'bi-briefcase-fill',
+        'value' => $homeLoadError
+            ? '—'
+            : number_format((int) ($homeResult['total'] ?? 0)),
+        'label' => 'Open Internships',
+    ],
+    [
+        'icon' => 'bi-building-fill',
+        'value' => $homeCompanyError
+            ? '—'
+            : number_format((int) ($companyResult['total'] ?? 0)),
+        'label' => 'Verified Companies',
+    ],
+    [
+        'icon' => 'bi-grid-fill',
+        'value' => $homeLoadError
+            ? '—'
+            : number_format(count($homeFields)),
+        'label' => 'Career Fields',
+    ],
+];
+
 
 ?>
 
 
 
-<?php render_header($publicUser, 'Home', 'home'); ?>  
+<?php render_header($publicUser, 'Home', 'home'); ?>
+<main class="im-guest-home" id="main-content" tabindex="-1">  
 
     <!--  HERO SECTION  -->
 
@@ -50,25 +104,24 @@ $publicUser = current_user();
 
                     <span class="hero-badge">
                         <i class="bi bi-stars"></i>
-                        Find your next opportunity
+                        MYANMAR'S INTERNSHIP PLATFORM
                     </span>
 
                     <h1 class="hero-title">
-                        Your Next
-                        <span>Opportunity</span>
-                        Awaits
+                        Find internships that
+                        <span>move your career forward</span>
                     </h1>
 
                     <p class="hero-text">
-                        Discover internships that match your skills,
-                        education, interests and career goals.
+                        Explore internships, connect with employers, and gain
+                        real-world experience to build your future in Myanmar.
                     </p>
 
 
                     <!-- Search Box -->
 <form
     class="search-box"
-    action="<?= e(url('explore.php')) ?>"
+    action="<?= e(url('opportunities.php')) ?>"
     method="get"
     role="search"
     aria-label="Search internships">
@@ -192,6 +245,120 @@ $publicUser = current_user();
 
 
 <!-- LIVE INTERNSHIPS -->
+    <section class="im-home-categories" aria-labelledby="homeCategoriesTitle">
+        <div class="container">
+            <div class="im-section-head">
+                <div><span class="section-label">EXPLORE YOUR INTERESTS</span><h2 id="homeCategoriesTitle">Popular career fields</h2></div>
+                <a href="<?= e(url('opportunities.php')) ?>">All internships <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="im-category-grid">
+                <?php foreach (array_slice($homeFields, 0, 8) as $index => $field): ?>
+                    <?php $categoryIcons = ['bi-code-slash','bi-megaphone','bi-graph-up-arrow','bi-palette','bi-cash-coin','bi-gear','bi-briefcase','bi-lightbulb']; ?>
+                    <a class="im-category-card" href="<?= e(url('explore.php?field_id=' . (int)$field['field_id'])) ?>">
+                        <span class="im-category-icon"><i class="bi <?= e($categoryIcons[$index % count($categoryIcons)]) ?>" aria-hidden="true"></i></span>
+                        <strong><?= e($field['field_name']) ?></strong>
+                        <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+            <?php if ($homeFields === []): ?>
+                <p class="text-muted mb-0">Browse internships to discover available career fields.</p>
+            <?php endif; ?>
+        </div>
+    </section>
+
+
+    
+<section class="im-home-quick-search">
+    <div class="container">
+
+        <div class="im-section-head">
+            <div>
+                <span class="section-label">
+                    FIND YOUR WORK STYLE
+                </span>
+                <h2>Explore Internship Opportunities</h2>
+                <p>Find opportunities that fit how you want to work.</p>
+            </div>
+        </div>
+
+        <div class="im-home-quick-grid">
+
+            <a href="<?= e(url(
+                'opportunities.php?type=On-site'
+            )) ?>" class="im-quick-tile">
+
+                <i class="bi bi-building"></i>
+                <strong>On-site</strong>
+                <span>Work at the company</span>
+            </a>
+
+            <a href="<?= e(url(
+                'opportunities.php?type=Remote'
+            )) ?>" class="im-quick-tile">
+
+                <i class="bi bi-laptop"></i>
+                <strong>Remote</strong>
+                <span>Work from anywhere</span>
+            </a>
+
+            <a href="<?= e(url(
+                'opportunities.php?type=Hybrid'
+            )) ?>" class="im-quick-tile">
+
+                <i class="bi bi-house-gear"></i>
+                <strong>Hybrid</strong>
+                <span>Flexible work arrangement</span>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+
+
+<section class="im-home-locations">
+    <div class="container">
+
+        <div class="im-section-head">
+            <div>
+                <span class="section-label">
+                    BROWSE BY LOCATION
+                </span>
+                <h2>Where would you like to intern?</h2>
+            </div>
+        </div>
+
+        <div class="im-location-links">
+
+            <?php foreach ([
+                'Yangon',
+                'Mandalay',
+                'Naypyidaw'
+            ] as $city): ?>
+
+                <a href="<?= e(url(
+                    'opportunities.php?'
+                    . http_build_query(['location' => $city])
+                )) ?>">
+                    <i class="bi bi-geo-alt"></i>
+                    <?= e($city) ?>
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+
+            <?php endforeach; ?>
+
+            <a href="<?= e(url('opportunities.php')) ?>">
+                <i class="bi bi-globe2"></i>
+                All Locations
+                <i class="bi bi-arrow-up-right"></i>
+            </a>
+
+        </div>
+    </div>
+</section>
+
+
 <section class="featured-section">
     <div class="container">
 
@@ -261,9 +428,16 @@ $publicUser = current_user();
                                 <?= e($internship['title']) ?>
                             </h3>
 
-                            <p class="company-name">
-                                <?= e($internship['company_name']) ?>
-                            </p>
+                            
+<p class="company-name">
+    <a href="<?= e(url(
+        'company-public-profile.php?id='
+        . (int) $internship['company_id']
+    )) ?>">
+        <?= e($internship['company_name']) ?>
+    </a>
+</p>
+
 
                             <div class="internship-info">
                                 <span>
@@ -320,6 +494,120 @@ $publicUser = current_user();
     </div>
 </section>
 
+
+    <!-- Discoverable categories and companies use existing PHP/MySQL data. -->
+    <section class="im-home-companies" aria-labelledby="homeCompaniesTitle">
+        <div class="container">
+            <div class="im-section-head">
+                <div><span class="section-label">EXPLORE EMPLOYERS</span><h2 id="homeCompaniesTitle">Companies to discover</h2></div>
+                <a href="<?= e(url('companies.php')) ?>">View all companies <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+
+                
+<a class="im-hiring-link"
+   href="<?= e(url('companies.php?hiring=1&sort=open')) ?>">
+
+    <i class="bi bi-lightning-charge-fill"></i>
+    Companies Hiring Now
+
+</a>
+
+            </div>
+            <?php if ($homeCompanyError): ?>
+                <div class="alert alert-light border">Company information is temporarily unavailable.</div>
+            <?php elseif ($homeCompanies === []): ?>
+                <p class="text-muted">Verified employer profiles will appear here as they become available.</p>
+            <?php else: ?>
+                <div class="im-company-showcase">
+                    <?php foreach ($homeCompanies as $featuredCompany): ?>
+                        <a class="im-company-tile" href="<?= e(url('company-public-profile.php?id=' . (int)$featuredCompany['company_id'])) ?>">
+                            <span class="im-company-tile-logo">
+                                <?= company_logo((int)$featuredCompany['company_id'], (string)$featuredCompany['company_name'], (int)$featuredCompany['company_has_logo'] === 1) ?>
+                            </span>
+                            <span><strong><?= e($featuredCompany['company_name']) ?></strong><small><?= (int)$featuredCompany['open_count'] ?> open internship<?= (int)$featuredCompany['open_count'] === 1 ? '' : 's' ?></small></span>
+                            <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <section class="im-home-resources" aria-labelledby="homeResourcesTitle">
+        <div class="container">
+            <div class="im-section-head">
+                <div><span class="section-label">CAREER DEVELOPMENT</span><h2 id="homeResourcesTitle">Get ready for your first internship</h2></div>
+
+<a href="<?= e(url('career-articles.php')) ?>">
+    Career articles
+    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+</a>
+            </div>
+            <div class="im-resource-grid">
+                <a href="<?= e(url('help.php')) ?>" class="im-resource-card"><span class="im-resource-icon"><i class="bi bi-file-earmark-person" aria-hidden="true"></i></span><strong>Build your profile</strong><p>Showcase your education, skills, interests, and experience.</p><span>Learn more <i class="bi bi-arrow-right" aria-hidden="true"></i></span></a>
+                <a href="<?= e(url('help.php')) ?>" class="im-resource-card"><span class="im-resource-icon"><i class="bi bi-search" aria-hidden="true"></i></span><strong>Find a suitable role</strong><p>Search by career field, location, and working arrangement.</p><span>Learn more <i class="bi bi-arrow-right" aria-hidden="true"></i></span></a>
+                <a href="<?= e(url('help.php')) ?>" class="im-resource-card"><span class="im-resource-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><strong>Prepare to apply</strong><p>Review opportunities carefully and keep track of applications.</p><span>Learn more <i class="bi bi-arrow-right" aria-hidden="true"></i></span></a>
+            </div>
+
+
+
+
+            
+<?php if ($homeFeaturedArticles !== []): ?>
+
+    <div class="im-home-article-heading">
+
+        <h3>Featured Career Reads</h3>
+
+        <a href="<?= e(url('career-articles.php')) ?>">
+            Browse articles
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+    <div class="im-featured-articles">
+
+        <?php foreach ($homeFeaturedArticles as $article): ?>
+
+            <article class="im-career-article-card">
+
+                <span class="im-career-category">
+                    <?= e($article['category']) ?>
+                </span>
+
+                <h2>
+                    <a href="<?= e(url(
+                        'career-article.php?slug='
+                        . rawurlencode($article['slug'])
+                    )) ?>">
+                        <?= e($article['title']) ?>
+                    </a>
+                </h2>
+
+                <p><?= e($article['excerpt']) ?></p>
+
+                <div class="im-career-article-foot">
+
+                    <a href="<?= e(url(
+                        'career-article.php?slug='
+                        . rawurlencode($article['slug'])
+                    )) ?>">
+                        Read article
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </article>
+
+        <?php endforeach; ?>
+
+    </div>
+
+<?php endif; ?>
+
+        </div>
+    </section>
 
     <!-- ================= HOW IT WORKS ================= -->
 
@@ -513,29 +801,18 @@ $publicUser = current_user();
 
                     <div class="stats-card">
 
-                        <div class="stat-item">
-                            <i class="bi bi-briefcase-fill"></i>
-                            <strong>100+</strong>
-                            <span>Internships</span>
-                        </div>
+                        
+<?php foreach ($homeStats as $stat): ?>
+    <div class="stat-item">
+        <i class="bi <?= e($stat['icon']) ?>"
+           aria-hidden="true"></i>
 
-                        <div class="stat-item">
-                            <i class="bi bi-building-fill"></i>
-                            <strong>50+</strong>
-                            <span>Companies</span>
-                        </div>
+        <strong><?= e($stat['value']) ?></strong>
 
-                        <div class="stat-item">
-                            <i class="bi bi-people-fill"></i>
-                            <strong>500+</strong>
-                            <span>Students</span>
-                        </div>
+        <span><?= e($stat['label']) ?></span>
+    </div>
+<?php endforeach; ?>
 
-                        <div class="stat-item">
-                            <i class="bi bi-graph-up-arrow"></i>
-                            <strong>90%</strong>
-                            <span>Match Accuracy</span>
-                        </div>
 
                     </div>
 
@@ -578,6 +855,16 @@ $publicUser = current_user();
                         : 'Go to My Dashboard' ?>
                 </a>
 
+                
+<a href="<?= e(url('opportunities.php')) ?>"
+   class="btn im-guest-secondary-cta">
+
+    <i class="bi bi-search me-1"></i>
+    Browse Internships First
+
+</a>
+
+
             </div>
 
         </div>
@@ -586,6 +873,8 @@ $publicUser = current_user();
 
 
     <!--  FOOTER  -->
+
+</main>
 
     <?php render_footer($publicUser); ?>
 

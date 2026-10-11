@@ -28,7 +28,7 @@ if (array_key_exists('id', $_GET)) {
 $filters = [];
 
 foreach (
-    ['q', 'location', 'field_id', 'type', 'sort', 'page']
+    ['q', 'location', 'field_id', 'company_id', 'type', 'sort', 'page']
     as $key
 ) {
     if (array_key_exists($key, $_GET)) {

@@ -7,8 +7,49 @@ require_once __DIR__ . '/../app/controllers/AdminVerificationController.php';
 require_once __DIR__ . '/../app/layout.php';
 
 
+
 $user = require_role('admin');
-$companies = AdminVerificationController::all();
+
+$verificationFilter = $_GET['status'] ?? '';
+
+$allowedVerificationFilters = [
+    '',
+    'pending',
+    'verified',
+    'rejected',
+];
+
+if (
+    !is_string($verificationFilter)
+    || !in_array(
+        $verificationFilter,
+        $allowedVerificationFilters,
+        true
+    )
+) {
+    http_response_code(400);
+    exit('Invalid company verification filter.');
+}
+
+try {
+    $allCompanies = AdminVerificationController::all();
+
+    $companies = array_values(array_filter(
+        $allCompanies,
+        static function (array $company) use (
+            $verificationFilter
+        ): bool {
+            return $verificationFilter === ''
+                || $company['verification_status']
+                    === $verificationFilter;
+        }
+    ));
+
+} catch (Throwable $exception) {
+    error_log((string) $exception);
+    http_response_code(500);
+    exit('Company verification records could not be loaded.');
+}
 ?>
 
 <?php render_header($user, 'Company Verification', 'verifications'); ?>
@@ -34,13 +75,69 @@ $companies = AdminVerificationController::all();
     <div class="card">
         <div class="card-body">
 
+
+        <form method="get"
+      action="<?= e(url('admin-verifications.php')) ?>"
+      class="im-admin-filter-bar">
+
+    <div>
+        <label for="verificationStatus">
+            Verification Status
+        </label>
+
+        <select name="status"
+                id="verificationStatus"
+                class="form-select">
+
+            <option value="">All Companies</option>
+
+            <?php foreach ([
+                'pending' => 'Pending',
+                'verified' => 'Verified',
+                'rejected' => 'Rejected'
+            ] as $value => $label): ?>
+
+                <option value="<?= e($value) ?>"
+                    <?= $verificationFilter === $value
+                        ? 'selected' : '' ?>>
+                    <?= e($label) ?>
+                </option>
+
+            <?php endforeach; ?>
+
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-funnel me-1"></i>
+        Filter
+    </button>
+
+    <a href="<?= e(url('admin-verifications.php')) ?>"
+       class="btn btn-outline-secondary">
+        Clear
+    </a>
+
+</form>
+
             <?php if ($companies === []): ?>
 
                 <p class="text-muted mb-0">
-                    No company accounts found.
+                    No companies match the selected verification status.
+                    Try another filter or show all companies.
                 </p>
 
             <?php else: ?>
+
+                
+
+
+<p class="text-muted small mb-3">
+    <?= count($companies) ?>
+    company record(s) found.
+</p>
+
+
 
 <div
     class="table-responsive"

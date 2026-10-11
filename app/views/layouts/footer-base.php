@@ -1,9 +1,9 @@
-<footer class="dashboard-footer border-top bg-white mt-5 py-4">
+<footer class="dashboard-footer im-site-footer mt-5 py-4">
     <div
         class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
 
         <p class="mb-0">
-            © <?= date('Y') ?> InternMatch
+            © <?= date('Y') ?> InternMatch · Building brighter career paths
         </p>
 
         <nav

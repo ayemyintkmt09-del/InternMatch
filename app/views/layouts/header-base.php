@@ -5,6 +5,7 @@ $navigation = [
         ['home', 'Home', 'index.php'],
         ['opportunities', 'Internships', 'opportunities.php'],
         ['companies', 'Companies', 'companies.php'],
+        ['career-content', 'Career Resources', 'career-articles.php'],
         ['help', 'Help & Guidance', 'help.php'],
     ],
     'student' => [
@@ -13,20 +14,26 @@ $navigation = [
         ['opportunities', 'Internships', 'opportunities.php'],
         ['applications', 'My Applications', 'my-applications.php'],
         ['saved', 'Saved', 'saved-internships.php'],
+        ['career-content', 'Career Resources', 'career-articles.php'],
     ],
     'company' => [
         ['dashboard', 'Dashboard', 'company-dashboard.php'],
         ['internships', 'My Internships', 'company-internships.php'],
         ['applications', 'Applicants', 'company-applications.php'],
+        ['recruitment', 'Recruitment', 'company-recruitment.php'],
         ['companies', 'Companies', 'companies.php'],
         ['opportunities', 'Browse Internships', 'opportunities.php'],
+        ['career-content', 'Career Resources', 'career-articles.php'],
+        ['career-admin', 'Career CMS', 'admin-career-articles.php'],
     ],
     'admin' => [
         ['dashboard', 'Dashboard', 'admin-dashboard.php'],
+        ['insights', 'Insights', 'admin-insights.php'],
         ['users', 'Users', 'admin-users.php'],
         ['verifications', 'Verification', 'admin-verifications.php'],
         ['internships', 'Internships', 'admin-internships.php'],
         ['activity', 'Activity', 'admin-activity.php'],
+        ['review-moderation', 'Reviews', 'admin-company-reviews.php'],
     ],
 ];
 
@@ -69,6 +76,10 @@ if ($pageTitle === '') {
 
     <link
         href="<?= e(asset_url('css/ui.css')) ?>"
+        rel="stylesheet">
+
+    <link
+        href="<?= e(asset_url('css/theme.css')) ?>"
         rel="stylesheet">
 </head>
 
@@ -217,3 +228,75 @@ if ($pageTitle === '') {
         </div>
     </div>
 </nav>
+
+<?php if ($layoutRole !== 'guest'): ?>
+<?php
+$roleMenus = [
+    'student' => [
+        ['dashboard', 'bi-grid-1x2', 'Overview', 'student-dashboard.php'],
+        ['opportunities', 'bi-search', 'Find Internships', 'opportunities.php'],
+        ['recommendations','bi-stars','Recommended Internships','student-recommendations.php'],
+        ['saved-searches','bi-bookmarks','Saved Searches','student-saved-searches.php'],
+        ['applications', 'bi-send-check', 'My Applications', 'my-applications.php'],
+        ['saved', 'bi-bookmark-heart', 'Saved Internships', 'saved-internships.php'],
+        ['companies', 'bi-buildings', 'Companies', 'companies.php'],
+        ['profile', 'bi-person-badge', 'My Profile & CV', 'student-profile.php'],       
+        ['portfolio', 'bi-collection', 'My Portfolio', 'student-portfolio.php'],
+        ['skills', 'bi-bar-chart', 'Skill Levels', 'student-skill-levels.php'],
+        ['digital-cv', 'bi-file-earmark-person', 'My Digital CV', 'student-digital-cv.php'], 
+        ['cv-sharing', 'bi-share', 'CV Sharing', 'student-cv-sharing.php'],
+        ['company-reviews','bi-chat-square-heart','My Company Reviews','student-company-reviews.php'],
+        ['notifications', 'bi-bell', 'Notifications', 'notifications.php'],
+        ['career-content','bi-journal-text','Career Resources','career-articles.php'],
+        ['help', 'bi-question-circle', 'Career Guidance', 'help.php'],
+    ],
+    'company' => [
+        ['dashboard', 'bi-grid-1x2', 'Overview', 'company-dashboard.php'],
+        ['internships', 'bi-briefcase', 'My Internships', 'company-internships.php'],
+        ['create', 'bi-plus-square', 'Post Internship', 'company-internship-create.php'],
+        ['applications', 'bi-people', 'Applicants', 'company-applications.php'],      
+        ['recruitment','bi-kanban','Recruitment Overview','company-recruitment.php'],
+        ['profile', 'bi-building', 'Company Profile', 'company-profile.php'],
+        ['companies', 'bi-buildings', 'Company Directory', 'companies.php'],
+        ['notifications', 'bi-bell', 'Notifications', 'notifications.php'],
+        ['career-content','bi-journal-text','Career Resources', 'career-articles.php'],
+        ['help', 'bi-question-circle', 'Help & Guidance', 'help.php'],
+    ],
+    'admin' => [
+        ['dashboard', 'bi-grid-1x2', 'Overview', 'admin-dashboard.php'],
+        ['insights', 'bi-graph-up-arrow', 'Platform Insights', 'admin-insights.php'],
+        ['users', 'bi-people', 'Manage Users', 'admin-users.php'],
+        ['verifications', 'bi-patch-check', 'Company Verification', 'admin-verifications.php'],
+        ['internships', 'bi-briefcase', 'Internship Moderation', 'admin-internships.php'],
+        ['activity', 'bi-clock-history', 'Activity Logs', 'admin-activity.php'],
+        ['review-moderation','bi-shield-check','Review Moderation','admin-company-reviews.php'],
+        ['notifications', 'bi-bell', 'Notifications', 'notifications.php'],
+        ['career-admin','bi-newspaper','Career Articles','admin-career-articles.php'],
+        ['help', 'bi-question-circle', 'Help & Guidance', 'help.php'],
+    ],
+];
+?>
+<aside class="im-role-sidebar" aria-label="<?= e(ucfirst($layoutRole)) ?> workspace">
+    <div class="im-sidebar-title">
+        <span class="im-sidebar-symbol"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i></span>
+        <span><?= e(ucfirst($layoutRole)) ?> workspace<small>InternMatch</small></span>
+    </div>
+    <div class="im-sidebar-label">WORKSPACE</div>
+    <nav class="im-sidebar-links" aria-label="Workspace pages">
+        <?php foreach ($roleMenus[$layoutRole] as [$key, $icon, $label, $path]): ?>
+            <a class="im-sidebar-link<?= $activeNav === $key ? ' is-active' : '' ?>"
+               href="<?= e(url($path)) ?>"
+               <?= $activeNav === $key ? 'aria-current="page"' : '' ?>>
+                <i class="bi <?= e($icon) ?>" aria-hidden="true"></i>
+                <span><?= e($label) ?></span>
+            </a>
+        <?php endforeach; ?>
+    </nav>
+    <div class="im-sidebar-help">
+        <i class="bi bi-stars" aria-hidden="true"></i>
+        <strong>Grow with InternMatch</strong>
+        <p>Discover opportunities, build experience, and take the next step.</p>
+        <a href="<?= e(url('help.php')) ?>">Get guidance <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+</aside>
+<?php endif; ?>

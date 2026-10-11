@@ -1245,8 +1245,14 @@ document.addEventListener("submit", function (event) {
         return;
     }
 
-    form.dataset.submitting = "true";
+
+form.dataset.submitting = "true";
+
+// Named submit buttons must remain enabled so their
+// name and value are included in the PHP POST request.
+if (!submitButton.name) {
     submitButton.disabled = true;
+}
 
     if (submitButton.tagName === "BUTTON") {
         submitButton.dataset.originalText =

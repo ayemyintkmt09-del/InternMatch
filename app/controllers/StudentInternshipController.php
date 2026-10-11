@@ -52,6 +52,7 @@ final class StudentInternshipController
             'q' => self::input($input, 'q', 100),
             'location' => self::input($input, 'location', 150),
             'field_id' => self::input($input, 'field_id', 10),
+            'company_id' => self::input($input, 'company_id', 12),
             'type' => self::input($input, 'type', 20),
             'sort' => self::input($input, 'sort', 20),
         ];
@@ -124,6 +125,47 @@ final class StudentInternshipController
             $where[] = 'i.internship_type = :internship_type';
             $parameters['internship_type'] = $filters['type'];
         }
+
+
+                
+if ($filters['company_id'] !== '') {
+    $companyId = filter_var(
+        $filters['company_id'],
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($companyId === false) {
+        throw new InvalidArgumentException(
+            'Invalid company filter.'
+        );
+    }
+
+    $where[] = 'i.company_id = :filter_company_id';
+
+    $parameters['filter_company_id'] = $companyId;
+}
+
+
+if ($filters['company_id'] !== '') {
+    $companyId = filter_var(
+        $filters['company_id'],
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($companyId === false) {
+        throw new InvalidArgumentException(
+            'Invalid company filter.'
+        );
+    }
+
+    $where[] = 'i.company_id = :filter_company_id';
+    $parameters['filter_company_id'] = $companyId;
+}
+
+
+
 
         $pageValue = self::input($input, 'page', 10);
         $page = 1;
@@ -215,6 +257,9 @@ final class StudentInternshipController
             'pages' => $pages,
             'per_page' => $perPage,
         ];
+
+
+
     }
 
     public static function detail(int $internshipId): ?array

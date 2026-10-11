@@ -159,6 +159,14 @@ function profile_options(
                 Save Changes
             </button>
 
+            
+            <a href="<?= e(url('student-portfolio.php')) ?>"
+            class="btn btn-outline-primary">
+                <i class="bi bi-collection me-1"></i>
+                My Portfolio
+            </a>
+
+
         </div>
 
 
@@ -492,7 +500,7 @@ function profile_options(
 
         <!-- SKILLS & INTERESTS -->
 
-        <section class="profile-section">
+        <section class="profile-section" id="skills-section">
 
             <div class="profile-section-header">
 
@@ -805,6 +813,16 @@ function profile_options(
                     <i class="bi bi-file-earmark-text"></i>
                 </div>
             </div>
+
+            
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="<?= e(url('student-digital-cv.php')) ?>"
+       class="btn btn-outline-primary">
+        <i class="bi bi-eye me-1"></i>
+        Preview My Digital CV
+    </a>
+</div>
+
 
             <?php if ($cvError !== null): ?>
                 <div class="alert alert-danger" role="alert">

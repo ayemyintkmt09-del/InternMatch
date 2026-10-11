@@ -208,6 +208,7 @@ function asset_url(string $path): string
     $assets = [
     'css/style.css' => __DIR__ . '/../public/css/style.css',
     'css/ui.css' => __DIR__ . '/../public/css/ui.css',
+    'css/theme.css' => __DIR__ . '/../public/css/theme.css',
     'js/script.js' => __DIR__ . '/../public/js/script.js',
 ];
 

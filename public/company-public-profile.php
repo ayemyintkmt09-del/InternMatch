@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/CompanyProfileController.php';
+require_once __DIR__ . '/../app/controllers/CompanyReviewController.php';
 
 require_once __DIR__ . '/../app/layout.php';
 
@@ -36,6 +37,16 @@ try {
 
     $internships =
         CompanyProfileController::publicInternships($companyId);
+
+        
+$reviewSummary =
+    CompanyReviewController::publicSummary($companyId);
+
+$publishedReviews =
+    CompanyReviewController::publicList($companyId);
+
+
+
 } catch (Throwable $exception) {
     error_log((string) $exception);
     http_response_code(500);
@@ -76,6 +87,35 @@ render_header($user, $pageTitle, $activeNav);
 
                 <h1><?= e($company['company_name']) ?></h1>
 
+                
+<div class="im-company-rating-summary">
+
+    <i class="bi bi-star-fill"></i>
+
+    <?php if ((int) $reviewSummary['total'] > 0): ?>
+
+        <strong>
+            <?= number_format(
+                (float) $reviewSummary['average_rating'],
+                1
+            ) ?>/5
+        </strong>
+
+        <span>
+            Based on
+            <?= (int) $reviewSummary['total'] ?>
+            approved review(s)
+        </span>
+
+    <?php else: ?>
+
+        <span>No published reviews yet</span>
+
+    <?php endif; ?>
+
+</div>
+
+
                 <?php if (!empty($company['industry'])): ?>
                     <p>
                         <i class="bi bi-building me-1"></i>
@@ -106,8 +146,102 @@ render_header($user, $pageTitle, $activeNav);
                     </div>
                 </section>
 
+
+
+                
+<section class="details-content-card im-company-reviews">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-3">
+
+        <h2 class="mb-0">Internship Experience Reviews</h2>
+
+        <span class="im-review-type">
+            <?= (int) $reviewSummary['total'] ?> Reviews
+        </span>
+    </div>
+
+    <?php if ($publishedReviews === []): ?>
+
+        <p class="text-muted">
+            This company does not have any published
+            internship experience reviews yet.
+        </p>
+
+    <?php else: ?>
+
+        <div class="im-published-review-list">
+
+            <?php foreach ($publishedReviews as $review): ?>
+
+                <article class="im-published-review">
+
+                    <div class="im-review-stars"
+                         aria-label="<?= (int) $review['rating'] ?> out of 5 stars">
+
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="bi <?= $i <= (int) $review['rating']
+                                ? 'bi-star-fill'
+                                : 'bi-star' ?>"
+                               aria-hidden="true"></i>
+                        <?php endfor; ?>
+                    </div>
+
+                    <h3><?= e($review['title']) ?></h3>
+
+                    <p class="im-review-author">
+                        InternMatch Student · Application-linked review
+                    </p>
+
+                    <p>
+                        <?= nl2br(e($review['positives'])) ?>
+                    </p>
+
+                    <?php if ($review['improvements']): ?>
+                        <p>
+                            <strong>Suggested Improvements:</strong>
+                            <?= nl2br(e($review['improvements'])) ?>
+                        </p>
+                    <?php endif; ?>
+
+                </article>
+
+            <?php endforeach; ?>
+
+        </div>
+
+    <?php endif; ?>
+
+    <p class="small text-muted mt-3">
+        Reviews are submitted by students with eligible
+        application records and moderated before publication.
+        Internship completion is not independently verified.
+    </p>
+
+</section>
+
+
+
                 <section class="details-content-card">
                     <h2>Open Internships</h2>
+
+                    
+
+<a class="im-company-jobs-link"
+   href="<?= e(url(
+       'opportunities.php?company_id='
+       . (int) $company['company_id']
+   )) ?>">
+
+    Browse all internships from
+    <?= e($company['company_name']) ?>
+
+    <i class="bi bi-arrow-right"></i>
+</a>
+
+
+
+<CodeBlock language="text"> 
 
                     <?php if ($internships === []): ?>
                         <p class="text-muted mb-0">

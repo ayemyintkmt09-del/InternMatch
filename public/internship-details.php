@@ -42,6 +42,45 @@ try {
 
     $internship = StudentInternshipController::detail($internshipId);
 
+    
+$relatedInternships = [];
+
+if ($internship !== null) {
+    $relatedSql = '
+        SELECT
+            i.internship_id,
+            i.title,
+            i.location,
+            i.internship_type
+        FROM internships AS i
+        JOIN companies AS c
+            ON c.company_id = i.company_id
+        JOIN users AS u
+            ON u.user_id = c.user_id
+        WHERE i.company_id = :company_id
+          AND i.internship_id <> :current_id
+          AND '
+        . StudentInternshipController::visibility()
+        . '
+        ORDER BY
+            i.published_at DESC,
+            i.internship_id DESC
+        LIMIT 3';
+
+    $relatedStmt = db()->prepare($relatedSql);
+
+    $relatedStmt->execute([
+        'company_id' => (int) $internship['company_id'],
+        'current_id' => $internshipId,
+        'today' => date('Y-m-d'),
+    ]);
+
+    $relatedInternships = $relatedStmt->fetchAll(
+        PDO::FETCH_ASSOC
+    );
+}
+
+
     $isSaved = false;
     $applicationStatus = null;
     $matchScore = null;
@@ -403,6 +442,47 @@ render_header($user, $pageTitle, $activeNav);
                         )) ?>
                     </div>
                 </section>
+
+                
+<?php if ($relatedInternships !== []): ?>
+
+    <section class="details-content-card im-related-jobs">
+
+        <h3>More Internships from This Company</h3>
+
+        <div class="im-related-job-list">
+
+            <?php foreach ($relatedInternships as $related): ?>
+
+                <a class="im-related-job"
+                   href="<?= e(url(
+                       'internship-details.php?id='
+                       . (int) $related['internship_id']
+                   )) ?>">
+
+                    <div>
+                        <strong>
+                            <?= e($related['title']) ?>
+                        </strong>
+
+                        <small>
+                            <?= e($related['location'] ?? 'Location not specified') ?>
+                            ·
+                            <?= e($related['internship_type']) ?>
+                        </small>
+                    </div>
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            <?php endforeach; ?>
+
+        </div>
+    </section>
+
+<?php endif; ?>
+
 
             </div>
 

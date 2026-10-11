@@ -52,6 +52,14 @@ try {
                     <a href="<?= e(url('opportunities.php')) ?>" class="btn btn-primary-custom">
                         <i class="bi bi-search"></i>Find Internships
                     </a>
+
+                    
+<a href="<?= e(url('student-digital-cv.php')) ?>"
+   class="btn btn-outline-primary">
+    <i class="bi bi-file-earmark-person me-1"></i>
+    My Digital CV
+</a>
+
                 </div>
 
             </section>
@@ -116,6 +124,43 @@ try {
             </section>
 
 
+
+            <!-- Existing skill catalogue and stored proficiency levels; no fake percentages. -->
+            <section class="im-student-skills" aria-labelledby="studentSkillsTitle">
+                <div class="im-student-skills-heading">
+                    <div><span class="section-label">YOUR PROFESSIONAL TOOLKIT</span><h2 id="studentSkillsTitle">Technologies & Skills I Master</h2></div>
+                    <a class="btn btn-outline-success btn-sm" href="<?= e(url('student-profile.php#skills-section')) ?>"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Edit skills</a>
+                </div>
+                <?php if ($dashboard['skills'] === []): ?>
+                    <div class="im-skills-empty">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        <p>Add your skills to your profile to showcase what you know.</p>
+                        <a href="<?= e(url('student-profile.php')) ?>">Add skills <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+                <?php else: ?>
+                    <div class="im-skills-grid">
+                        <?php foreach ($dashboard['skills'] as $skill): ?>
+                            <?php
+                            $level = trim((string)$skill['proficiency_level']);
+                           
+$levelWidths = [
+    'Beginner' => 25,
+    'Intermediate' => 50,
+    'Advanced' => 75,
+    'Expert' => 100
+];
+
+                            $barWidth = $levelWidths[$level] ?? 0;
+                            ?>
+                            <div class="im-skill-item">
+                                <div class="im-skill-label"><span><i class="bi bi-lightning-charge" aria-hidden="true"></i> <?= e($skill['skill_name']) ?></span><small><?= e($level !== '' ? $level : 'Not rated') ?></small></div>
+                                <div class="im-skill-track" role="img" aria-label="<?= e($skill['skill_name'] . ': ' . ($level !== '' ? $level : 'Not rated')) ?>"><div style="width: <?= $barWidth ?>%"></div></div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="im-skill-disclaimer">Proficiency levels are profile entries, not certified assessment scores.</p>
+                <?php endif; ?>
+            </section>
 
             <!-- STATISTICS -->
 
@@ -440,6 +485,73 @@ try {
                             <i class="bi bi-chevron-right"></i>
                         </a>
 
+                        
+<a class="quick-action"
+   href="<?= e(url('student-digital-cv.php')) ?>">
+
+    <div class="quick-action-icon blue">
+        <i class="bi bi-file-earmark-person"></i>
+    </div>
+
+    <div>
+        <strong>My Digital CV</strong>
+        <small>Preview and export your profile</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+</a>
+
+
+<a class="quick-action"
+   href="<?= e(url('student-portfolio.php')) ?>">
+
+    <div class="quick-action-icon blue">
+        <i class="bi bi-collection"></i>
+    </div>
+
+    <div>
+        <strong>My Portfolio</strong>
+        <small>Manage projects and certificates</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+</a>
+
+
+<a class="quick-action"
+   href="<?= e(url('student-cv-sharing.php')) ?>">
+
+    <div class="quick-action-icon green">
+        <i class="bi bi-share"></i>
+    </div>
+
+    <div>
+        <strong>Share Digital CV</strong>
+        <small>Manage your public career profile</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+
+</a>
+
+
+<a class="quick-action"
+   href="<?= e(url('student-skill-levels.php')) ?>">
+
+    <div class="quick-action-icon green">
+        <i class="bi bi-bar-chart"></i>
+    </div>
+
+    <div>
+        <strong>Skill Levels</strong>
+        <small>Update your proficiency levels</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+</a>
+
+
+
                         <a
                             class="quick-action"
                             href="<?= e(url('saved-internships.php')) ?>">
@@ -454,6 +566,59 @@ try {
 
                             <i class="bi bi-chevron-right"></i>
                         </a>
+
+
+                        
+<a class="quick-action"
+   href="<?= e(url('student-recommendations.php')) ?>">
+
+    <div class="quick-action-icon green">
+        <i class="bi bi-stars"></i>
+    </div>
+
+    <div>
+        <strong>Recommended Internships</strong>
+        <small>Explore personalized matches</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+</a>
+
+<a class="quick-action"
+   href="<?= e(url('student-saved-searches.php')) ?>">
+
+    <div class="quick-action-icon blue">
+        <i class="bi bi-bookmarks"></i>
+    </div>
+
+    <div>
+        <strong>Saved Searches</strong>
+        <small>Revisit your search filters</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+</a>
+
+
+
+
+<a class="quick-action"
+   href="<?= e(url('career-articles.php')) ?>">
+
+    <div class="quick-action-icon green">
+        <i class="bi bi-journal-text"></i>
+    </div>
+
+    <div>
+        <strong>Career Resources</strong>
+        <small>News, CV tips, interviews and career guidance</small>
+    </div>
+
+    <i class="bi bi-chevron-right"></i>
+
+</a>
+
+
 
                     </div>
 

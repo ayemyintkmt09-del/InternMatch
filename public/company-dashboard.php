@@ -7,6 +7,9 @@ require_once __DIR__ . '/../app/controllers/CompanyProfileController.php';
 
 require_once __DIR__ . '/../app/controllers/CompanyFileController.php';
 require_once __DIR__ . '/../app/controllers/CompanyInternshipController.php';
+
+require_once __DIR__ . '/../app/controllers/CompanyApplicationController.php';
+require_once __DIR__ . '/../app/controllers/CompanyReviewController.php';
 require_once __DIR__ . '/../app/layout.php';
 
 
@@ -17,9 +20,24 @@ try {
         (int) $user['user_id']
     );
 
+    
+$companyReviewSummary =
+    CompanyReviewController::publicSummary(
+        (int) $company['company_id']
+    );
+
     $dashboard = CompanyInternshipController::dashboard(
         (int) $user['user_id']
     );
+
+    
+$recentApplicants = array_slice(
+    CompanyApplicationController::all(
+        (int) $user['user_id']
+    ),
+    0,
+    5
+);
 
 
 } catch (Throwable $exception) {
@@ -152,6 +170,54 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                 </div>
 
             </div>
+
+            
+<section class="im-review-dashboard-panel">
+
+    <div>
+        <span class="dashboard-small-title">
+            COMPANY REPUTATION
+        </span>
+
+        <h2>Internship Reviews</h2>
+
+        <p>
+            Feedback published from eligible
+            internship applications.
+        </p>
+    </div>
+
+    <div class="im-review-dashboard-rating">
+
+        <i class="bi bi-star-fill"></i>
+
+        <strong>
+            <?= (int) $companyReviewSummary['total'] > 0
+                ? number_format(
+                    (float) $companyReviewSummary['average_rating'],
+                    1
+                )
+                : '—' ?>
+        </strong>
+
+        <span>
+            <?= (int) $companyReviewSummary['total'] ?>
+            published reviews
+        </span>
+    </div>
+
+    <a class="btn btn-outline-primary"
+       href="<?= e(url(
+           'company-public-profile.php?id='
+           . (int) $company['company_id']
+       )) ?>">
+
+        View Published Reviews
+
+    </a>
+
+</section>
+
 
             <!-- STATISTICS -->
 
@@ -397,7 +463,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                                 <a
                                     class="btn btn-outline-primary"
                                     href="<?= e(url('company-applications.php')) ?>">
-                                    View All Internships
+                                    View All Applications
                                 </a>
                             </div>
 
@@ -464,7 +530,7 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
 
                         <a
                             class="company-quick-action text-decoration-none text-reset"
-                            href="<?= e(url('company-internships.php')) ?>"
+                            href="<?= e(url('company-applications.php')) ?>"
                         >
 
                             <div class="company-quick-icon green">
@@ -528,16 +594,26 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                             </div>
                         </div>
 
-                        <?php foreach (
-                            $dashboard['status_counts'] as $status => $total
-                        ): ?>
 
-                            <div class="company-status-item">
-                                <span><?= e($status) ?></span>
-                                <strong><?= number_format($total) ?></strong>
-                            </div>
+<?php foreach (
+    $dashboard['status_counts'] as $status => $total
+): ?>
 
-                        <?php endforeach; ?>
+    <a class="company-status-item im-status-link"
+       href="<?= e(url(
+           'company-applications.php?status='
+           . rawurlencode((string) $status)
+       )) ?>">
+
+        <span><?= e($status) ?></span>
+
+        <strong>
+            <?= number_format((int) $total) ?>
+        </strong>
+
+    </a>
+
+<?php endforeach; ?>
 
                         <p class="small text-muted mt-3 mb-0">
                             Total applications includes withdrawn applications.
@@ -564,12 +640,70 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                     </a>
                 </div>
 
-                <div class="text-center py-4">
-                    <i class="bi bi-people fs-1 text-primary"></i>
-                    <p class="mt-3 mb-0">
-                        Select an internship above to view and manage its applicants.
-                    </p>
-                </div>
+
+<?php if (empty($recentApplicants)): ?>
+
+    <div class="im-recruit-empty">
+        <i class="bi bi-people"></i>
+        <h4>No Recent Applicants</h4>
+        <p>No applications have been received yet.</p>
+    </div>
+
+<?php else: ?>
+
+    <div class="table-responsive">
+
+        <table class="table align-middle">
+
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Internship</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php foreach ($recentApplicants as $app): ?>
+
+                    <tr>
+                        <td><?= e($app['student_name']) ?></td>
+
+                        <td><?= e($app['title']) ?></td>
+
+                        <td>
+                            <span class="im-application-status">
+                                <?= e($app['status']) ?>
+                            </span>
+                        </td>
+
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="<?= e(url(
+                                   'company-application-review.php?id='
+                                   . (int) $app['application_id']
+                               )) ?>">
+                                Review
+                            </a>
+                        </td>
+                    </tr>
+
+                <?php endforeach; ?>
+            </tbody>
+
+        </table>
+    </div>
+
+<?php endif; ?>
+
+<div class="text-end mt-3">
+    <a href="<?= e(url('company-applications.php')) ?>"
+       class="btn btn-outline-primary">
+        View All Applicants
+        <i class="bi bi-arrow-right ms-1"></i>
+    </a>
+</div>
             </div>
 
 

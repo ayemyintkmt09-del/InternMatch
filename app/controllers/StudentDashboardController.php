@@ -96,7 +96,18 @@ final class StudentDashboardController
             'local_now' => $localNow,
         ]);
 
+        $skillStatement = $pdo->prepare(
+            'SELECT s.skill_name, ss.proficiency_level
+             FROM student_skills AS ss
+             JOIN skills AS s ON s.skill_id = ss.skill_id
+             WHERE ss.student_id = :student_id
+             ORDER BY s.skill_name
+             LIMIT 12'
+        );
+        $skillStatement->execute(['student_id' => $studentId]);
+
         return [
+            'skills' => $skillStatement->fetchAll(),
             'profile' => $profile,
             'profile_completion' =>
                 StudentProfileController::completion($profile),

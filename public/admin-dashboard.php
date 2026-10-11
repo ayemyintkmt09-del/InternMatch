@@ -66,6 +66,66 @@
             </div>
 
 
+
+            
+<nav class="im-admin-shortcuts"
+     aria-label="Admin management shortcuts">
+
+     
+<a href="<?= e(url('admin-company-reviews.php')) ?>">
+
+    <i class="bi bi-chat-square-check"></i>
+
+    <span>Moderate Company Reviews</span>
+
+</a>
+
+
+    <a href="<?= e(url('admin-insights.php')) ?>">
+        <i class="bi bi-graph-up-arrow"></i>
+        <span>Platform Insights</span>
+    </a>
+
+    <a href="<?= e(url(
+        'admin-verifications.php?status=pending'
+    )) ?>">
+        <i class="bi bi-building-check"></i>
+        <span>Pending Verification</span>
+    </a>
+
+    <a href="<?= e(url(
+        'admin-users.php?status=suspended'
+    )) ?>">
+        <i class="bi bi-person-lock"></i>
+        <span>Suspended Users</span>
+    </a>
+
+    <a href="<?= e(url(
+        'admin-internships.php?status=Published'
+    )) ?>">
+        <i class="bi bi-briefcase"></i>
+        <span>Published Internships</span>
+    </a>
+
+    <a href="<?= e(url('admin-activity.php')) ?>">
+        <i class="bi bi-clock-history"></i>
+        <span>Activity Logs</span>
+    </a>
+
+    
+<a href="<?= e(url('admin-career-articles.php')) ?>">
+
+    <i class="bi bi-newspaper"></i>
+
+    <span>Manage Career Articles</span>
+
+</a>
+
+
+</nav>
+
+
+
         <!-- STATISTICS -->
 
         <div class="admin-stat-grid">
@@ -207,7 +267,8 @@
                             <h4>Internship Reviews</h4>
 
                             <p>
-                                Internship review tools are not connected yet.
+                                Review internship listings, monitor publication
+                                statuses, and close published listings when required.
                             </p>
 
                             <a

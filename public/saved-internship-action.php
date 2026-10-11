@@ -34,6 +34,7 @@ if (!is_array($returnFilters)) {
 $allowedFields = match ($returnPage) {
     'opportunities.php' => [
         'q' => 100,
+        'company_id' => 12,
         'location' => 150,
         'field_id' => 10,
         'type' => 20,
@@ -86,8 +87,8 @@ foreach ($allowedValues as $key => $values) {
     }
 }
 
-foreach (['page', 'field_id'] as $key) {
-    if (!isset($query[$key])) {
+foreach (['page', 'field_id', 'company_id'] as $key) {
+        if (!isset($query[$key])) {
         continue;
     }
 

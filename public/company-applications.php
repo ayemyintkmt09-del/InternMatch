@@ -34,10 +34,48 @@ if (
 }
 
 
+$keyword = $_GET['q'] ?? '';
+$rawInternshipFilter = $_GET['internship_id'] ?? '';
+
+if (
+    !is_string($keyword)
+    || mb_strlen(trim($keyword), 'UTF-8') > 100
+    || !is_string($rawInternshipFilter)
+) {
+    http_response_code(400);
+    exit('Invalid application filters.');
+}
+
+$keyword = trim($keyword);
+$filterInternshipId = null;
+
+if ($rawInternshipFilter !== '') {
+    $filterInternshipId = filter_var(
+        $rawInternshipFilter,
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($filterInternshipId === false) {
+        http_response_code(400);
+        exit('Invalid internship selection.');
+    }
+}
+
+
+
+
 try {
+    $userId = (int) $user['user_id'];
+
+    $companyInternships =
+        CompanyApplicationController::internships($userId);
+
     $applications = CompanyApplicationController::all(
-    (int) $user['user_id'],
-    $statusFilter === '' ? null : $statusFilter
+    $userId,
+    $statusFilter === '' ? null : $statusFilter,
+    $keyword,
+    $filterInternshipId
 );
 
 } catch (Throwable $exception) {
@@ -46,6 +84,8 @@ try {
     http_response_code(500);
     exit('Applications could not be loaded.');
 }
+
+$filteredCount = count($applications);
 
 $pageTitle = 'Applications';
 $activeNav = 'applications';
@@ -67,37 +107,93 @@ render_header(
                 <h1>Applications</h1>
                 <p>Review applications from all your internships.</p>
 
-                <form
-                    method="get"
-                    action="<?= e(url('company-applications.php')) ?>"
-                    class="application-filter-bar mb-4">
 
-                    <label
-                        for="companyStatusFilter"
-                        class="visually-hidden">
-                        Filter applications by status
-                    </label>
+                
+<form method="get"
+      action="<?= e(url('company-applications.php')) ?>"
+      class="im-recruit-filters">
 
-                    <select
-                        id="companyStatusFilter"
-                        name="status"
-                        class="form-select"
-                        onchange="this.form.submit()">
+    <div>
+        <label for="recruitSearch">Search Applicants</label>
 
-                        <option value="">All applications</option>
+        <input type="search"
+               id="recruitSearch"
+               name="q"
+               class="form-control"
+               maxlength="100"
+               placeholder="Name, email, or internship"
+               value="<?= e($keyword) ?>">
+    </div>
 
-                        <?php foreach ($statusOptions as $statusOption): ?>
-                            <option
-                                value="<?= e($statusOption) ?>"
-                                <?= $statusFilter === $statusOption
-                                    ? 'selected'
-                                    : '' ?>>
-                                <?= e($statusOption) ?>
-                            </option>
-                        <?php endforeach; ?>
+    <div>
+        <label for="recruitInternship">Internship</label>
 
-                    </select>
-                </form>
+        <select id="recruitInternship"
+                name="internship_id"
+                class="form-select">
+
+            <option value="">All Internships</option>
+
+            <?php foreach ($companyInternships as $job): ?>
+                <option
+                    value="<?= (int) $job['internship_id'] ?>"
+                    <?= $filterInternshipId ===
+                        (int) $job['internship_id']
+                        ? 'selected' : '' ?>>
+
+                    <?= e($job['title']) ?>
+
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div>
+        <label for="recruitStatus">Status</label>
+
+        <select id="recruitStatus"
+                name="status"
+                class="form-select">
+
+            <option value="">All Statuses</option>
+
+            <?php foreach ($statusOptions as $status): ?>
+                <option value="<?= e($status) ?>"
+                    <?= $statusFilter === $status
+                        ? 'selected' : '' ?>>
+
+                    <?= e($status) ?>
+
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="im-recruit-filter-actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i>
+            Search
+        </button>
+    </div>
+</form>
+
+
+
+<div class="im-recruit-results">
+
+    <p>
+        <strong><?= $filteredCount ?></strong>
+        application(s) found
+    </p>
+
+    <a href="<?= e(url('company-applications.php')) ?>">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        Clear Filters
+    </a>
+
+</div>
+
+
             </div>
 
             <a
@@ -151,8 +247,7 @@ render_header(
     class="table-responsive"
     role="region"
     aria-label="Company Applications results"
-    tabindex="0">                
-                >
+    tabindex="0">
                     <table class="table align-middle application-table">
                     <caption class="visually-hidden">
                         Applications received by the company

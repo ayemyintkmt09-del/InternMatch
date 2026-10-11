@@ -2,4 +2,7 @@ Options -Indexes
 
 RewriteEngine On 
 
+
+
+
 RewriteRule ^(?:app|config|database|storage)(?:/|$) - [F,L,NC]

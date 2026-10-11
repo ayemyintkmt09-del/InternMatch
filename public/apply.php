@@ -6,6 +6,9 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/StudentInternshipController.php';
 require_once __DIR__ . '/../app/controllers/ApplicationController.php';
 
+require_once __DIR__ . '/../app/layout.php';
+
+
 $user = require_role('student');
 $userId = (int) $user['user_id'];
 

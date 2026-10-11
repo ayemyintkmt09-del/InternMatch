@@ -41,6 +41,21 @@ try {
 
 $filters = $result['filters'];
 
+$activeFilterCount = 0;
+
+foreach ([
+    'q',
+    'location',
+    'field_id',
+    'company_id',
+    'type'
+] as $filterKey) {
+    if (($filters[$filterKey] ?? '') !== '') {
+        $activeFilterCount++;
+    }
+}
+
+
 $pageLink = static function (int $page) use ($filters): string {
     return url(
         'opportunities.php?'
@@ -49,6 +64,22 @@ $pageLink = static function (int $page) use ($filters): string {
         )
     );
 };
+
+
+$quickFilterUrl = static function (
+    array $changes
+) use ($filters): string {
+
+    $query = array_merge($filters, $changes);
+
+    unset($query['page']);
+
+    return url(
+        'opportunities.php?'
+        . http_build_query($query)
+    );
+};
+
 
 $pageTitle = 'Internships';
 $activeNav = 'opportunities';
@@ -81,6 +112,139 @@ render_header($user, $pageTitle, $activeNav);
                 <p>Find open internships from verified companies.</p>
             </div>
         </div>
+
+            
+<?php if ($isStudent): ?>
+
+    <div class="im-save-search-panel">
+
+        <div>
+            <strong>
+                <i class="bi bi-bookmark-star me-1"></i>
+                Save Current Search
+            </strong>
+
+            <p>
+                Keep your current search filters
+                for future internship discovery.
+            </p>
+        </div>
+
+        <form method="post"
+              action="<?= e(url(
+                  'student-saved-searches.php'
+              )) ?>"
+              class="im-save-search-form">
+
+            <?= csrf_field() ?>
+
+            <input type="hidden"
+                   name="action"
+                   value="save">
+
+            <?php foreach ([
+                'q',
+                'location',
+                'field_id',
+                'company_id',
+                'type',
+                'sort'
+            ] as $key): ?>
+
+                <input type="hidden"
+                       name="<?= e($key) ?>"
+                       value="<?= e(
+                           (string) ($filters[$key] ?? '')
+                       ) ?>">
+
+            <?php endforeach; ?>
+
+            <label for="savedSearchName"
+                   class="visually-hidden">
+                Saved search name
+            </label>
+
+            <input type="text"
+                   id="savedSearchName"
+                   name="name"
+                   class="form-control"
+                   maxlength="80"
+                   placeholder="e.g. Yangon IT Internships"
+                   required>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                <i class="bi bi-bookmark-plus me-1"></i>
+                Save Search
+            </button>
+
+        </form>
+
+    </div>
+
+<?php endif; ?>
+
+
+        
+<nav class="im-quick-filters"
+     aria-label="Quick work arrangement filters">
+
+    <strong>Work arrangement:</strong>
+
+    <?php foreach ([
+        'All' => '',
+        'On-site' => 'On-site',
+        'Remote' => 'Remote',
+        'Hybrid' => 'Hybrid'
+    ] as $label => $value): ?>
+
+        <a href="<?= e($quickFilterUrl([
+            'type' => $value
+        ])) ?>"
+           class="im-filter-pill <?= $filters['type'] === $value
+               ? 'is-current' : '' ?>"
+           <?= $filters['type'] === $value
+               ? 'aria-current="page"'
+               : '' ?>>
+
+            <?= e($label) ?>
+
+        </a>
+
+    <?php endforeach; ?>
+
+</nav>
+
+
+<nav class="im-quick-filters"
+     aria-label="Quick location filters">
+
+    <strong>Location:</strong>
+
+    <?php foreach ([
+        'All locations' => '',
+        'Yangon' => 'Yangon',
+        'Mandalay' => 'Mandalay',
+        'Naypyidaw' => 'Naypyidaw'
+    ] as $label => $location): ?>
+
+        <a href="<?= e($quickFilterUrl([
+            'location' => $location
+        ])) ?>"
+           class="im-filter-pill <?= $filters['location'] === $location
+               ? 'is-current' : '' ?>"
+           <?= $filters['location'] === $location
+               ? 'aria-current="page"'
+               : '' ?>>
+
+            <?= e($label) ?>
+
+        </a>
+
+    <?php endforeach; ?>
+
+</nav>
+
 
         <form
             id="opportunityFilters"
@@ -121,7 +285,15 @@ render_header($user, $pageTitle, $activeNav);
             aria-controls="opportunityFiltersPanel">
 
             <i class="bi bi-sliders me-2" aria-hidden="true"></i>
-            <span data-filter-toggle-label>Show filters</span>
+            
+<span data-filter-toggle-label>Show filters</span>
+
+<?php if ($activeFilterCount > 0): ?>
+    <span class="im-filter-count">
+        <?= $activeFilterCount ?>
+    </span>
+<?php endif; ?>
+
         </button>
 
         <div class="row g-4">
@@ -281,6 +453,12 @@ render_header($user, $pageTitle, $activeNav);
                     if ($filters['q'] !== '') {
                         $activeFilters['q'] = 'Search: ' . $filters['q'];
                     }
+                    
+if ($filters['company_id'] !== '') {
+    $activeFilters['company_id'] =
+        'Company ID: ' . $filters['company_id'];
+}
+
 
                     if ($filters['location'] !== '') {
                         $activeFilters['location'] =
@@ -339,25 +517,6 @@ render_header($user, $pageTitle, $activeNav);
                         </div>
                     <?php endif; ?>
 
-                    <?php if ($activeFilters !== []): ?>
-                        <div
-                            class="active-filter-list"
-                            role="group"
-                            aria-label="Active filters">
-
-                            <?php foreach ($activeFilters as $activeFilter): ?>
-                                <span class="active-filter-chip">
-                                    <?= e($activeFilter) ?>
-                                </span>
-                            <?php endforeach; ?>
-
-                            <a
-                                class="btn btn-sm btn-link p-0"
-                                href="<?= e(url('opportunities.php')) ?>">
-                                Clear all
-                            </a>
-                        </div>
-                <?php endif; ?>
 
                 <?php if ($result['items'] === []): ?>
 
@@ -388,11 +547,23 @@ render_header($user, $pageTitle, $activeNav);
                                 You can update your profile while you wait.
                             </p>
 
-                            <a
-                                class="btn btn-outline-primary"
-                                href="<?= e(url('student-profile.php')) ?>">
-                                Update my profile
-                            </a>
+                            
+<?php if ($isStudent): ?>
+
+    <a class="btn btn-outline-primary"
+       href="<?= e(url('student-profile.php')) ?>">
+        Update My Profile
+    </a>
+
+<?php else: ?>
+
+    <a class="btn btn-outline-primary"
+       href="<?= e(url('companies.php')) ?>">
+        Explore Companies
+    </a>
+
+<?php endif; ?>
+
                         <?php endif; ?>
                     </div>
 
@@ -449,7 +620,7 @@ render_header($user, $pageTitle, $activeNav);
 
                             <div class="opportunity-card-top">
 
-                                <div class="company-logo-placeholder">
+
 
 <div class="company-logo-placeholder">
     <?= company_logo(
@@ -459,6 +630,10 @@ render_header($user, $pageTitle, $activeNav);
         'opportunity-company-logo-image'
     ) ?>
 </div>
+
+
+
+
                                 </div>
 
                                 <div class="opportunity-main">
@@ -539,19 +714,25 @@ render_header($user, $pageTitle, $activeNav);
 
                                     </div>
 
-                                    <div class="internship-tags">
-                                        <span>
-                                            <?= e(
-                                                $internship['field_name']
-                                                ?? 'General'
-                                            ) ?>
-                                        </span>
 
-                                        <span>
-                                            <?= (int) $internship['interns_needed'] ?>
-                                            positions
-                                        </span>
-                                    </div>
+<?php if (!empty($internship['field_id'])): ?>
+
+    <a class="im-field-link"
+       href="<?= e(url(
+           'opportunities.php?field_id='
+           . (int) $internship['field_id']
+       )) ?>">
+
+        <?= e($internship['field_name'] ?? 'General') ?>
+
+    </a>
+
+<?php else: ?>
+
+    <span>General</span>
+
+<?php endif; ?>
+
 
                                 </div>
                             </div>

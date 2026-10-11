@@ -165,11 +165,18 @@ render_header(
 
         <section class="profile-section">
 
-            <?php if ($application['status'] === 'Withdrawn'): ?>
+                <?php if (in_array(
+                        $application['status'],
+                        ['Withdrawn', 'Accepted', 'Rejected'],
+                        true
+                )): ?>
 
                 <div class="alert alert-warning mb-0" role="alert">
-                    This application has been withdrawn by the student.
-                    Reviewing and changing its status are no longer available.
+                    This application is currently
+                    <strong><?= e($application['status']) ?></strong>.
+
+                    The existing recruitment workflow does not allow
+                    further status changes from this state.
                 </div>
 
             <?php else: ?>
@@ -246,12 +253,13 @@ render_header(
                         id="interview_date"
                         name="interview_date"
                         class="form-control profile-input"
+                        
                         min="<?= e(
-                            (new DateTimeImmutable(
-                                'now',
-                                new DateTimeZone(date_default_timezone_get())
-                            ))->format('Y-m-d\TH:i')
+                            (new DateTimeImmutable('now'))
+                                ->modify('+5 minutes')
+                                ->format('Y-m-d\TH:i')
                         ) ?>"
+
 
                         value="<?= !empty(
                             $application['interview_date']
@@ -270,7 +278,7 @@ render_header(
                     <label
                         class="profile-label"
                         for="interview_notes">
-                        Interview Notes
+                        Interview Notes (Shared with Student)
                     </label>
 
                     <textarea
@@ -281,6 +289,16 @@ render_header(
                         maxlength="3000"><?= e(
                             $application['interview_notes'] ?? ''
                         ) ?></textarea>
+
+
+                    
+<p class="small text-muted mt-2">
+    These notes may be visible to the student through
+    their application details and status history.
+    Do not include confidential recruiter evaluations.
+</p>
+
+
                 </div>
 
                 <button

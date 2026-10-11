@@ -44,9 +44,7 @@ try {
         }
     }
 
-    $internsNeeded = !empty($result['items'])
-        ? (int) $result['items'][0]['interns_needed']
-        : 0;
+    $internsNeeded = (int) $result['interns_needed'];
 
 
 } catch (InvalidArgumentException $exception) {
@@ -164,7 +162,9 @@ render_header(
                                     </td>
 
                                     <td>
-                                        <?= e($application['status']) ?>
+                                        <span class="im-application-status">
+                                            <?= e($application['status']) ?>
+                                        </span>
                                     </td>
 
                                     <td>

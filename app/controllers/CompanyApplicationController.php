@@ -60,7 +60,7 @@ final class CompanyApplicationController
         $companyId = self::companyId($userId);
 
         $internshipStatement = db()->prepare(
-            'SELECT title
+            'SELECT title, interns_needed
             FROM internships
             WHERE internship_id = :internship_id
             AND company_id = :company_id
@@ -109,10 +109,13 @@ final class CompanyApplicationController
 
         $items = $statement->fetchAll();
 
-        return [
-            'items' => $items,
-            'title' => $internship['title'],
-        ];
+        
+return [
+    'items' => $items,
+    'title' => $internship['title'],
+    'interns_needed' => (int) $internship['interns_needed'],
+];
+
     }
 
     public static function application(
@@ -507,11 +510,32 @@ AdminActivityController::record(
 
 
 
+
 public static function all(
     int $userId,
-    ?string $status = null
+    ?string $status = null,
+    string $keyword = '',
+    ?int $internshipId = null
 ): array {
+
     $companyId = self::companyId($userId);
+
+
+    
+$keyword = trim($keyword);
+
+if (mb_strlen($keyword, 'UTF-8') > 100) {
+    throw new InvalidArgumentException(
+        'Search keyword is too long.'
+    );
+}
+
+if ($internshipId !== null && $internshipId < 1) {
+    throw new InvalidArgumentException(
+        'Invalid internship filter.'
+    );
+}
+
 
     $allowedStatuses = [
         'Pending',
@@ -543,6 +567,26 @@ public static function all(
         $where[] = 'a.status = :status';
         $parameters['status'] = $status;
     }
+
+    
+if ($internshipId !== null) {
+    $where[] = 'i.internship_id = :filter_internship_id';
+
+    $parameters['filter_internship_id'] = $internshipId;
+}
+
+if ($keyword !== '') {
+    $where[] = '(
+        LOCATE(:search_student, u.name) > 0
+        OR LOCATE(:search_title, i.title) > 0
+        OR LOCATE(:search_email, u.email) > 0
+    )';
+
+    $parameters['search_student'] = $keyword;
+    $parameters['search_title'] = $keyword;
+    $parameters['search_email'] = $keyword;
+}
+
 
     $statement = db()->prepare(
         'SELECT

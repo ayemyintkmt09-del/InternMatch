@@ -106,6 +106,29 @@ try {
             (int) $application['application_id']
         );
     }
+
+    
+$allApplications = $selectedStatus === null
+    ? $applications
+    : ApplicationController::listing($userId, null);
+
+$statusCounts = array_fill_keys(
+    $statusOptions,
+    0
+);
+
+foreach ($allApplications as $application) {
+    $currentStatus = (string) $application['status'];
+
+    if (isset($statusCounts[$currentStatus])) {
+        $statusCounts[$currentStatus]++;
+    }
+}
+
+$totalApplicationCount = count($allApplications);
+
+
+
 } catch (Throwable $exception) {
     error_log((string) $exception);
 
@@ -140,6 +163,18 @@ render_header(
                 <p>
                     Track the internships you have applied for.
                 </p>
+
+
+                
+<a href="<?= e(url('student-company-reviews.php')) ?>"
+   class="btn btn-outline-primary mt-3">
+
+    <i class="bi bi-star me-1"></i>
+    Review My Internship Experiences
+
+</a>
+
+a
             </div>
         </div>
 
@@ -154,6 +189,60 @@ render_header(
                 <?= e($error) ?>
             </div>
         <?php endif; ?>
+
+
+
+        
+<section class="im-application-overview"
+         aria-label="Application status summary">
+
+    <div class="im-career-heading">
+        <div>
+            <h2>Application Overview</h2>
+
+            <p>
+                <?= $totalApplicationCount ?>
+                total applications
+            </p>
+        </div>
+
+        <a href="<?= e(url(
+            'notifications.php?filter=applications'
+        )) ?>"
+           class="btn btn-outline-primary">
+
+            <i class="bi bi-bell me-1"></i>
+            Application Updates
+
+        </a>
+    </div>
+
+    <div class="im-status-grid">
+
+        <?php foreach ($statusOptions as $status): ?>
+
+            <a href="<?= e(url(
+                'my-applications.php?status='
+                . rawurlencode($status)
+            )) ?>"
+               class="im-status-stat <?= $statusFilter === $status
+                   ? 'is-current'
+                   : '' ?>">
+
+                <strong>
+                    <?= (int) $statusCounts[$status] ?>
+                </strong>
+
+                <span><?= e($status) ?></span>
+
+            </a>
+
+        <?php endforeach; ?>
+
+    </div>
+
+</section>
+
 
 
         <div class="application-list-toolbar">

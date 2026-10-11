@@ -43,12 +43,17 @@ final class StudentProfileController
         $statement = db()->prepare(
             'SELECT sp.*, u.name, u.email
              FROM student_profiles AS sp
-             JOIN users AS u ON u.user_id = sp.user_id
-             WHERE sp.user_id = :user_id
+JOIN users AS u ON u.user_id = sp.user_id
+    AND u.role = :required_role
+WHERE sp.user_id = :user_id
              LIMIT 1'
         );
 
-        $statement->execute(['user_id' => $userId]);
+
+$statement->execute([
+    'user_id' => $userId,
+    'required_role' => 'student'
+]);
 
         $profile = $statement->fetch();
 
