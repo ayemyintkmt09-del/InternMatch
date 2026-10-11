@@ -134,8 +134,13 @@
 
 
 
-<?php render_header($user, 'Internship Editor', 'internships'); ?>
-
+<?php
+render_header(
+    $user,
+    $internshipId === null ? 'Post Internship' : 'Edit Internship',
+    $internshipId === null ? 'create' : 'internships'
+);
+?>
 
 
 <main class="profile-page" id="main-content" tabindex="-1">

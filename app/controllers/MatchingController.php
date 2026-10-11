@@ -38,13 +38,49 @@ final class MatchingController
             (int) $profile['student_id']
         );
 
+
+                $internshipIds = array_values(array_unique(array_map(
+            static fn(array $item): int =>
+                (int) $item['internship_id'],
+            $items
+        )));
+
+        $skillsByInternship = [];
+
+        // Keep each query within a manageable parameter count.
+        foreach (array_chunk($internshipIds, 500) as $chunk) {
+            $placeholders = implode(
+                ',',
+                array_fill(0, count($chunk), '?')
+            );
+
+            $skillsStatement = db()->prepare(
+                'SELECT
+                    isk.internship_id,
+                    s.skill_id,
+                    s.skill_name
+                 FROM internship_skills AS isk
+                 JOIN skills AS s ON s.skill_id = isk.skill_id
+                 WHERE isk.internship_id IN (' . $placeholders . ')'
+            );
+
+            $skillsStatement->execute($chunk);
+
+            foreach ($skillsStatement->fetchAll() as $skill) {
+                $id = (int) $skill['internship_id'];
+
+                $skillsByInternship[$id][] = [
+                    'skill_id' => $skill['skill_id'],
+                    'skill_name' => $skill['skill_name'],
+                ];
+            }
+        }
+
         foreach ($items as &$item) {
             $item['match_score'] = self::score(
                 $profile,
                 $item,
-                self::requiredSkills(
-                    (int) $item['internship_id']
-                ),
+                $skillsByInternship[(int) $item['internship_id']] ?? [],
                 $studentSkillIds
             );
         }
@@ -247,35 +283,36 @@ final class MatchingController
         array $profile,
         array $internship
     ): int {
-        $availableFrom = self::dateValue(
-            $profile['available_from'] ?? null
-        );
-
-        $availableUntil = self::dateValue(
-            $profile['available_until'] ?? null
-        );
-
-        $internshipStart = self::dateValue(
-            $internship['start_date'] ?? null
-        );
-
-        $internshipEnd = self::dateValue(
-            $internship['end_date'] ?? null
-        );
+        $from = self::dateValue($profile['available_from'] ?? null);
+        $until = self::dateValue($profile['available_until'] ?? null);
+        $start = self::dateValue($internship['start_date'] ?? null);
+        $end = self::dateValue($internship['end_date'] ?? null);
 
         if (
-            $availableFrom === null
-            || $availableUntil === null
-            || $internshipStart === null
-            || $internshipEnd === null
+            $from === null
+            || $until === null
+            || $start === null
+            || $end === null
+            || $until < $from
+            || $end < $start
         ) {
-            return 100;
+            return 0;
         }
 
-        return $availableFrom <= $internshipEnd
-            && $availableUntil >= $internshipStart
-            ? 100
-            : 0;
+        $overlapStart = $from > $start ? $from : $start;
+        $overlapEnd = $until < $end ? $until : $end;
+
+        if ($overlapEnd < $overlapStart) {
+            return 0;
+        }
+
+        $internshipDays = (int) $start->diff($end)->days + 1;
+        $overlapDays =
+            (int) $overlapStart->diff($overlapEnd)->days + 1;
+
+        return (int) round(
+            ($overlapDays / $internshipDays) * 100
+        );
     }
 
     private static function locationScore(
@@ -327,7 +364,11 @@ final class MatchingController
     private static function dateValue(
         mixed $value
     ): ?DateTimeImmutable {
-        $value = trim((string) $value);
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
 
         if ($value === '') {
             return null;
@@ -338,9 +379,23 @@ final class MatchingController
             $value
         );
 
-        return $date instanceof DateTimeImmutable
-            ? $date
-            : null;
+        $errors = DateTimeImmutable::getLastErrors();
+
+        if (
+            !$date
+            || $date->format('Y-m-d') !== $value
+            || (
+                $errors !== false
+                && (
+                    $errors['warning_count'] > 0
+                    || $errors['error_count'] > 0
+                )
+            )
+        ) {
+            return null;
+        }
+
+        return $date;
     }
 
     private static function tokens(string $text): array
@@ -387,5 +442,57 @@ final class MatchingController
         }
 
         return array_keys($tokens);
+    }
+
+
+        public static function recommendations(
+        int $userId,
+        ?int $limit = null
+    ): array {
+        require_once __DIR__ . '/StudentInternshipController.php';
+
+        $profile = StudentProfileController::load($userId);
+
+        $appliedStatement = db()->prepare(
+            'SELECT internship_id
+             FROM applications
+             WHERE student_id = :student_id'
+        );
+
+        $appliedStatement->execute([
+            'student_id' => (int) $profile['student_id'],
+        ]);
+
+        $appliedIds = array_fill_keys(
+            $appliedStatement->fetchAll(PDO::FETCH_COLUMN),
+            true
+        );
+
+        $candidates = array_values(array_filter(
+            StudentInternshipController::recommendationCandidates(),
+            static fn(array $item): bool =>
+                !isset($appliedIds[(int) $item['internship_id']])
+        ));
+
+        $items = self::attachToList($userId, $candidates);
+
+        usort(
+            $items,
+            static function (array $a, array $b): int {
+                $scoreOrder =
+                    ($b['match_score']['overall'] ?? 0)
+                    <=>
+                    ($a['match_score']['overall'] ?? 0);
+
+                return $scoreOrder !== 0
+                    ? $scoreOrder
+                    : (int) $b['internship_id']
+                        <=> (int) $a['internship_id'];
+            }
+        );
+
+        return $limit === null
+            ? $items
+            : array_slice($items, 0, max(0, $limit));
     }
 }

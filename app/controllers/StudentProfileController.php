@@ -126,7 +126,17 @@ $statement->execute([
 
     $filled = 0;
 
-    foreach ($fields as $field) {
+        foreach ($fields as $field) {
+        if ($field === 'cv_path') {
+            require_once __DIR__ . '/CvController.php';
+
+            if (CvController::downloadPath($profile) !== null) {
+                $filled++;
+            }
+
+            continue;
+        }
+
         $value = trim((string) ($profile[$field] ?? ''));
 
         if ($value !== '') {
@@ -465,5 +475,80 @@ if ($data['field_id'] !== '') {
 
             throw $exception;
         }
+    }
+
+    public static function uploadPhoto(int $userId, array $file): void
+    {
+        $error = $file['error'] ?? UPLOAD_ERR_NO_FILE;
+        $temporaryPath = $file['tmp_name'] ?? null;
+
+        if ($error !== UPLOAD_ERR_OK || !is_string($temporaryPath)
+            || !is_uploaded_file($temporaryPath)) {
+            throw new InvalidArgumentException('Please select a valid image.');
+        }
+
+        $size = filesize($temporaryPath);
+        if ($size === false || $size < 1 || $size > 2 * 1024 * 1024) {
+            throw new InvalidArgumentException('Profile image must be smaller than 2 MB.');
+        }
+
+        $mime = (new finfo(FILEINFO_MIME_TYPE))->file($temporaryPath);
+        $allowed = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($allowed[$mime]) || @getimagesize($temporaryPath) === false) {
+            throw new InvalidArgumentException('Use a JPG, PNG, or WebP image.');
+        }
+
+        $directory = dirname(__DIR__, 2) . '/public/uploads/profile-photos';
+        if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
+            throw new RuntimeException('Could not create the profile-image directory.');
+        }
+
+        $filename = bin2hex(random_bytes(24)) . '.' . $allowed[$mime];
+        $destination = $directory . DIRECTORY_SEPARATOR . $filename;
+        $relativePath = 'uploads/profile-photos/' . $filename;
+
+        if (!move_uploaded_file($temporaryPath, $destination)) {
+            throw new RuntimeException('Could not save the profile image.');
+        }
+
+        $statement = db()->prepare(
+            'UPDATE student_profiles
+             SET profile_photo = :profile_photo
+             WHERE user_id = :user_id'
+        );
+
+        try {
+            $statement->execute([
+                'profile_photo' => $relativePath,
+                'user_id' => $userId,
+            ]);
+        } catch (Throwable $exception) {
+            @unlink($destination);
+            throw $exception;
+        }
+    }
+
+    public static function photoUrl(array $profile): ?string
+    {
+        $stored = $profile['profile_photo'] ?? null;
+
+        if (!is_string($stored)
+            || !preg_match('~^uploads/profile-photos/[A-Za-z0-9_-]{1,80}\.(jpg|png|webp)$~D', $stored)) {
+            return null;
+        }
+
+
+        $photoFile = __DIR__ . '/../../public/' . $stored;
+
+        if (!is_file($photoFile) || !is_readable($photoFile)) {
+            return null;
+        }
+
+        return url($stored);
     }
 }

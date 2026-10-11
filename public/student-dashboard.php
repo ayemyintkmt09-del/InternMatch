@@ -36,7 +36,7 @@ try {
 
             <!-- WELCOME HEADER-->
 
-            <section class="dashboard-header">
+            <section class="dashboard-header im-student-welcome">
 
                 <div>
                     <p class="dashboard-small-title">STUDENT DASHBOARD</p>
@@ -123,13 +123,47 @@ try {
 
             </section>
 
+                        <!-- STATISTICS -->
 
+<section class="row g-3 dashboard-stat-row">
+    <?php
+    $studentStats = [
+        ['Applications', 'total_applications',
+            'bi-send-check', 'All submitted applications'],
+        ['Interviews', 'upcoming_interview_count',
+            'bi-calendar-check', 'Upcoming interviews'],
+        ['Shortlisted', 'shortlisted_count',
+            'bi-person-check', 'Currently shortlisted'],
+        ['Accepted', 'accepted_count',
+            'bi-patch-check', 'Accepted applications'],
+    ];
+    ?>
+
+    <?php foreach ($studentStats as [$label, $key, $icon, $hint]): ?>
+        <div class="col-xl-3 col-sm-6">
+            <div class="dashboard-stat-card">
+                <div class="stat-icon stat-blue" aria-hidden="true">
+                    <i class="bi <?= e($icon) ?>"></i>
+                </div>
+                <div class="stat-content">
+                    <span><?= e($label) ?></span>
+                    <h3><?= number_format($dashboard[$key]) ?></h3>
+                    <small><?= e($hint) ?></small>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</section>
+
+<div class="im-student-toolkit">
+
+            
 
             <!-- Existing skill catalogue and stored proficiency levels; no fake percentages. -->
             <section class="im-student-skills" aria-labelledby="studentSkillsTitle">
                 <div class="im-student-skills-heading">
-                    <div><span class="section-label">YOUR PROFESSIONAL TOOLKIT</span><h2 id="studentSkillsTitle">Technologies & Skills I Master</h2></div>
-                    <a class="btn btn-outline-success btn-sm" href="<?= e(url('student-profile.php#skills-section')) ?>"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Edit skills</a>
+                    <div><span class="section-label">YOUR PROFESSIONAL TOOLKIT</span><h2 id="studentSkillsTitle">Technologies I Master</h2></div>
+                    <a class="btn btn-outline-success btn-sm" href="<?= e(url('student-skill-levels.php')) ?>"><i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Edit skills</a>
                 </div>
                 <?php if ($dashboard['skills'] === []): ?>
                     <div class="im-skills-empty">
@@ -143,12 +177,12 @@ try {
                             <?php
                             $level = trim((string)$skill['proficiency_level']);
                            
-$levelWidths = [
-    'Beginner' => 25,
-    'Intermediate' => 50,
-    'Advanced' => 75,
-    'Expert' => 100
-];
+                            $levelWidths = [
+                                'Beginner' => 25,
+                                'Intermediate' => 50,
+                                'Advanced' => 75,
+                                'Expert' => 100
+                            ];
 
                             $barWidth = $levelWidths[$level] ?? 0;
                             ?>
@@ -162,6 +196,30 @@ $levelWidths = [
                 <?php endif; ?>
             </section>
 
+                <section class="im-digital-cv-card"
+             aria-labelledby="digitalCvCardTitle">
+        <div class="im-cv-art" aria-hidden="true">
+            <i class="bi bi-file-earmark-person"></i>
+            <span><i class="bi bi-check-lg"></i></span>
+        </div>
+
+        <h2 id="digitalCvCardTitle">My Digital CV</h2>
+        <p>
+            Keep your education, skills and experience
+            ready for your next opportunity.
+        </p>
+
+        <a class="btn btn-primary"
+           href="<?= e(url('student-digital-cv.php')) ?>">
+            View Digital CV
+        </a>
+
+        <a class="btn btn-outline-primary"
+           href="<?= e(url('student-profile.php#cv-section')) ?>">
+            Manage Uploaded CV
+        </a>
+    </section>
+</div>
             <!-- STATISTICS -->
 
             <section class="row g-4 dashboard-stat-row">
@@ -245,12 +303,12 @@ $levelWidths = [
                                 <p>Recently published opportunities from verified companies</p>
                             </div>
 
-                            <a href="<?= e(url('opportunities.php')) ?>">
+                            <a href="<?= e(url('student-recommendations.php')) ?>">
                                 View All <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>
 
-                        <?php if ($dashboard['latest_internships'] === []): ?>
+                        <?php if ($dashboard['recommended_internships'] === []): ?>
 
                             <div class="text-center py-4">
                                 <i class="bi bi-briefcase fs-1 text-primary"></i>
@@ -263,7 +321,7 @@ $levelWidths = [
                         <?php else: ?>
 
                             <?php foreach (
-                                $dashboard['latest_internships'] as $internship
+                                $dashboard['recommended_internships'] as $internship
                             ): ?>
 
                                 <div class="internship-card">
@@ -277,7 +335,22 @@ $levelWidths = [
                                         <div class="internship-card-title-row">
                                             <div>
                                                 <h4><?= e($internship['title']) ?></h4>
-                                                <p><?= e($internship['company_name']) ?></p>
+                                                <span class="im-match-badge">
+                                                    <?= (int) ($internship['match_score']['overall'] ?? 0) ?>%
+                                                    profile match
+                                                </span>
+                                                <p>
+    <a href="<?= e(url(
+        'company-view-profile.php?id='
+        . (int) $internship['company_id']
+    )) ?>">
+        <?= e($internship['company_name']) ?>
+    </a>
+</p>
+
+                                                                                                <p class="small text-muted">
+                                                    Match scores describe profile alignment, not hiring probability.
+                                                </p>
                                             </div>
                                         </div>
 
@@ -388,7 +461,14 @@ $levelWidths = [
 
                                     <div class="application-info">
                                         <h5><?= e($application['title']) ?></h5>
-                                        <p><?= e($application['company_name']) ?></p>
+                                        <p>
+    <a href="<?= e(url(
+        'company-view-profile.php?id='
+        . (int) $application['company_id']
+    )) ?>">
+        <?= e($application['company_name']) ?>
+    </a>
+</p>
                                     </div>
 
                                     <span class="badge <?= e($badgeClass) ?>">
@@ -429,7 +509,12 @@ $levelWidths = [
                                     </strong>
 
                                     <div class="small text-muted">
-                                        <?= e($interview['company_name']) ?>
+                                        <a href="<?= e(url(
+    'company-view-profile.php?id='
+    . (int) $interview['company_id']
+)) ?>">
+    <?= e($interview['company_name']) ?>
+</a>
                                     </div>
 
                                     <div class="small text-primary mt-1">
@@ -577,8 +662,8 @@ $levelWidths = [
     </div>
 
     <div>
-        <strong>Recommended Internships</strong>
-        <small>Explore personalized matches</small>
+        <h3>Recommended Internships</h3>
+<p>Open opportunities ranked against your profile</p>
     </div>
 
     <i class="bi bi-chevron-right"></i>
@@ -628,21 +713,7 @@ $levelWidths = [
 
 
 
-            <!-- =====================================
-                 FOOTER
-            ====================================== -->
 
-            <div class="dashboard-footer">
-
-                <span>
-                    © 2026 InternMatch
-                </span>
-
-                <span>
-                    Internship Opportunity & Student Matching System
-                </span>
-
-            </div>
 
 
         </div>

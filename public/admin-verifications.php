@@ -6,6 +6,8 @@ require_once __DIR__ . '/../app/middleware/auth.php';
 require_once __DIR__ . '/../app/controllers/AdminVerificationController.php';
 require_once __DIR__ . '/../app/layout.php';
 
+require_once __DIR__ . '/../app/controllers/CompanyFileController.php';
+
 
 
 $user = require_role('admin');
@@ -171,7 +173,13 @@ try {
                             <tr>
                                 <td>
                                     <strong>
-                                        <?= e($company['company_name']) ?>
+                                        <a class="fw-semibold text-decoration-none"
+                                            href="<?= e(url(
+                                                'company-view-profile.php?id='
+                                                . (int) $company['company_id']
+                                            )) ?>">
+                                                <?= e($company['company_name']) ?>
+                                        </a>
                                     </strong>
                                     <br>
                                     <small class="text-muted">
@@ -190,9 +198,22 @@ try {
                                 </td>
 
                                 <td>
-                                    <?= $company['verification_doc_path']
-                                        ? 'Uploaded'
-                                        : 'Not uploaded' ?>
+                                    <?php
+                                        $verificationDocumentAvailable =
+                                            CompanyFileController::path($company, 'verification') !== null;
+                                        ?>
+
+                                        <span class="small <?= $verificationDocumentAvailable
+                                            ? 'text-success'
+                                            : 'text-muted' ?>">
+                                            <?= $verificationDocumentAvailable
+                                                ? 'Available'
+                                                : (
+                                                    !empty($company['verification_doc_path'])
+                                                        ? 'File unavailable'
+                                                        : 'Not uploaded'
+                                                ) ?>
+                                        </span>
                                 </td>
 
                                 <td class="text-end">

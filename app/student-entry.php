@@ -42,6 +42,8 @@ function student_entry_path(mixed $intent): ?string
         'field_id' => 10,
         'type' => 20,
         'sort' => 20,
+        'company_id' => 10,
+
     ];
 
     $query = [];

@@ -70,7 +70,25 @@ final class AdminUserController
         $offset = ($page - 1) * $pageSize;
 
         $statement = $pdo->prepare(
-            'SELECT user_id, name, email, role, status, created_at
+            'SELECT
+                user_id,
+                name,
+                email,
+                role,
+                status,
+                created_at,
+                (
+                    SELECT sp.student_id
+                    FROM student_profiles AS sp
+                    WHERE sp.user_id = users.user_id
+                    LIMIT 1
+                ) AS student_profile_id,
+                (
+                    SELECT c.company_id
+                    FROM companies AS c
+                    WHERE c.user_id = users.user_id
+                    LIMIT 1
+                ) AS company_profile_id
              FROM users'
             . $whereSql
             . ' ORDER BY user_id DESC
@@ -141,17 +159,21 @@ final class AdminUserController
                 );
             }
 
-            $allowed = (
-                $target['status'] === 'active'
-                && $newStatus === 'suspended'
-            ) || (
-                $target['status'] === 'suspended'
-                && $newStatus === 'active'
+            $allowedTransitions = [
+                'pending' => ['active'],
+                'active' => ['suspended'],
+                'suspended' => ['active'],
+            ];
+
+            $allowed = in_array(
+                $newStatus,
+                $allowedTransitions[$target['status']] ?? [],
+                true
             );
 
             if (!$allowed) {
                 throw new InvalidArgumentException(
-                    'Only active accounts can be suspended and suspended accounts reactivated.'
+                    'This account status transition is not allowed.'
                 );
             }
 

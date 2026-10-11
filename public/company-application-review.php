@@ -77,6 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Review Application';
+$activeNav = 'applications';
+
+
 render_header(
     $user,
     $pageTitle ?? 'InternMatch',
@@ -92,6 +95,15 @@ render_header(
             <div>
                 <p class="dashboard-small-title">APPLICATION REVIEW</p>
                 <h1><?= e($application['student_name']) ?></h1>
+
+
+                <a class="btn btn-outline-primary btn-sm mb-2"
+                    href="<?= e(url(
+                        'student-view-profile.php?id='
+                        . (int) $application['student_id']
+                    )) ?>">
+                        View Student Profile
+                </a>
                 <p><?= e($application['title']) ?></p>
             </div>
 
@@ -223,12 +235,33 @@ render_header(
                         class="form-select profile-input"
                         required>
 
-                        <?php foreach ([
-                            'Under Review',
-                            'Shortlisted',
-                            'Accepted',
-                            'Rejected',
-                        ] as $status): ?>
+                        <?php
+                            $statusOptions = [
+                                'Pending' => [
+                                    'Pending',
+                                    'Under Review',
+                                    'Rejected',
+                                ],
+                                'Under Review' => [
+                                    'Under Review',
+                                    'Shortlisted',
+                                    'Accepted',
+                                    'Rejected',
+                                ],
+                                'Shortlisted' => [
+                                    'Shortlisted',
+                                    'Accepted',
+                                    'Rejected',
+                                ],
+                                'Accepted' => ['Accepted'],
+                                'Rejected' => ['Rejected'],
+                            ];
+
+                            $currentStatusOptions =
+                                $statusOptions[$application['status']] ?? [];
+                            ?>
+
+                            <?php foreach ($currentStatusOptions as $status): ?>
 
                             <option
                                 value="<?= e($status) ?>"
@@ -254,11 +287,7 @@ render_header(
                         name="interview_date"
                         class="form-control profile-input"
                         
-                        min="<?= e(
-                            (new DateTimeImmutable('now'))
-                                ->modify('+5 minutes')
-                                ->format('Y-m-d\TH:i')
-                        ) ?>"
+                       
 
 
                         value="<?= !empty(
@@ -272,6 +301,14 @@ render_header(
                                 16
                             )
                         )) : '' ?>">
+
+
+
+
+                        <p class="small text-muted mt-2 mb-0">
+                            New or changed interview times must be in the future.
+                            Existing interview times can be kept when updating the review.
+                        </p>
                 </div>
 
                 <div class="mb-4">

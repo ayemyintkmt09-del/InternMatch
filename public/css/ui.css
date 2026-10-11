@@ -1,19 +1,24 @@
 /* InternMatch shared interface */
 
 :root {
-    --im-brand: #166534;
-    --im-brand-hover: #14532d;
-    --im-brand-soft: #f0fdf4;
-    --im-text: #183229;
-    --im-muted: #52635c;
-    --im-border: #dce5df;
+    --im-brand: #168b91;
+    --im-brand-hover: #116970;
+    --im-brand-soft: #e1f5f1;
+    --im-text: #203844;
+    --im-muted: #5b707a;
+    --im-border: #d3e7e7;
     --im-surface: #ffffff;
-    --im-background: #f8fafc;
+    --im-background: #edf7f6;
     --im-radius: 16px;
-    --im-shadow: 0 8px 24px rgb(24 50 41 / 5%);
+    --im-shadow: 0 8px 24px rgb(31 87 90 / 7%);
+    --im-sidebar-width: 238px;
+    --im-header-height: 76px;
+    --im-skill-soft: #eee8fa;
+    --im-skill-color: #8b72be;
 
-    --bs-success: #166534;
-    --bs-success-rgb: 22, 101, 52;
+
+    --bs-success: #168b91;
+    --bs-success-rgb: 22, 139, 145;
 }
 
 .im-app {
@@ -355,4 +360,1035 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* BUILD 13 — shared four-role visual system. */
+
+.im-profile-photo-card{display:flex;gap:1.25rem;align-items:center;margin:1.5rem 0;padding:1.25rem;border:1px solid rgba(15,157,138,.16);border-radius:1.25rem;background:#fff;box-shadow:0 16px 36px rgba(15,118,110,.08)}
+.im-profile-photo-preview{width:96px;height:96px;flex:0 0 96px;overflow:hidden;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#d7f6ef,#91d9cf);color:#087f74;font-size:2rem;font-weight:800}
+.im-profile-photo-preview img{width:100%;height:100%;object-fit:cover}
+.im-profile-photo-copy{min-width:0;flex:1}.im-profile-photo-copy h2{margin:0 0 .25rem}.im-profile-photo-copy p{margin:0 0 .75rem;color:#607d79}
+@media (max-width:575.98px){.im-profile-photo-card{align-items:flex-start;flex-direction:column}.im-profile-photo-preview{width:80px;height:80px;flex-basis:80px}.im-profile-photo-copy form{align-items:stretch;flex-direction:column}.im-profile-photo-copy form .form-control,.im-profile-photo-copy form .btn{width:100%}}
+/* This layer is intentionally last so the existing PHP pages keep their
+   routes, forms, controllers, and database behaviour while sharing one UI. */
+.im-app {
+    background: var(--im-background) !important;
+    color: var(--im-text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.im-app .container,
+.im-app .container-fluid {
+    --bs-gutter-x: 2rem;
+}
+
+.im-app .im-announcement-bar {
+    background: #d9f1ed;
+    border-bottom: 1px solid #c2e4e0;
+    color: #2d6468;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+    padding: 0.45rem 0;
+}
+
+.im-app .im-announcement-bar a {
+    color: #0f777c;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.im-app .im-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    min-height: 76px;
+    padding-block: 0.72rem;
+    background: rgb(255 255 255 / 96%) !important;
+    border-bottom: 1px solid #d3e7e7 !important;
+    box-shadow: 0 4px 18px rgb(31 87 90 / 6%);
+    backdrop-filter: blur(16px);
+}
+
+.im-app .im-brand-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #203844 !important;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.im-app .im-brand-lockup > i {
+    color: var(--im-brand);
+    font-size: 1.25rem;
+}
+
+.im-app .im-brand-lockup .logo-green {
+    color: var(--im-brand);
+}
+
+.im-app .im-primary-nav {
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.im-app .im-primary-nav .nav-link {
+    border-radius: 10px;
+    color: #4d6771;
+    font-size: 0.87rem;
+    font-weight: 650;
+    padding: 0.58rem 0.74rem;
+}
+
+.im-app .im-primary-nav .nav-link:is(:hover, .active) {
+    background: #e0f4f1;
+    color: #0d777d;
+}
+
+.im-app .im-account-controls {
+    white-space: nowrap;
+}
+
+.im-app .im-account-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.48rem;
+    border-color: #cfe2e2;
+    background: #f7fbfb;
+    color: #304f58;
+}
+
+.im-app .im-account-avatar {
+    display: inline-grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 50%;
+    background: #cfeee9;
+    color: #13767a;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.im-app .im-role-sidebar {
+    top: 76px;
+    width: 238px;
+    padding: 1.35rem 0.9rem 1rem;
+    background: linear-gradient(180deg, #e2f3f0 0%, #eef8f7 70%, #e7f5f6 100%);
+    border-right: 1px solid #cfe4e2;
+}
+
+.im-app .im-sidebar-title {
+    padding: 0.25rem 0.65rem 1.2rem;
+}
+
+.im-app .im-sidebar-symbol {
+    background: var(--im-brand);
+    box-shadow: 0 6px 12px rgb(22 139 145 / 16%);
+}
+
+.im-app .im-sidebar-link {
+    border: 1px solid transparent;
+    color: #46636b;
+    font-size: 0.84rem;
+}
+
+.im-app .im-sidebar-link:is(:hover, .is-active) {
+    background: #cfeee9;
+    border-color: #b9e0dc;
+    box-shadow: inset 3px 0 var(--im-brand);
+    color: #0a6f74 !important;
+}
+
+.im-app .im-sidebar-help {
+    background: #d3eeeb;
+    border-color: #b9dcd9;
+}
+
+.im-app:is(.im-role-student, .im-role-company, .im-role-admin) > main {
+    margin-left: 238px;
+}
+
+.im-app:is(.im-role-student, .im-role-company, .im-role-admin) .im-site-footer {
+    margin-left: 238px;
+}
+
+/* Public homepage */
+
+.im-app.im-public .hero-section {
+    padding: clamp(3.5rem, 7vw, 5.6rem) 0 clamp(3.8rem, 7vw, 5.8rem);
+    background:
+        radial-gradient(circle at 82% 18%, rgb(191 234 226 / 72%) 0 10%, transparent 34%),
+        linear-gradient(120deg, #effaf8 0%, #e4f6f4 56%, #d4efed 100%);
+    border-bottom: 1px solid #cfe9e5;
+}
+
+.im-app.im-public .hero-badge {
+    background: #d5f0eb;
+    color: #13787d;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+}
+
+.im-app.im-public .hero-title {
+    max-width: 680px;
+    color: #203844;
+    font-size: clamp(2.25rem, 5vw, 4.25rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1.04;
+}
+
+.im-app.im-public .hero-title span {
+    color: #117f83;
+}
+
+.im-app.im-public .hero-text {
+    max-width: 550px;
+    color: #5b747b;
+    font-size: 1.04rem;
+}
+
+.im-app.im-public .search-box {
+    max-width: 960px;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    border: 1px solid #acd8d4;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgb(29 106 105 / 12%);
+}
+
+.im-app.im-public .search-box :where(input, select) {
+    min-height: 47px;
+    border: 0;
+    color: #39545d;
+    font-size: 0.88rem;
+}
+
+.im-app.im-public .search-box .search-button {
+    min-width: 58px;
+    min-height: 47px;
+    border: 0;
+    border-radius: 11px;
+    background: var(--im-brand);
+}
+
+.im-app.im-public .search-message {
+    color: #47777a;
+    font-size: 0.8rem;
+}
+
+.im-app.im-public :where(.im-home-categories, .im-home-companies, .im-home-resources, .featured-section, .how-section, .benefits-section) {
+    padding-block: clamp(3.1rem, 6vw, 5rem);
+}
+
+.im-app.im-public .im-home-categories { background: #e5f5f2; }
+.im-app.im-public .im-home-companies { background: #edf9f6; }
+.im-app.im-public .im-home-resources { background: #e8f5f6; }
+.im-app.im-public .featured-section { background: #f5fbfa; }
+.im-app.im-public .how-section { background: #e4f3f1; }
+.im-app.im-public .benefits-section { background: #edf8f6; }
+
+.im-app.im-public .section-label {
+    color: #198187;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+}
+
+.im-app.im-public .im-section-head,
+.im-app.im-public .section-heading {
+    margin-bottom: 1.6rem;
+}
+
+.im-app.im-public :where(.im-category-card, .im-company-tile, .im-resource-card, .home-live-card, .step-card, .im-career-article-card) {
+    border: 1px solid #cfe6e3;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 86%);
+    box-shadow: 0 7px 22px rgb(31 87 90 / 6%);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.im-app.im-public :where(.im-category-card, .im-company-tile, .im-resource-card, .home-live-card, .step-card, .im-career-article-card):hover {
+    border-color: #9fd1cc;
+    box-shadow: 0 13px 28px rgb(31 87 90 / 10%);
+    transform: translateY(-2px);
+}
+
+.im-app.im-public .home-live-card {
+    padding: 1.35rem;
+}
+
+.im-app.im-public .card-button,
+.im-app.im-public .cta-button {
+    border: 0;
+    background: var(--im-brand);
+    color: #fff;
+}
+
+.im-app.im-public .card-button:hover,
+.im-app.im-public .cta-button:hover {
+    background: var(--im-brand-hover);
+    color: #fff;
+}
+
+/* Authenticated home pages */
+
+.im-app:is(.im-role-student, .im-role-company, .im-role-admin) :where(.dashboard-main, .company-dashboard-page, .admin-dashboard-page) {
+    min-height: calc(100vh - 76px);
+    padding: 2.25rem clamp(1rem, 2.4vw, 2.5rem) 4rem;
+}
+
+.im-app:is(.im-role-student, .im-role-company, .im-role-admin) :where(.dashboard-container, .company-dashboard-page > .container, .admin-dashboard-page > .container) {
+    max-width: 1440px;
+    margin-inline: auto;
+}
+
+.im-app :where(.dashboard-header, .company-dashboard-header, .admin-dashboard-header) {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.55rem;
+    padding: clamp(1.35rem, 3vw, 2.15rem);
+    border: 1px solid #cce5e2;
+    border-radius: 20px;
+    background: linear-gradient(118deg, #dff3f0 0%, #edf9f7 58%, #e5f1f7 100%);
+}
+
+.im-app :where(.dashboard-header h1, .company-dashboard-header h1, .admin-dashboard-header h1) {
+    margin: 0.35rem 0 0.5rem;
+    color: #203844;
+    font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+}
+
+.im-app :where(.dashboard-header p, .company-dashboard-header p, .admin-dashboard-header p) {
+    max-width: 670px;
+    margin: 0;
+    color: #5a737a;
+}
+
+.im-app .dashboard-small-title {
+    color: #168187;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+}
+
+.im-app :where(.dashboard-panel, .company-panel, .admin-panel, .profile-completion-card, .company-profile-banner, .im-student-skills) {
+    border: 1px solid #d1e6e4;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 7px 24px rgb(31 87 90 / 6%);
+}
+
+.im-app .profile-completion-card,
+.im-app .im-student-skills,
+.im-app .company-profile-banner {
+    margin-bottom: 1.5rem;
+}
+
+.im-app :where(.dashboard-stat-card, .company-stat-card, .admin-stat-card) {
+    min-height: 112px;
+    border: 1px solid #d1e6e4;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 6px 20px rgb(31 87 90 / 5%);
+}
+
+.im-app :where(.dashboard-stat-card, .company-stat-card, .admin-stat-card) h3,
+.im-app :where(.dashboard-stat-card, .company-stat-card, .admin-stat-card) strong {
+    color: #203f49;
+}
+
+.im-app :where(.dashboard-panel-header, .company-panel-header, .admin-panel-header) {
+    gap: 1rem;
+    border-bottom-color: #e0eeee;
+}
+
+.im-app :where(.dashboard-panel-header h3, .company-panel-header h3, .admin-panel-header h2) {
+    color: #294951;
+    font-size: 1.08rem;
+}
+
+.im-app :where(.dashboard-panel-header p, .company-panel-header p, .admin-panel-header p) {
+    color: #6b8288;
+}
+
+.im-app .im-student-skills {
+    padding: clamp(1.15rem, 2.4vw, 1.7rem);
+    background: linear-gradient(125deg, #fbfefe 8%, #e5f5f3 100%);
+}
+
+.im-app .im-student-skills-heading h2 {
+    color: #294951;
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+
+.im-app .im-skill-track {
+    height: 8px;
+    background: #dce8eb;
+}
+
+.im-app .im-skill-track > div {
+    background: linear-gradient(90deg, #a58be8 0%, #7e6ae1 100%);
+}
+
+.im-app .im-cv-sheet {
+    border-color: #cde5e2;
+    box-shadow: 0 12px 35px rgb(31 87 90 / 8%);
+}
+
+.im-app .im-cv-hero {
+    background: linear-gradient(125deg, #dff3f0, #e9f4f8);
+}
+
+/* Footer */
+
+.im-app .im-site-footer {
+    margin-top: 0 !important;
+    padding: 3rem 0 1.1rem;
+    background: #dff0ee;
+    border-top: 1px solid #c4dfdc;
+    color: #45676e;
+}
+
+.im-app .im-footer-main {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.15fr) minmax(0, 2fr);
+    gap: 3rem;
+    padding-bottom: 2.25rem;
+}
+
+.im-app .im-footer-brand p {
+    max-width: 320px;
+    margin: 1rem 0;
+    color: #5b777d;
+    font-size: 0.88rem;
+}
+
+.im-app .im-footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: #23454e;
+    font-size: 1.28rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-decoration: none;
+}
+
+.im-app .im-footer-logo > span:last-child > span { color: var(--im-brand); }
+
+.im-app .im-footer-logo-icon {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--im-brand);
+    color: #fff;
+}
+
+.im-app .im-footer-trust {
+    color: #2e7275;
+    font-size: 0.77rem;
+    font-weight: 700;
+}
+
+.im-app .im-footer-trust i { margin-right: 0.35rem; }
+
+.im-app .im-footer-columns {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.4rem;
+}
+
+.im-app .im-footer-column h2 {
+    margin: 0 0 0.8rem;
+    color: #2e555d;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.im-app .im-footer-column nav {
+    display: grid;
+    gap: 0.48rem;
+}
+
+.im-app .im-footer-column a,
+.im-app .im-footer-legal a {
+    color: #537178;
+    font-size: 0.78rem;
+    text-decoration: none;
+}
+
+.im-app .im-footer-column a:hover,
+.im-app .im-footer-legal a:hover { color: #0d747a; text-decoration: underline; }
+
+.im-app .im-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #c8e1df;
+    color: #668086;
+    font-size: 0.76rem;
+}
+
+.im-app .im-footer-legal { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+@media (max-width: 1199.98px) {
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) > main,
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) .im-site-footer {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .im-app .im-footer-main { grid-template-columns: 1fr; gap: 2rem; }
+    .im-app .im-footer-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .im-app .im-primary-nav { align-items: stretch; }
+    .im-app .im-account-controls { align-items: stretch !important; flex-wrap: wrap; }
+}
+
+@media (max-width: 575.98px) {
+    .im-app .container,
+    .im-app .container-fluid { --bs-gutter-x: 1.25rem; }
+    .im-app .im-account-name { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+    .im-app .im-footer-columns { grid-template-columns: 1fr 1fr; gap: 1.4rem 1rem; }
+    .im-app .im-footer-bottom { align-items: flex-start; flex-direction: column; }
+    .im-app :where(.dashboard-header, .company-dashboard-header, .admin-dashboard-header) { align-items: flex-start; flex-direction: column; }
+    .im-app :where(.dashboard-header-actions, .company-dashboard-header .btn, .admin-dashboard-header .btn) { width: 100%; }
+    .im-app .dashboard-header-actions { display: grid; width: 100%; }
+    .im-app.im-public .search-box { display: grid; grid-template-columns: 1fr; }
+    .im-app.im-public .search-box :where(input, select, .search-button) { width: 100%; border-top: 1px solid #e6f0ef; }
+    .im-app.im-public .search-box .search-input { border-top: 0; }
+}
+
+
+
+
+/* BATCH 3 — shared components and responsive workspace navigation */
+
+.im-app .im-account-avatar {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--im-brand-soft);
+    color: var(--im-brand);
+}
+
+.im-app .im-account-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.im-app .card {
+    border-color: var(--im-border);
+    border-radius: var(--im-radius);
+}
+
+.im-app .form-control,
+.im-app .form-select {
+    border-color: var(--im-border);
+    border-radius: 10px;
+    min-height: 44px;
+}
+
+.im-app .form-control:focus,
+.im-app .form-select:focus {
+    border-color: var(--im-brand);
+    box-shadow: 0 0 0 3px rgb(22 139 145 / 14%);
+}
+
+.im-app .btn-primary,
+.im-app .btn-success {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--im-brand);
+    --bs-btn-border-color: var(--im-brand);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--im-brand-hover);
+    --bs-btn-hover-border-color: var(--im-brand-hover);
+    --bs-btn-active-bg: var(--im-brand-hover);
+    --bs-btn-active-border-color: var(--im-brand-hover);
+    --bs-btn-disabled-bg: var(--im-brand);
+    --bs-btn-disabled-border-color: var(--im-brand);
+}
+
+.im-app .btn-outline-primary,
+.im-app .btn-outline-success {
+    --bs-btn-color: var(--im-brand);
+    --bs-btn-border-color: var(--im-brand);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--im-brand);
+    --bs-btn-hover-border-color: var(--im-brand);
+    --bs-btn-active-bg: var(--im-brand-hover);
+    --bs-btn-active-border-color: var(--im-brand-hover);
+}
+
+.im-app .table > thead > tr > th {
+    background: var(--im-brand-soft);
+    color: var(--im-text);
+    font-weight: 650;
+    border-bottom-color: var(--im-border);
+}
+
+.im-app .table > :not(caption) > * > * {
+    border-bottom-color: var(--im-border);
+}
+
+.im-app :where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid var(--im-brand);
+    outline-offset: 3px;
+}
+
+.im-app .im-empty-state {
+    padding: clamp(24px, 5vw, 48px);
+    border: 1px dashed var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    text-align: center;
+}
+
+.im-app .im-empty-state p {
+    color: var(--im-muted);
+}
+
+.im-app .im-skill-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--im-skill-soft);
+}
+
+.im-app .im-skill-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--im-skill-color);
+}
+
+@media (min-width: 1200px) {
+    .im-app .im-role-sidebar {
+        width: var(--im-sidebar-width);
+        top: var(--im-header-height);
+    }
+
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) > main,
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) .im-site-footer {
+        margin-left: var(--im-sidebar-width);
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .im-app .im-role-sidebar {
+        display: none;
+    }
+
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) > main,
+    .im-app:is(.im-role-student, .im-role-company, .im-role-admin) .im-site-footer {
+        margin-left: 0;
+    }
+
+    .im-app #roleNavbar {
+        max-height: calc(100dvh - 100px);
+        overflow-y: auto;
+        padding: 12px 0;
+    }
+
+    .im-app #roleNavbar .im-primary-nav {
+        display: flex !important;
+        gap: 4px;
+    }
+
+    .im-app #roleNavbar .nav-link {
+        padding: 10px 14px;
+        border-radius: 10px;
+        white-space: normal;
+    }
+
+    .im-app #roleNavbar .nav-link.active {
+        background: var(--im-brand-soft);
+        color: var(--im-brand);
+    }
+
+    .im-app #roleNavbar .im-account-controls {
+        flex-wrap: wrap;
+        padding: 12px 0;
+        border-top: 1px solid var(--im-border);
+        margin-top: 12px;
+    }
+}
+
+
+/* BATCH 5 — Company and Admin workspaces */
+
+.im-app:is(.im-role-company, .im-role-admin) > main {
+    padding-top: 28px;
+    padding-bottom: 40px;
+}
+
+.im-app .company-dashboard-header,
+.im-app .admin-dashboard-header,
+.im-app .company-panel-header,
+.im-app .admin-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.im-app .company-panel,
+.im-app .admin-panel,
+.im-app .im-recruit-panel,
+.im-app .im-review-dashboard-panel {
+    padding: clamp(20px, 3vw, 28px);
+    margin-bottom: 24px;
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .company-panel-header,
+.im-app .admin-panel-header {
+    margin-bottom: 20px;
+}
+
+.im-app .company-panel-header p,
+.im-app .admin-panel-header p {
+    margin-bottom: 0;
+    color: var(--im-muted);
+}
+
+.im-app .admin-stat-card {
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .admin-pending-card {
+    border: 1px solid var(--im-border);
+    border-radius: 12px;
+    background: var(--im-brand-soft);
+}
+
+.im-app .im-applicant-overview {
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: linear-gradient(120deg, #e4f4f1, #f4faf9);
+}
+
+.im-app:is(.im-role-company, .im-role-admin) .table {
+    margin-bottom: 0;
+}
+
+.im-app:is(.im-role-company, .im-role-admin) .table td {
+    vertical-align: middle;
+}
+
+.im-app:is(.im-role-company, .im-role-admin) .table .btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .im-app:is(.im-role-company, .im-role-admin) > main {
+        padding-top: 20px;
+        padding-bottom: 28px;
+    }
+
+    .im-app .company-panel,
+    .im-app .admin-panel,
+    .im-app .im-recruit-panel,
+    .im-app .im-review-dashboard-panel {
+        padding: 18px;
+    }
+
+    .im-app .company-dashboard-header .btn,
+    .im-app .admin-dashboard-header .btn {
+        max-width: 100%;
+    }
+}
+
+
+/* STEPS 41–45 — Student visual components */
+
+.im-app.im-role-student .im-student-welcome {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 40px);
+    border: 1px solid var(--im-border);
+    border-radius: 20px;
+    background-color: #e4f4f1;
+    background-image:
+        linear-gradient(
+            90deg,
+            rgb(228 244 241 / 96%),
+            rgb(228 244 241 / 72%) 55%,
+            rgb(228 244 241 / 18%)
+        ),
+        url("../images/student-welcome.png");
+    background-position: center;
+    background-size: cover;
+}
+
+.im-app .im-student-welcome h1 {
+    font-size: clamp(1.65rem, 3vw, 2.4rem);
+}
+
+.im-app .im-student-welcome p {
+    max-width: 500px;
+    color: var(--im-text);
+}
+
+.im-app .im-student-toolkit {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+    gap: 24px;
+    margin: 24px 0;
+    align-items: stretch;
+}
+
+.im-app.im-role-student
+.im-student-toolkit .im-student-skills {
+    min-width: 0;
+    margin: 0;
+}
+
+.im-app .im-digital-cv-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 24px;
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: linear-gradient(145deg, #fff, #edf8f6);
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .im-digital-cv-card h2 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.im-app .im-digital-cv-card p {
+    margin: 0 0 4px;
+    color: var(--im-muted);
+    font-size: 0.9rem;
+}
+
+.im-app .im-digital-cv-card .btn {
+    width: 100%;
+}
+
+.im-app .im-cv-art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 82px;
+    height: 94px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    background: #e6efff;
+    color: #638fc6;
+    transform: rotate(-8deg);
+}
+
+.im-app .im-cv-art > i {
+    font-size: 3.4rem;
+}
+
+.im-app .im-cv-art > span {
+    position: absolute;
+    right: -8px;
+    bottom: 8px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--im-brand);
+    color: white;
+}
+
+.im-app .im-sidebar-career-art {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+    color: var(--im-brand);
+}
+
+.im-app .im-sidebar-career-art > i:first-child {
+    font-size: 2.8rem;
+}
+
+.im-app .im-sidebar-career-art > i:last-child {
+    font-size: 1.5rem;
+    color: #a18bc8;
+}
+
+@media (max-width: 991.98px) {
+    .im-app .im-student-toolkit {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* STEPS 46–50 — Student live dashboard content */
+
+.im-app.im-role-student .dashboard-stat-card {
+    height: 100%;
+    padding: 20px;
+    border: 1px solid var(--im-border);
+    border-radius: var(--im-radius);
+    background: var(--im-surface);
+    box-shadow: var(--im-shadow);
+}
+
+.im-app .im-match-badge {
+    display: inline-block;
+    margin: 6px 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--im-brand-soft);
+    color: var(--im-brand-hover);
+    font-size: 0.75rem;
+    font-weight: 650;
+}
+
+.im-app.im-role-student .internship-card {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--im-border);
+}
+
+.im-app.im-role-student .internship-card:last-child {
+    border-bottom: 0;
+}
+
+.im-app.im-role-student .internship-card-main {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.im-app.im-role-student .internship-card-main a,
+.im-app.im-role-student .application-info a {
+    color: var(--im-brand-hover);
+    text-decoration: none;
+}
+
+.im-app.im-role-student .internship-card-main a:hover,
+.im-app.im-role-student .application-info a:hover {
+    text-decoration: underline;
+}
+
+
+/* STEPS 51–55 — Live Company charts */
+
+.im-app .im-chart-panel {
+    margin-bottom: 0;
+}
+
+.im-app .im-trend-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.im-app .im-chart-months {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.im-app .im-chart-months > div {
+    text-align: center;
+}
+
+.im-app .im-chart-months span,
+.im-app .im-chart-months strong {
+    display: block;
+}
+
+.im-app .im-chart-months span {
+    color: var(--im-muted);
+    font-size: 0.7rem;
+}
+
+.im-app .im-status-chart {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.im-app .im-status-donut {
+    display: grid;
+    place-items: center;
+    width: 160px;
+    height: 160px;
+    flex: 0 0 160px;
+    border-radius: 50%;
+}
+
+.im-app .im-status-donut > div {
+    display: grid;
+    place-content: center;
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    background: var(--im-surface);
+    text-align: center;
+}
+
+.im-app .im-status-donut strong {
+    font-size: 1.65rem;
+}
+
+.im-app .im-status-donut span {
+    color: var(--im-muted);
+    font-size: 0.7rem;
+}
+
+.im-app .im-status-legend {
+    flex: 1 1 150px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.im-app .im-status-legend li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 0.8rem;
+}
+
+.im-app .im-status-legend strong {
+    margin-left: auto;
+}
+
+.im-app .im-legend-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 50%;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/StudentProfileController.php';
 require_once __DIR__ . '/StudentInternshipController.php';
+require_once __DIR__ . '/MatchingController.php';
 
 final class StudentDashboardController
 {
@@ -20,6 +21,8 @@ final class StudentDashboardController
         $applicationStatement = $pdo->prepare(
             "SELECT
                 COUNT(*) AS total_applications,
+COALESCE(SUM(status = 'Shortlisted'), 0) AS shortlisted_count,
+COALESCE(SUM(status = 'Accepted'), 0) AS accepted_count,
                 COALESCE(
                     SUM(
                         status IN ('Under Review', 'Shortlisted')
@@ -58,7 +61,8 @@ final class StudentDashboardController
                 a.application_id,
                 a.status,
                 i.title,
-                c.company_name
+                c.company_name,
+                c.company_id
              FROM applications AS a
              INNER JOIN internships AS i
                 ON i.internship_id = a.internship_id
@@ -78,7 +82,8 @@ final class StudentDashboardController
                 a.application_id,
                 a.interview_date,
                 i.title,
-                c.company_name
+                c.company_name,
+                c.company_id
              FROM applications AS a
              INNER JOIN internships AS i
                 ON i.internship_id = a.internship_id
@@ -118,10 +123,14 @@ final class StudentDashboardController
                 (int) $savedStatement->fetchColumn(),
             'upcoming_interview_count' =>
                 (int) $applicationStats['upcoming_interviews'],
-            'latest_internships' =>
-                array_slice($opportunities['items'], 0, 3),
+            'recommended_internships' =>
+                MatchingController::recommendations($userId, 3),
             'recent_applications' => $recentStatement->fetchAll(),
             'upcoming_interviews' => $interviewStatement->fetchAll(),
+            'shortlisted_count' =>
+                (int) $applicationStats['shortlisted_count'],
+            'accepted_count' =>
+                (int) $applicationStats['accepted_count'],
         ];
     }
 }

@@ -236,7 +236,7 @@ try {
                     $canChange = $account['role'] !== 'admin'
                         && in_array(
                             $account['status'],
-                            ['active', 'suspended'],
+                            ['pending', 'active', 'suspended'],
                             true
                         );
 
@@ -244,13 +244,48 @@ try {
                         ? 'suspended'
                         : 'active';
 
-                    $actionLabel = $nextStatus === 'suspended'
-                        ? 'Suspend'
-                        : 'Reactivate';
+                    $actionLabel = match ($account['status']) {
+                        'pending' => 'Activate',
+                        'active' => 'Suspend',
+                        'suspended' => 'Reactivate',
+                        default => 'Unavailable',
+                    };
                     ?>
 
                     <tr>
-                        <td><?= e($account['name']) ?></td>
+                       <td>
+                            <?php
+                            $accountProfilePath = null;
+
+                            if (
+                                $account['role'] === 'student'
+                                && !empty($account['student_profile_id'])
+                            ) {
+                                $accountProfilePath =
+                                    'student-view-profile.php?id='
+                                    . (int) $account['student_profile_id'];
+                            } elseif (
+                                $account['role'] === 'company'
+                                && !empty($account['company_profile_id'])
+                            ) {
+                                $accountProfilePath =
+                                    'company-view-profile.php?id='
+                                    . (int) $account['company_profile_id'];
+                            }
+                            ?>
+
+                            <?php if ($accountProfilePath !== null): ?>
+                                <a class="fw-semibold text-decoration-none"
+                                href="<?= e(url($accountProfilePath)) ?>">
+                                    <?= e($account['name']) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="fw-semibold">
+                                    <?= e($account['name']) ?>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+
                         <td><?= e($account['email']) ?></td>
                         <td><?= e(ucfirst($account['role'])) ?></td>
                         <td>

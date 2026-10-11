@@ -87,6 +87,7 @@ final class CompanyApplicationController
                 i.interns_needed,
                 u.name AS student_name,
                 u.email AS student_email,
+                 sp.user_id AS student_user_id,
                 sp.phone,
                 sp.university,
                 sp.degree
@@ -131,6 +132,7 @@ return [
                 i.company_id,
                 u.name AS student_name,
                 u.email AS student_email,
+                 sp.user_id AS student_user_id,
                 sp.phone,
                 sp.university,
                 sp.degree
@@ -176,6 +178,7 @@ return [
         $interviewDate = $input['interview_date'] ?? '';
 
         $allowedStatuses = [
+            'Pending',
             'Under Review',
             'Shortlisted',
             'Accepted',
@@ -257,15 +260,9 @@ return [
                 );
             }
 
-            $now = new DateTimeImmutable('now', $timezone);
 
-            if ($date < $now) {
-                throw new InvalidArgumentException(
-                    'The interview date cannot be in the past.'
-                );
-            }
 
-            $interviewDate = $date->format('Y-m-d H:i:s');
+        $interviewDate = $date->format('Y-m-d H:i:s');
         } else {
             $interviewDate = null;
         }
@@ -394,6 +391,43 @@ if (
                     . 'Review the current status and try again.'
                 );
             }
+
+
+
+
+                $storedInterviewDate =
+                $current['interview_date'] ?? null;
+
+            // The form submits minutes; preserve the stored timestamp
+            // when the displayed interview time has not changed.
+            $sameInterviewMinute =
+                $interviewDate !== null
+                && $storedInterviewDate !== null
+                && substr($interviewDate, 0, 16)
+                    === substr((string) $storedInterviewDate, 0, 16);
+
+            if ($sameInterviewMinute) {
+                $interviewDate = $storedInterviewDate;
+            } elseif ($interviewDate !== null) {
+                $timezone = new DateTimeZone(
+                    date_default_timezone_get()
+                );
+
+                $scheduledDate = new DateTimeImmutable(
+                    $interviewDate,
+                    $timezone
+                );
+
+                $now = new DateTimeImmutable('now', $timezone);
+
+                if ($scheduledDate < $now) {
+                    throw new InvalidArgumentException(
+                        'A new or changed interview date cannot be in the past.'
+                    );
+                }
+            }
+
+
 
             $statusChanged = $current['status'] !== $newStatus;
 

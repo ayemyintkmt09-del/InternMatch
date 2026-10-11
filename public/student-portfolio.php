@@ -177,11 +177,11 @@ render_header($user, 'My Portfolio', 'portfolio');
             
 <span class="im-visibility-label">
 
-    <i class="bi <?= (int) ($entry['is_public'] ?? 0) === 1
+    <i class="bi <?= (int) ($form['is_public'] ?? 0) === 1
         ? 'bi-globe2'
         : 'bi-lock-fill' ?>"></i>
 
-    <?= (int) ($entry['is_public'] ?? 0) === 1
+    <?= (int) ($form['is_public'] ?? 0) === 1
         ? 'Public'
         : 'Private' ?>
 

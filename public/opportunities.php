@@ -251,6 +251,15 @@ render_header($user, $pageTitle, $activeNav);
             method="get"
             action="<?= e(url('opportunities.php')) ?>">
 
+            <?php if ($filters['company_id'] !== ''): ?>
+    <input
+        type="hidden"
+        name="company_id"
+        value="<?= e($filters['company_id']) ?>">
+<?php endif; ?>
+
+
+
             <div class="opportunity-search-card">
                 <div class="opportunity-search">
                     <i class="bi bi-search"></i>

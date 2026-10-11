@@ -212,7 +212,7 @@ if ($id > 0) {
           description, link_url, start_date, end_date, is_public)
          VALUES
          (:user_id, :item_type, :title, :organization,
-          :description, :link_url, :start_date, :end_date, is_public)'
+          :description, :link_url, :start_date, :end_date, :is_public)'
     );
 }
 

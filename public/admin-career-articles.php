@@ -79,7 +79,7 @@ try {
     exit('Unable to load career content.');
 }
 $notice = take_flash('career_admin_notice');
-render_header($user, 'Manage Career Articles', 'career-content');
+render_header($user, 'Manage Career Articles', 'career-admin');
 ?>
 
 <main class="im-career-content-page" id="main-content" tabindex="-1">

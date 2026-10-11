@@ -615,4 +615,4 @@ render_header($user, $pageTitle, $activeNav);
     </div>
 </main>
 
-render_footer($user);
+<?php render_footer($user); ?>

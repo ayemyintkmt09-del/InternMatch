@@ -14,6 +14,7 @@ $userId = (int) $user['user_id'];
 
 $profileError = null;
 $profileSuccess = take_flash('profile_success');
+$profileUploadError = take_flash('profile_error');
 
 $cvSuccess = take_flash('cv_success');
 $cvError = take_flash('cv_error');
@@ -168,6 +169,46 @@ function profile_options(
 
 
         </div>
+
+        <section class="im-card im-profile-photo-card" id="profile-photo">
+            <div class="im-profile-photo-preview">
+                <?php $profilePhotoUrl = StudentProfileController::photoUrl($profile); ?>
+                <?php if ($profilePhotoUrl !== null): ?>
+                    <img src="<?= e($profilePhotoUrl) ?>"
+                         alt="<?= e((string) ($profile['name'] ?? 'Student')) ?> profile photo">
+                <?php else: ?>
+                    <span aria-hidden="true">
+                        <?= e(mb_strtoupper(mb_substr((string) ($profile['name'] ?? 'S'), 0, 1, 'UTF-8'), 'UTF-8')) ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <div class="im-profile-photo-copy">
+                <h2>Profile photo</h2>
+                <p>Upload a clear JPG, PNG, or WebP image smaller than 2 MB.</p>
+
+                <?php if ($profileUploadError !== null): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?= e($profileUploadError) ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post"
+                      action="<?= e(url('student-profile-photo-upload.php')) ?>"
+                      enctype="multipart/form-data"
+                      class="d-flex flex-wrap gap-2 align-items-center">
+                    <?= csrf_field() ?>
+                    <input type="file"
+                           name="profile_photo"
+                           class="form-control"
+                           accept="image/jpeg,image/png,image/webp"
+                           required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload me-1"></i> Upload photo
+                    </button>
+                </form>
+            </div>
+        </section>
 
 
         <!-- =====================================

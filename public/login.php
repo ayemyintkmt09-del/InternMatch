@@ -207,8 +207,8 @@ $loginSuccess = take_flash('login_success');
                                             <span>*</span>
                                         </label>
 
-                                        <a href="#">
-                                            Forgot Password?
+                                        <a href="<?= e(url('help.php')) ?>">
+                                            Sign-in help
                                         </a>
 
                                     </div>

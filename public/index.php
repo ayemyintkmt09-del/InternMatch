@@ -97,7 +97,7 @@ $homeStats = [
 
         <div class="container">
 
-            <div class="row align-items-center">
+            <div class="row align-items-center g-5">
 
                 <!-- Hero text -->
                 <div class="col-lg-6">

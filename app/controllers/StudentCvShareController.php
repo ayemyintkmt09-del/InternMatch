@@ -26,7 +26,8 @@ final class StudentCvShareController
         $stmt = db()->prepare(
             'INSERT INTO student_cv_shares
              (user_id, cv_id)
-             VALUES (:user_id, :cv_id)'
+             VALUES (:user_id, :cv_id)
+             ON DUPLICATE KEY UPDATE user_id = user_id'
         );
 
         $stmt->execute([
@@ -34,16 +35,32 @@ final class StudentCvShareController
             'cv_id' => $cvId,
         ]);
 
-        return [
-            'cv_id' => $cvId,
-            'is_active' => 0,
-        ];
+                $read = db()->prepare(
+            'SELECT cv_id, is_active
+             FROM student_cv_shares
+             WHERE user_id = :user_id
+             LIMIT 1'
+        );
+
+        $read->execute(['user_id' => $userId]);
+        $created = $read->fetch(PDO::FETCH_ASSOC);
+
+        if ($created === false) {
+            throw new RuntimeException(
+                'The CV-sharing record could not be initialized.'
+            );
+        }
+
+        return $created;
     }
 
 
     
 public static function generateLink(int $userId): string
 {
+
+    self::ensure($userId);
+    
     $token = bin2hex(random_bytes(32));
     $hash = hash('sha256', $token);
 

@@ -128,42 +128,22 @@ final class StudentInternshipController
 
 
                 
-if ($filters['company_id'] !== '') {
-    $companyId = filter_var(
-        $filters['company_id'],
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
+        if ($filters['company_id'] !== '') {
+            $companyId = filter_var(
+                $filters['company_id'],
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1]]
+            );
 
-    if ($companyId === false) {
-        throw new InvalidArgumentException(
-            'Invalid company filter.'
-        );
-    }
+            if ($companyId === false) {
+                throw new InvalidArgumentException(
+                    'Invalid company filter.'
+                );
+            }
 
-    $where[] = 'i.company_id = :filter_company_id';
-
-    $parameters['filter_company_id'] = $companyId;
-}
-
-
-if ($filters['company_id'] !== '') {
-    $companyId = filter_var(
-        $filters['company_id'],
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
-
-    if ($companyId === false) {
-        throw new InvalidArgumentException(
-            'Invalid company filter.'
-        );
-    }
-
-    $where[] = 'i.company_id = :filter_company_id';
-    $parameters['filter_company_id'] = $companyId;
-}
-
+            $where[] = 'i.company_id = :filter_company_id';
+            $parameters['filter_company_id'] = $companyId;
+        }
 
 
 
@@ -261,6 +241,36 @@ if ($filters['company_id'] !== '') {
 
 
     }
+
+
+
+
+    public static function recommendationCandidates(): array
+    {
+        $statement = db()->prepare(
+            'SELECT
+                i.*,
+                c.company_name,
+                CASE WHEN c.logo_path IS NOT NULL
+                    THEN 1 ELSE 0
+                END AS company_has_logo,
+                af.field_name
+             FROM internships AS i
+             JOIN companies AS c ON c.company_id = i.company_id
+             JOIN users AS u ON u.user_id = c.user_id
+             LEFT JOIN academic_fields AS af
+                ON af.field_id = i.field_id
+             WHERE ' . self::visibility() . '
+             ORDER BY i.published_at DESC, i.internship_id DESC'
+        );
+
+        $statement->execute(['today' => date('Y-m-d')]);
+
+        return $statement->fetchAll();
+    }
+
+
+
 
     public static function detail(int $internshipId): ?array
     {

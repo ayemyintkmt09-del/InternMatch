@@ -57,6 +57,10 @@ try {
 }
 
 $pageTitle = 'Applicants';
+
+
+$activeNav = 'applications';
+
 render_header(
     $user,
     $pageTitle ?? 'InternMatch',
@@ -130,10 +134,13 @@ render_header(
 
                                 <tr>
                                     <td>
-                                        <strong>
+                                        <a class="fw-semibold text-decoration-none"
+                                        href="<?= e(url(
+                                            'student-view-profile.php?id='
+                                            . (int) $application['student_id']
+                                        )) ?>">
                                             <?= e($application['student_name']) ?>
-                                        </strong>
-
+                                        </a>
                                         <div class="small text-muted">
                                             <?= e($application['student_email']) ?>
                                         </div>

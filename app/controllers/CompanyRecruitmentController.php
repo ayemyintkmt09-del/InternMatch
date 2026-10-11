@@ -51,6 +51,7 @@ public static function upcomingInterviews(
     $stmt = db()->prepare("
         SELECT
             a.application_id,
+            a.student_id,
             a.interview_date,
             a.status,
             i.title,

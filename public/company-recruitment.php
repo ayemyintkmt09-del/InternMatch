@@ -194,7 +194,13 @@ render_header(
 
                     <div class="im-interview-info">
                         <strong>
-                            <?= e($interview['student_name']) ?>
+                            <a class="fw-semibold text-decoration-none"
+                            href="<?= e(url(
+                                'student-view-profile.php?id='
+                                . (int) $interview['student_id']
+                            )) ?>">
+                                <?= e($interview['student_name']) ?>
+                            </a>
                         </strong>
 
                         <span>

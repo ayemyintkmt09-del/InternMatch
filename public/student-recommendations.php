@@ -14,45 +14,8 @@ $userId = (int) $user['user_id'];
 
 
 try {
-    // Retrieve the ten newest currently open internships.
-    $result = StudentInternshipController::search([
-        'sort' => 'newest'
-    ]);
-
-    // Calculate matches using the existing matching system.
-    $items = MatchingController::attachToList(
-        $userId,
-        $result['items']
-    );
-
-    // Exclude internships the student has already applied to.
-    $appliedIds = array_fill_keys(
-        array_map(
-            static fn(array $application): int =>
-                (int) $application['internship_id'],
-
-            ApplicationController::listing($userId)
-        ),
-        true
-    );
-
-    $items = array_values(array_filter(
-        $items,
-        static fn(array $item): bool =>
-            !isset($appliedIds[
-                (int) $item['internship_id']
-            ])
-    ));
-
-    // Rank this group by profile-match score.
-    usort(
-        $items,
-        static fn(array $a, array $b): int =>
-            ($b['match_score']['overall'] ?? 0)
-            <=>
-            ($a['match_score']['overall'] ?? 0)
-    );
-
+    $items = MatchingController::recommendations($userId);
+    
 } catch (Throwable $exception) {
     error_log((string) $exception);
 
@@ -87,9 +50,8 @@ render_header(
                 <h1>Recommended Internships</h1>
 
                 <p>
-                    Personalized matches among the ten
-                    newest open listings, excluding
-                    internships you already applied to.
+                    Personalized matches across currently open internships,
+                    excluding internships you already applied to.
                 </p>
             </div>
 

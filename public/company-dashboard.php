@@ -10,6 +10,9 @@ require_once __DIR__ . '/../app/controllers/CompanyInternshipController.php';
 
 require_once __DIR__ . '/../app/controllers/CompanyApplicationController.php';
 require_once __DIR__ . '/../app/controllers/CompanyReviewController.php';
+
+require_once __DIR__
+    . '/../app/controllers/CompanyDashboardChartController.php';
 require_once __DIR__ . '/../app/layout.php';
 
 
@@ -19,6 +22,11 @@ try {
     $company = CompanyProfileController::load(
         (int) $user['user_id']
     );
+
+        $companyCharts = CompanyDashboardChartController::load(
+        (int) $user['user_id']
+    );
+
 
     
 $companyReviewSummary =
@@ -141,6 +149,15 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
 
                     <div>
                         <h3><?= e($company['company_name']) ?></h3>
+
+
+                        <a class="btn btn-outline-primary btn-sm mb-3"
+                        href="<?= e(url(
+                            'company-view-profile.php?id='
+                            . (int) $company['company_id']
+                        )) ?>">
+                            View Company Profile
+                        </a>
 
                         <p>
                             <?= e($company['industry'] ?: 'Industry not added yet') ?>
@@ -317,6 +334,145 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
             <!-- =================================
                  MAIN CONTENT
             ================================== -->
+
+
+            <section class="row g-4 mb-4" aria-label="Application charts">
+    <div class="col-lg-7">
+        <div class="company-panel im-chart-panel h-100">
+            <h2 class="h5">Applications Received</h2>
+            <p class="small text-muted">
+                Last six Myanmar calendar months.
+                The current month is in progress.
+            </p>
+
+            <?php
+            $months = $companyCharts['months'];
+            $maximum = max(1, ...array_column($months, 'count'));
+            $points = [];
+
+            foreach ($months as $index => $month) {
+                $x = 30 + $index * 100;
+                $y = 170 - ($month['count'] / $maximum) * 140;
+                $points[] = $x . ',' . round($y, 2);
+            }
+            ?>
+
+            <svg class="im-trend-chart"
+                 viewBox="0 0 560 200"
+                 role="img"
+                 aria-labelledby="companyTrendTitle">
+                <title id="companyTrendTitle">
+                    Applications received by month.
+                    Exact counts are listed below.
+                </title>
+
+                <path d="M30 30H530 M30 100H530 M30 170H530"
+                      fill="none" stroke="#d3e7e7"/>
+
+                <polyline
+                    points="<?= e(implode(' ', $points)) ?>"
+                    fill="none"
+                    stroke="#168b91"
+                    stroke-width="3"/>
+
+                <?php foreach ($months as $index => $month): ?>
+                    <?php
+                    $x = 30 + $index * 100;
+                    $y = 170 - ($month['count'] / $maximum) * 140;
+                    ?>
+                    <circle cx="<?= $x ?>"
+                            cy="<?= round($y, 2) ?>"
+                            r="4" fill="#168b91"/>
+
+                    <text x="<?= $x ?>"
+                          y="<?= round($y - 10, 2) ?>"
+                          text-anchor="middle"
+                          font-size="12" fill="#203844">
+                        <?= $month['count'] ?>
+                    </text>
+                <?php endforeach; ?>
+            </svg>
+
+            <div class="im-chart-months">
+                <?php foreach ($months as $month): ?>
+                    <div>
+                        <span><?= e($month['label']) ?></span>
+                        <strong><?= $month['count'] ?></strong>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="company-panel im-chart-panel h-100">
+    <h2 class="h5">Application Status</h2>
+    <p class="small text-muted">Current statuses across all applications.</p>
+
+    <?php
+    $statusColors = [
+        'Pending' => '#efbf61',
+        'Under Review' => '#6ebcc2',
+        'Shortlisted' => '#a38bcf',
+        'Accepted' => '#168b91',
+        'Rejected' => '#d78989',
+        'Withdrawn' => '#a5b2bd',
+    ];
+
+    $segments = [];
+    $cursor = 0;
+    $total = $companyCharts['total'];
+
+    foreach ($companyCharts['statuses'] as $status => $count) {
+        if ($count === 0 || $total === 0) {
+            continue;
+        }
+
+        $end = $cursor + ($count / $total) * 100;
+
+        $segments[] = $statusColors[$status]
+            . ' ' . round($cursor, 4) . '% '
+            . round($end, 4) . '%';
+
+        $cursor = $end;
+    }
+
+    $donutBackground = $total > 0
+        ? 'conic-gradient(' . implode(', ', $segments) . ')'
+        : '#e4eeed';
+    ?>
+
+    <div class="im-status-chart">
+        <div class="im-status-donut"
+             style="background: <?= e($donutBackground) ?>"
+             aria-hidden="true">
+            <div>
+                <strong><?= number_format($total) ?></strong>
+                <span>Applications</span>
+            </div>
+        </div>
+
+        <ul class="im-status-legend">
+            <?php foreach ($companyCharts['statuses'] as $status => $count): ?>
+                <li>
+                    <span class="im-legend-dot"
+                          style="background: <?= e($statusColors[$status]) ?>"
+                          aria-hidden="true"></span>
+                    <span><?= e($status) ?></span>
+                    <strong><?= number_format($count) ?></strong>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+
+    <?php if ($total === 0): ?>
+        <p class="small text-muted mb-0">
+            Applications will appear here when students apply.
+        </p>
+    <?php endif; ?>
+</div>
+    </div>
+</section>
 
             <div class="row g-4">
 
@@ -668,7 +824,15 @@ $hasLogo = CompanyFileController::path($company, 'logo') !== null;
                 <?php foreach ($recentApplicants as $app): ?>
 
                     <tr>
-                        <td><?= e($app['student_name']) ?></td>
+                        <td>
+    <a class="fw-semibold text-decoration-none"
+       href="<?= e(url(
+           'student-view-profile.php?id='
+           . (int) $app['student_id']
+       )) ?>">
+        <?= e($app['student_name']) ?>
+    </a>
+</td>
 
                         <td><?= e($app['title']) ?></td>
 
